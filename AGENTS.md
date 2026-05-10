@@ -3,9 +3,9 @@
 ## Overview
 Implements Meta's SIRA paper (arXiv:2605.06647): training-free retrieval bridging support-ticket vocabulary to KB articles via LLM enrichment + weighted BM25.
 
-**Project root:** `sira_arXiv:2605.06647/` — all commands below run from there.
+**Project root:** `sira/` — all commands below run from there.
 
-**Current state:** Iterations 1–3 implemented. Iterations 4–5 (FastAPI service, evaluation harness) are specified but not coded.
+**Current state:** Iterations 1–5 coded. Evaluation harness and ablation runner exist; test set is currently bootstrap placeholder data pending real annotations.
 
 ---
 
@@ -24,7 +24,7 @@ No `setup.py` / `pyproject.toml`. No CI. No packaging. Run everything as scripts
 
 ## Commands
 
-All commands must be run from `sira_arXiv:2605.06647/` (not the repo root).
+All commands must be run from `sira/` (not the repo root).
 
 ```bash
 # Run all tests
@@ -105,21 +105,17 @@ Hallucination rate = `len(rejected) / len(generated)`. If >20%, lower sketch tem
 
 ## Testing notes
 
-- **38 tests, no integration tests** — all LLM calls are mocked via `unittest.mock`.
+- **49 tests, no integration tests** — all LLM calls are mocked via `unittest.mock`.
 - `tests/conftest.py` defines `CORPUS_PATH` and `INDEX_PATH` relative to `tests/` parent (i.e., `data/kb_corpus.jsonl` must exist).
 - The `enriched_index` fixture in `test_retrieve.py` pads to 100 articles so `τ=0.01` allows `df=1` terms to pass validation.
 - SIRA tests patch `src.retrieve.generate_sketch` directly (not `src.sketch.generate_sketch`).
 
 ---
 
-## What's not yet implemented (Iterations 4–5)
+## Remaining gaps
 
-- `src/api.py` — `POST /retrieve`, `GET /health`, `POST /feedback` (FastAPI, bearer auth, Pydantic models)
-- `src/models.py` — Pydantic request/response schemas
-- `src/eval.py` — nDCG@10, Recall@5, MRR computation
-- `scripts/run_ablations.py` — 5-experiment ablation table
-- `tests/annotated_test_set.jsonl` — ≥20 hand-annotated ticket→KB pairs
-- `.env.example`
+- `tests/annotated_test_set.jsonl` currently contains bootstrap placeholders; replace with hand-annotated ticket→KB pairs.
+- `.env.example` is still missing.
 
 See `ITERATIONS.md` for full sign-off checklists and expected CLI output for each iteration.
 

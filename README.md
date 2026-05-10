@@ -1,49 +1,20 @@
 # arxiv_impl
 
-Implementations of arXiv papers.
+Implementations of arXiv papers. Each paper implementation lives in its own folder.
 
-## Active project
+## Table of contents
 
-- `sira_arXiv:2605.06647/` — implementation of Meta's SIRA retrieval approach
-  (training-free vocabulary bridging with LLM enrichment + weighted BM25).
+| Folder | Paper | Summary | Status |
+|---|---|---|---|
+| `sira/` | Meta SIRA (arXiv:2605.06647) | Training-free support-ticket to KB retrieval via offline LLM enrichment + online sketch expansion + weighted BM25 | Iterations 1-5 code complete (placeholder eval set; real annotation data pending) |
 
-## Current status (SIRA project)
+## Usage
 
-- Iteration 1–4 implemented (Iteration 4 API is running, auth intentionally skipped).
-- Iteration 5 (evaluation harness + ablation runner) pending.
+Enter any implementation folder and follow its local docs/scripts.
 
-## Quickstart
-
-Run all commands from:
+Example:
 
 ```bash
-cd sira_arXiv:2605.06647
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run tests:
-
-```bash
+cd sira
 python3 -m pytest tests/
 ```
-
-Start services:
-
-```bash
-./scripts/start_api.sh
-./scripts/start_ui.sh
-```
-
-- API docs: `http://localhost:8001/docs`
-- Operations UI: `http://localhost:8000/`
-
-## Notes for pushing to GitHub
-
-- Generated artifacts (index pickle, df store, enriched corpora, feedback logs, local PID/log files)
-  are ignored via `.gitignore`.
-- Keep `data/kb_corpus.jsonl` tracked as the seed dataset.
