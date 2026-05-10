@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIRA Operations Console</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .ops-layout { display: grid; grid-template-columns: 1fr 420px; gap: 1rem; align-items: start; }
+        .sidebar { position: sticky; top: 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+        .status-flagbar { display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; margin-top: 0.4rem; flex-wrap: wrap; }
+        .flag { border-radius: 999px; padding: 0.22rem 0.6rem; font-size: 0.75rem; border: 1px solid var(--border); }
+        .flag.up { background: #dcfce7; color: #166534; border-color: #86efac; }
+        .flag.warn { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+        .flag.down { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        .side-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .panel-head { width: 100%; background: transparent; border: 0; text-align: left; padding: 0.9rem 1rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .panel-content { padding: 0 1rem 1rem; }
+        .panel-content.hidden { display: none; }
+        .chev { color: var(--text-secondary); font-size: 0.9rem; }
+        .kv { display: grid; grid-template-columns: 1fr auto; gap: 0.3rem 0.75rem; font-size: 0.85rem; }
+        .kv .k { color: var(--text-secondary); }
+        .model-controls { display: grid; gap: 0.5rem; }
+        .model-controls select { width: 100%; padding: 0.45rem; border: 1px solid var(--border); border-radius: var(--radius); }
+        .model-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+        .chip { border: 1px solid var(--border); border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.75rem; }
+        .missing-models { margin-top: 0.4rem; border-top: 1px dashed var(--border); padding-top: 0.45rem; }
+        .missing-item { font-size: 0.78rem; margin-bottom: 0.35rem; }
+        .missing-item code { font-size: 0.72rem; }
+        .missing-item .btn { margin-top: 0.2rem; }
+        .swagger-frame { width: 100%; height: 540px; border: 1px solid var(--border); border-radius: var(--radius); }
+        .logs-console { background: #0b1220; color: #dbeafe; border-radius: 8px; border: 1px solid #1f2937; height: 300px; overflow-y: auto; padding: 0.6rem; font-size: 0.78rem; line-height: 1.4; }
+        .log-line { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .log-meta { color: #93c5fd; }
+        .log-error { color: #fca5a5; }
+        .log-warn { color: #fde68a; }
+        .log-filters { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+        .filter-chip { border: 1px solid #1f2937; background: #0f172a; color: #cbd5e1; border-radius: 999px; padding: 0.15rem 0.5rem; font-size: 0.72rem; cursor: pointer; }
+        .filter-chip.active { background: #1d4ed8; border-color: #2563eb; color: #fff; }
+        @media (max-width: 1200px) {
+            .ops-layout { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+            .swagger-frame { height: 420px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SIRA Operations Console</h1>
+            <p>KB enrichment telemetry, retrieval inspection, and API operations &nbsp;|&nbsp; <a href="/query">Retrieval Query UI</a></p>
+            <div class="status-flagbar">
+                <span id="flag-api" class="flag warn">API: unknown</span>
+                <span id="flag-index" class="flag warn">Index: unknown</span>
+                <span class="label" id="last-refresh">last check: —</span>
+                <button class="btn secondary small" id="refresh-monitor-btn">Refresh</button>
+            </div>
+        </header>
+
+        <div class="ops-layout">
+            <main>
+                <section class="stats">
+                    <div class="card"><div class="metric">{{ stats.total }}</div><div class="label">Total Articles</div></div>
+                    <div class="card"><div class="metric">{{ stats.enriched }}</div><div class="label">Enriched</div></div>
+                    <div class="card"><div class="metric">{{ stats.avg_terms }}</div><div class="label">Avg Terms / Article</div></div>
+                    <div class="card"><div class="metric" id="active-enrich-model">{{ stats.model }}</div><div class="label">Active Enrich Model</div></div>
+                    <div class="card"><div class="metric">{{ stats.last_run or "—" }}</div><div class="label">Last Run</div></div>
+                </section>
+
+                <section class="controls">
+                    <button id="enrich-all-btn" class="btn primary">Enrich All Articles</button>
+                    <button id="refresh-btn" class="btn secondary">Refresh Data</button>
+                    <div id="progress-container" class="hidden">
+                        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+                        <div id="progress-text">0 / 0</div>
+                        <div id="progress-log"></div>
+                    </div>
+                </section>
+
+                <section class="articles">
+                    <h2>Articles</h2>
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Title</th><th>Status</th><th>Terms</th><th>Last Updated</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for art in articles %}
+                            <tr>
+                                <td>{{ art.article_id }}</td>
+                                <td>{{ art.title }}</td>
+                                <td>{% if art.enriched_at %}<span class="badge success">Enriched</span>{% else %}<span class="badge pending">Pending</span>{% endif %}</td>
+                                <td>{{ art.enriched_terms | length }}</td>
+                                <td>{{ art.last_updated_display }}</td>
+                                <td>
+                                    <button class="btn small" onclick="openDetail('{{ art.article_id }}')">View</button>
+                                    {% if not art.enriched_at %}<button class="btn small" onclick="enrichOne('{{ art.article_id }}')">Enrich</button>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
+            </main>
+
+            <aside class="sidebar">
+                <section class="side-card" data-panel="model-control">
+                    <button class="panel-head" type="button"><span>Model Control</span><span class="chev">▸</span></button>
+                    <div class="panel-content hidden">
+                        <div class="model-controls">
+                            <select id="model-select"></select>
+                            <div class="model-row">
+                                <label><input type="checkbox" id="apply-enrich" checked> enrich</label>
+                                <label><input type="checkbox" id="apply-sketch" checked> sketch</label>
+                            </div>
+                            <div class="model-row">
+                                <button class="btn primary small" id="apply-model-btn">Apply</button>
+                                <button class="btn secondary small" id="unload-prev-btn">Unload Previous</button>
+                            </div>
+                            <div class="model-row">
+                                <span class="chip" id="chip-enrich">enrich: —</span>
+                                <span class="chip" id="chip-sketch">sketch: —</span>
+                            </div>
+                            <div class="missing-models">
+                                <div class="label" style="margin-bottom:0.25rem">Available but not installed</div>
+                                <div id="missing-models-list"></div>
+                            </div>
+                            <div id="model-status" class="label">Ready</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="side-card" data-panel="api-docs">
+                    <button class="panel-head" type="button"><span>API Docs (Swagger)</span><span class="chev">▸</span></button>
+                    <div class="panel-content hidden">
+                        <iframe class="swagger-frame" id="swagger-frame" data-src="{{ api_url }}/docs"></iframe>
+                    </div>
+                </section>
+
+                <section class="side-card" data-panel="api-health">
+                    <button class="panel-head" type="button"><span>API Health</span><span class="chev">▾</span></button>
+                    <div class="panel-content">
+                        <div class="kv">
+                            <div class="k">Index loaded</div><div id="h-index">—</div>
+                            <div class="k">Corpus size</div><div id="h-corpus">—</div>
+                            <div class="k">Index built at</div><div id="h-built">—</div>
+                            <div class="k">API URL</div><div>{{ api_url }}</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="side-card" data-panel="live-logs">
+                    <button class="panel-head" type="button"><span>Live Logs</span><span class="chev">▾</span></button>
+                    <div class="panel-content">
+                        <div class="log-filters">
+                            <button class="filter-chip active" data-filter="all">all</button>
+                            <button class="filter-chip" data-filter="models">models</button>
+                            <button class="filter-chip" data-filter="enrich">enrich</button>
+                            <button class="filter-chip" data-filter="query">query</button>
+                            <button class="filter-chip" data-filter="system">system</button>
+                            <button class="btn secondary small" id="clear-logs-btn">Clear</button>
+                        </div>
+                        <div id="logs-console" class="logs-console"></div>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="modal-title">Article Detail</h2><button class="close-btn" onclick="closeModal()">&times;</button></div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const articles = {{ articles | tojson }};
+        let currentFilter = 'all';
+        let logCursor = 0;
+        let logs = [];
+
+        function escapeHtml(text) { const d = document.createElement('div'); d.textContent = text ?? ''; return d.innerHTML; }
+        function closeModal() { document.getElementById('detail-modal').classList.add('hidden'); }
+
+        function openDetail(articleId) {
+            const art = articles.find(a => a.article_id === articleId);
+            if (!art) return;
+            document.getElementById('modal-title').textContent = art.article_id + ' — ' + art.title;
+            const enriched = art.enriched_terms || [];
+            const telemetry = art.telemetry || {};
+            let html = `<div class="detail-grid"><div class="detail-section"><h3>Original Body</h3><div class="text-box">${art.body || art.original_body || ''}</div></div><div class="detail-section"><h3>Enriched Terms (${enriched.length})</h3><div class="terms-list">${enriched.map(t => `<span class="term-badge">${escapeHtml(t)}</span>`).join('') || '<em>No enriched terms</em>'}</div>${art.enriched_body ? `<h4 style="margin-top:1rem">Enriched Body Snippet</h4><div class="text-box">${escapeHtml(art.enriched_body.slice(0,300))}...</div>` : ''}</div></div>`;
+            if (telemetry.duration_sec !== undefined) {
+                html += `<div class="telemetry"><h3>Telemetry</h3><table class="telemetry-table"><tr><td>Duration</td><td>${telemetry.duration_sec}s</td></tr><tr><td>Retries</td><td>${telemetry.retries}</td></tr><tr><td>Raw Terms</td><td>${telemetry.raw_term_count || '—'}</td></tr><tr><td>After Filter</td><td>${telemetry.filtered_term_count || '—'}</td></tr><tr><td>Model</td><td>${art.model_used || '—'}</td></tr></table></div>`;
+            }
+            document.getElementById('modal-body').innerHTML = html;
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function panelDefaults() {
+            return {
+                'model-control': false,
+                'api-health': true,
+                'api-docs': false,
+                'live-logs': true,
+            };
+        }
+
+        function initPanels() {
+            const defaults = panelDefaults();
+            document.querySelectorAll('.side-card[data-panel]').forEach((card) => {
+                const key = card.dataset.panel;
+                const head = card.querySelector('.panel-head');
+                const content = card.querySelector('.panel-content');
+                const chev = card.querySelector('.chev');
+                const lsKey = 'panel:' + key;
+                const saved = localStorage.getItem(lsKey);
+                let open = saved === null ? !!defaults[key] : saved === 'open';
+
+                const apply = () => {
+                    content.classList.toggle('hidden', !open);
+                    head.setAttribute('aria-expanded', String(open));
+                    chev.textContent = open ? '▾' : '▸';
+                    if (open && key === 'api-docs') {
+                        const frame = document.getElementById('swagger-frame');
+                        if (frame && !frame.src) frame.src = frame.dataset.src;
+                    }
+                };
+                apply();
+                head.addEventListener('click', () => {
+                    open = !open;
+                    localStorage.setItem(lsKey, open ? 'open' : 'closed');
+                    apply();
+                });
+            });
+        }
+
+        function addLog(category, message, level = 'info', ts = null, meta = null) {
+            logs.push({ category, message, level, ts: ts || new Date().toISOString(), meta: meta || {} });
+            if (logs.length > 500) logs = logs.slice(logs.length - 500);
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const box = document.getElementById('logs-console');
+            const filtered = logs.filter(l => currentFilter === 'all' || l.category === currentFilter);
+            box.innerHTML = filtered.map((l) => {
+                const t = new Date(l.ts).toLocaleTimeString();
+                const cls = l.level === 'error' ? 'log-error' : (l.level === 'warn' ? 'log-warn' : '');
+                const meta = l.meta && Object.keys(l.meta).length ? ' ' + JSON.stringify(l.meta) : '';
+                return `<div class="log-line ${cls}"><span class="log-meta">[${t}] [${l.category}]</span> ${escapeHtml(l.message)}${escapeHtml(meta)}</div>`;
+            }).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function refreshLogs() {
+            const resp = await fetch(`/api/logs?since=${logCursor}`);
+            if (!resp.ok) return;
+            const data = await resp.json();
+            logCursor = data.next_id || logCursor;
+            for (const e of (data.entries || [])) addLog(e.category, e.message, e.level, e.ts, e.meta);
+        }
+
+        function setFlags(apiUp, indexLoaded) {
+            const api = document.getElementById('flag-api');
+            const idx = document.getElementById('flag-index');
+            api.className = 'flag ' + (apiUp ? 'up' : 'down');
+            api.textContent = 'API: ' + (apiUp ? 'UP' : 'DOWN');
+            if (!apiUp) {
+                idx.className = 'flag warn';
+                idx.textContent = 'Index: unknown';
+            } else {
+                idx.className = 'flag ' + (indexLoaded ? 'up' : 'warn');
+                idx.textContent = 'Index: ' + (indexLoaded ? 'loaded' : 'not loaded');
+            }
+            document.getElementById('last-refresh').textContent = 'last check: ' + new Date().toLocaleTimeString();
+        }
+
+        async function refreshMonitorAndModels() {
+            const status = document.getElementById('model-status');
+            status.textContent = 'Refreshing monitor...';
+            let apiUp = false;
+            try {
+                const [mResp, cResp, monResp] = await Promise.all([
+                    fetch('/api/models'),
+                    fetch('/api/models/current'),
+                    fetch('/api/monitor'),
+                ]);
+                const models = await mResp.json();
+                const current = await cResp.json();
+                const monitor = await monResp.json();
+
+                apiUp = monResp.ok;
+                setFlags(apiUp, !!monitor.health?.bm25_index_loaded);
+
+                const sel = document.getElementById('model-select');
+                const missingList = document.getElementById('missing-models-list');
+                sel.innerHTML = '';
+                for (const m of (models.installed || [])) {
+                    const o = document.createElement('option');
+                    o.value = m.name;
+                    o.textContent = m.size_label ? `${m.name} (${m.size_label})` : m.name;
+                    sel.appendChild(o);
+                }
+                missingList.innerHTML = '';
+                for (const m of (models.missing || [])) {
+                    const div = document.createElement('div');
+                    div.className = 'missing-item';
+                    const cmd = m.pull || '';
+                    div.innerHTML = `${escapeHtml(m.name)} ${m.size_label ? '(' + escapeHtml(m.size_label) + ')' : ''}<br><code>${escapeHtml(cmd)}</code><br><button class="btn secondary small install-copy-btn" data-cmd="${escapeHtml(cmd)}">Install</button>`;
+                    missingList.appendChild(div);
+                }
+                missingList.querySelectorAll('.install-copy-btn').forEach((btn) => {
+                    btn.addEventListener('click', async () => {
+                        const cmd = btn.dataset.cmd || '';
+                        if (!cmd) return;
+                        try {
+                            await navigator.clipboard.writeText(cmd);
+                            addLog('models', 'install command copied', 'info', null, { command: cmd });
+                            const old = btn.textContent;
+                            btn.textContent = 'Copied';
+                            setTimeout(() => { btn.textContent = old; }, 900);
+                        } catch (e) {
+                            addLog('models', 'failed to copy install command', 'error', null, { command: cmd, error: String(e) });
+                        }
+                    });
+                });
+                if (current.active_enrich_model) sel.value = current.active_enrich_model;
+                document.getElementById('chip-enrich').textContent = 'enrich: ' + (current.active_enrich_model || '—');
+                document.getElementById('chip-sketch').textContent = 'sketch: ' + (current.active_sketch_model || '—');
+                document.getElementById('active-enrich-model').textContent = current.active_enrich_model || '—';
+
+                document.getElementById('h-index').textContent = String(monitor.health?.bm25_index_loaded ?? '—');
+                document.getElementById('h-corpus').textContent = String(monitor.health?.corpus_size ?? '—');
+                document.getElementById('h-built').textContent = monitor.health?.index_built_at || '—';
+
+                status.textContent = current.last_switch_error ? ('Warning: ' + current.last_switch_error) : 'Ready';
+                addLog('system', 'manual refresh complete', 'info', null, { api_up: apiUp, index_loaded: !!monitor.health?.bm25_index_loaded });
+            } catch (e) {
+                setFlags(false, false);
+                status.textContent = 'Refresh failed';
+                addLog('system', 'refresh failed', 'error', null, { error: String(e) });
+            }
+            await refreshLogs();
+        }
+
+        document.getElementById('refresh-monitor-btn').addEventListener('click', refreshMonitorAndModels);
+        document.getElementById('refresh-btn').addEventListener('click', () => window.location.reload());
+
+        document.getElementById('enrich-all-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('enrich-all-btn');
+            const prog = document.getElementById('progress-container');
+            const fill = document.getElementById('progress-fill');
+            const text = document.getElementById('progress-text');
+            const log = document.getElementById('progress-log');
+            btn.disabled = true;
+            prog.classList.remove('hidden');
+            log.innerHTML = '';
+            addLog('enrich', 'enrich_all requested');
+            const evtSource = new EventSource('/api/enrich/all');
+            evtSource.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                if (data.type === 'progress') {
+                    const pct = (data.current / data.total) * 100;
+                    fill.style.width = pct + '%';
+                    text.textContent = `${data.current} / ${data.total} — ${data.article_id} (${data.status})`;
+                    log.innerHTML += `<div>${escapeHtml(data.article_id)}: ${escapeHtml(data.status)} ${data.terms ? '(' + data.terms + ' terms)' : ''}</div>`;
+                    addLog('enrich', `${data.article_id} ${data.status}`, data.status === 'failed' ? 'error' : 'info', null, data);
+                }
+                if (data.type === 'complete') {
+                    evtSource.close();
+                    btn.disabled = false;
+                    text.textContent = `Complete — enriched ${data.enriched}/${data.total}, failed ${data.failed}`;
+                    addLog('enrich', 'enrich_all completed', 'info', null, data);
+                    refreshLogs();
+                    setTimeout(() => window.location.reload(), 1200);
+                }
+            };
+            evtSource.onerror = () => { evtSource.close(); btn.disabled = false; text.textContent = 'Connection lost'; addLog('enrich', 'enrich_all stream disconnected', 'warn'); };
+        });
+
+        async function enrichOne(articleId) {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Enriching...';
+            addLog('enrich', 'enrich_one requested', 'info', null, { article_id: articleId });
+            try {
+                const resp = await fetch('/api/enrich/' + articleId, {method: 'POST'});
+                const data = await resp.json();
+                if (data.error) {
+                    addLog('enrich', 'enrich_one failed', 'error', null, { article_id: articleId, error: data.error });
+                    alert('Error: ' + data.error);
+                } else {
+                    addLog('enrich', 'enrich_one complete', 'info', null, { article_id: articleId, model: data.article?.model_used });
+                    window.location.reload();
+                }
+            } catch (e) {
+                addLog('enrich', 'enrich_one failed', 'error', null, { article_id: articleId, error: String(e) });
+                alert('Error: ' + e.message);
+            }
+        }
+
+        document.getElementById('apply-model-btn').addEventListener('click', async () => {
+            const model = document.getElementById('model-select').value;
+            const applyTo = [];
+            if (document.getElementById('apply-enrich').checked) applyTo.push('enrich');
+            if (document.getElementById('apply-sketch').checked) applyTo.push('sketch');
+            const status = document.getElementById('model-status');
+            if (!model || !applyTo.length) {
+                status.textContent = 'Select model and at least one target';
+                return;
+            }
+            status.textContent = 'Switching model...';
+            const resp = await fetch('/api/models/select', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({model, apply_to: applyTo}),
+            });
+            const data = await resp.json();
+            if (!resp.ok || data.error) {
+                status.textContent = 'Error: ' + (data.error || resp.statusText);
+                addLog('models', 'model switch failed', 'error', null, { model, apply_to: applyTo, error: data.error || resp.statusText });
+            } else {
+                addLog('models', 'model switched', 'info', null, { model, apply_to: applyTo, unload_results: data.unload_results || [] });
+                await refreshMonitorAndModels();
+            }
+        });
+
+        document.getElementById('unload-prev-btn').addEventListener('click', async () => {
+            const status = document.getElementById('model-status');
+            status.textContent = 'Unloading previous model...';
+            const resp = await fetch('/api/models/unload', {method: 'POST'});
+            const data = await resp.json();
+            if (!resp.ok || data.error) {
+                status.textContent = 'Error unloading model';
+                addLog('models', 'unload failed', 'error', null, { error: data.error || resp.statusText });
+            } else {
+                status.textContent = 'Unload requested';
+                addLog('models', 'unload requested', 'info', null, { unload_results: data.unload_results || [] });
+                await refreshMonitorAndModels();
+            }
+        });
+
+        document.querySelectorAll('.filter-chip[data-filter]').forEach((el) => {
+            el.addEventListener('click', () => {
+                currentFilter = el.dataset.filter;
+                document.querySelectorAll('.filter-chip[data-filter]').forEach(c => c.classList.toggle('active', c === el));
+                renderLogs();
+            });
+        });
+        document.getElementById('clear-logs-btn').addEventListener('click', () => { logs = []; renderLogs(); });
+
+        initPanels();
+        refreshMonitorAndModels();
+    </script>
+</body>
+</html>

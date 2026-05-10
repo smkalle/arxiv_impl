@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIRA Query Console</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* ---- page-specific overrides ---- */
+        .nav { display:flex; gap:1rem; margin-bottom:2rem; font-size:0.9rem; }
+        .nav a { color: var(--primary); text-decoration:none; }
+        .nav a:hover { text-decoration:underline; }
+        .nav span { color: var(--text-secondary); }
+
+        .query-form {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .query-form label { display:block; font-weight:600; font-size:0.875rem; margin-bottom:0.4rem; }
+        textarea#ticket-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-family: inherit;
+            resize: vertical;
+        }
+        textarea#ticket-input:focus { outline:2px solid var(--primary); border-color: transparent; }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .field { display:flex; flex-direction:column; gap:0.3rem; }
+        .field label { font-size:0.8rem; font-weight:600; color: var(--text-secondary); }
+        .field input[type=number], .field select {
+            padding: 0.45rem 0.6rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            width: 90px;
+        }
+        .field select { width: 110px; }
+
+        .mode-toggle {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .mode-toggle label { font-size:0.8rem; font-weight:600; color: var(--text-secondary); display:block; margin-bottom:0.3rem; }
+        .toggle-btn {
+            padding: 0.4rem 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.8rem;
+            cursor: pointer;
+            background: var(--card);
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .toggle-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        .hsn-bar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            align-items: center;
+        }
+        .hsn-bar span { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+        .hsn-chip {
+            padding: 0.3rem 0.65rem;
+            background: #f3f4f6;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: background 0.12s;
+            white-space: nowrap;
+        }
+        .hsn-chip:hover { background: #dbeafe; border-color: var(--primary); color: var(--primary-dark); }
+
+        /* ---- results area ---- */
+        #results-area { display: none; }
+
+        .audit-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .audit-panel h2 { margin: 0 0 1rem; font-size: 1rem; }
+
+        .audit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .audit-block { }
+        .audit-block .audit-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+        .audit-block .term-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; min-height: 1.8rem; }
+        .pill { padding: 0.25rem 0.55rem; border-radius: 999px; font-size: 0.78rem; font-weight: 500; }
+        .pill.generated { background: #f3f4f6; color: var(--text); border: 1px solid var(--border); }
+        .pill.validated { background: #dcfce7; color: var(--success); }
+        .pill.rejected  { background: #fee2e2; color: var(--danger); }
+        .pill.none      { font-style: italic; color: var(--text-secondary); background: none; }
+
+        .audit-meta {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+        .audit-meta .meta-item { display: flex; gap: 0.4rem; align-items: center; }
+        .audit-meta .meta-label { color: var(--text-secondary); }
+        .audit-meta .meta-val { font-weight: 600; }
+        .audit-meta .meta-val.warn { color: var(--warning); }
+        .audit-meta .meta-val.danger { color: var(--danger); }
+        .audit-meta .meta-val.ok { color: var(--success); }
+
+        .fallback-banner {
+            background: #fef9c3;
+            border: 1px solid #fde047;
+            border-radius: var(--radius);
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            color: #854d0e;
+            margin-bottom: 1rem;
+        }
+
+        .results-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem 1.5rem;
+        }
+        .results-panel h2 { margin: 0 0 1rem; font-size: 1rem; }
+
+        .result-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.75rem;
+            transition: border-color 0.15s;
+        }
+        .result-card:hover { border-color: var(--primary); }
+        .result-card:last-child { margin-bottom: 0; }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .result-rank-title { display: flex; align-items: baseline; gap: 0.5rem; }
+        .result-rank { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); }
+        .result-id { font-size: 0.75rem; color: var(--text-secondary); }
+        .result-title { font-weight: 600; font-size: 0.95rem; }
+        .result-score {
+            font-size: 0.8rem;
+            background: #dbeafe;
+            color: var(--primary-dark);
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .result-snippet {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.6rem;
+            line-height: 1.5;
+        }
+
+        .match-row { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; align-items: center; margin-top: 0.4rem; }
+        .match-label { color: var(--text-secondary); font-weight: 600; }
+        .match-pill-orig { background: #f3f4f6; color: var(--text); border-radius: 999px; padding: 0.15rem 0.45rem; }
+        .match-pill-enrich { background: #dcfce7; color: var(--success); border-radius: 999px; padding: 0.15rem 0.45rem; }
+
+        /* ---- status / error ---- */
+        #status-bar {
+            font-size: 0.85rem;
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            min-height: 1.5rem;
+        }
+        #status-bar.error { color: var(--danger); }
+
+        .index-warn {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            color: #7f1d1d;
+            margin-bottom: 1rem;
+        }
+        .index-warn code { font-family: monospace; background: #fecaca; padding: 0.1rem 0.3rem; border-radius: 3px; }
+
+        .spinner {
+            display: inline-block;
+            width: 14px; height: 14px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 0.3rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>SIRA Query Console</h1>
+        <p>Test the full pipeline: query sketch → DF filter → weighted BM25</p>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.2rem">Active sketch model: <strong id="active-sketch-model">{{ active_sketch_model }}</strong></p>
+    </header>
+
+    <nav class="nav">
+        <a href="/">Enrichment Monitor</a>
+        <span>/</span>
+        <strong>Query UI</strong>
+    </nav>
+
+    {% if not index_loaded %}
+    <div class="index-warn">
+        BM25 index not loaded. Build it first:<br>
+        <code>python3 src/index.py data/enriched_corpus.jsonl --output data/bm25_index.pkl</code>
+        <br>Then restart the server.
+    </div>
+    {% endif %}
+
+    <!-- Query form -->
+    <div class="query-form">
+        <label for="ticket-input">Support ticket text</label>
+        <textarea id="ticket-input" placeholder="Describe the customer's problem…"></textarea>
+
+        <!-- HSN (hand-selected / noteworthy) sample inputs -->
+        <div class="hsn-bar">
+            <span>HSN inputs:</span>
+            <button class="hsn-chip" data-text="My app keeps crashing whenever I try to log in from my phone">App crash on login</button>
+            <button class="hsn-chip" data-text="I haven't received my password reset email and it's been 30 minutes">Password reset not arriving</button>
+            <button class="hsn-chip" data-text="I'm being charged twice for my subscription this month">Charged twice</button>
+            <button class="hsn-chip" data-text="My two-factor authentication code is not working and I can't get into my account">2FA code rejected</button>
+            <button class="hsn-chip" data-text="The app just shows a white screen and won't load anything after the latest update">White screen after update</button>
+            <button class="hsn-chip" data-text="I need a refund, I was charged but the order never went through">Refund for failed order</button>
+            <button class="hsn-chip" data-text="Getting a 503 error every time I try to authenticate">503 on auth</button>
+        </div>
+
+        <div class="form-row">
+            <!-- Mode toggle -->
+            <div class="field">
+                <label>Mode</label>
+                <div class="mode-toggle">
+                    <button class="toggle-btn active" id="btn-sira" data-mode="sira">SIRA</button>
+                    <button class="toggle-btn" id="btn-plain" data-mode="plain">Plain BM25</button>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Top-k</label>
+                <input type="number" id="top-k" value="5" min="1" max="15">
+            </div>
+
+            <div class="field sira-only">
+                <label>τ (tau)</label>
+                <input type="number" id="tau" value="0.01" min="0.001" max="0.5" step="0.001">
+            </div>
+
+            <div class="field sira-only">
+                <label>w (weight)</label>
+                <input type="number" id="weight" value="1.5" min="0.1" max="5" step="0.1">
+            </div>
+
+            <div class="field" style="margin-left:auto">
+                <label>&nbsp;</label>
+                <button class="btn primary" id="run-btn" {% if not index_loaded %}disabled{% endif %}>Retrieve</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="status-bar"></div>
+
+    <!-- Results -->
+    <div id="results-area">
+
+        <!-- Audit trace (SIRA only) -->
+        <div id="audit-panel" class="audit-panel">
+            <h2>Audit Trace</h2>
+            <div id="fallback-banner" class="fallback-banner hidden">
+                Fallback to plain BM25 — LLM sketch failed or timed out.
+            </div>
+            <div class="audit-grid">
+                <div class="audit-block">
+                    <div class="audit-label">Generated (<span id="gen-count">0</span>)</div>
+                    <div class="term-pills" id="pills-generated"></div>
+                </div>
+                <div class="audit-block">
+                    <div class="audit-label">Validated — passed DF filter (<span id="val-count">0</span>)</div>
+                    <div class="term-pills" id="pills-validated"></div>
+                </div>
+                <div class="audit-block">
+                    <div class="audit-label">Rejected — hallucinated / too common (<span id="rej-count">0</span>)</div>
+                    <div class="term-pills" id="pills-rejected"></div>
+                </div>
+            </div>
+            <div class="audit-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Hallucination rate</span>
+                    <span class="meta-val" id="hal-rate">—</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Latency</span>
+                    <span class="meta-val" id="latency">—</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Mode</span>
+                    <span class="meta-val" id="mode-display">—</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Corpus size</span>
+                    <span class="meta-val">{{ corpus_size }} articles</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ranked results -->
+        <div class="results-panel">
+            <h2>Ranked Results (<span id="result-count">0</span>)</h2>
+            <div id="results-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- mode toggle ---
+    let currentMode = 'sira';
+    document.getElementById('btn-sira').addEventListener('click', () => setMode('sira'));
+    document.getElementById('btn-plain').addEventListener('click', () => setMode('plain'));
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('btn-sira').classList.toggle('active', mode === 'sira');
+        document.getElementById('btn-plain').classList.toggle('active', mode === 'plain');
+        document.querySelectorAll('.sira-only').forEach(el => {
+            el.style.opacity = mode === 'sira' ? '1' : '0.35';
+            el.querySelectorAll('input').forEach(i => i.disabled = mode !== 'sira');
+        });
+    }
+    setMode('sira');
+
+    // --- HSN chips ---
+    document.querySelectorAll('.hsn-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.getElementById('ticket-input').value = chip.dataset.text;
+            document.getElementById('ticket-input').focus();
+        });
+    });
+
+    // --- run query ---
+    document.getElementById('run-btn').addEventListener('click', runQuery);
+    document.getElementById('ticket-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) runQuery();
+    });
+
+    async function runQuery() {
+        const text = document.getElementById('ticket-input').value.trim();
+        if (!text) { setStatus('Enter a ticket text first.', false); return; }
+
+        const topK = parseInt(document.getElementById('top-k').value) || 5;
+        const tau  = parseFloat(document.getElementById('tau').value) || 0.01;
+        const w    = parseFloat(document.getElementById('weight').value) || 1.5;
+
+        setStatus('<span class="spinner"></span>Running…', false, true);
+        document.getElementById('run-btn').disabled = true;
+
+        try {
+            const resp = await fetch('/api/query', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    ticket_text: text,
+                    mode: currentMode,
+                    top_k: topK,
+                    tau, weight: w,
+                }),
+            });
+            const data = await resp.json();
+            if (!resp.ok || data.error) {
+                setStatus('Error: ' + (data.error || resp.statusText), true);
+                return;
+            }
+            renderResults(data);
+            setStatus('');
+        } catch (e) {
+            setStatus('Error: ' + e.message, true);
+        } finally {
+            document.getElementById('run-btn').disabled = false;
+        }
+    }
+
+    function setStatus(msg, isError = false, isHtml = false) {
+        const bar = document.getElementById('status-bar');
+        bar.className = isError ? 'error' : '';
+        if (isHtml) bar.innerHTML = msg;
+        else bar.textContent = msg;
+    }
+
+    function e(text) {
+        const d = document.createElement('div');
+        d.textContent = String(text ?? '');
+        return d.innerHTML;
+    }
+
+    function renderResults(data) {
+        document.getElementById('results-area').style.display = 'block';
+
+        const isSira = data.mode === 'sira';
+        document.getElementById('audit-panel').style.display = isSira ? '' : 'none';
+
+        if (isSira) {
+            const gen = data.sketch_terms_generated || [];
+            const val = new Set(data.sketch_terms_validated || []);
+            const rej = new Set(data.sketch_terms_rejected || []);
+
+            document.getElementById('gen-count').textContent = gen.length;
+            document.getElementById('val-count').textContent = val.size;
+            document.getElementById('rej-count').textContent = rej.size;
+
+            setPills('pills-generated', gen.map(t => ({
+                text: t,
+                cls: val.has(t) ? 'validated' : rej.has(t) ? 'rejected' : 'generated',
+            })));
+            setPills('pills-validated', [...val].map(t => ({text: t, cls: 'validated'})));
+            setPills('pills-rejected', [...rej].map(t => ({text: t, cls: 'rejected'})));
+
+            const hal = data.hallucination_rate;
+            const halEl = document.getElementById('hal-rate');
+            halEl.textContent = gen.length ? (hal * 100).toFixed(0) + '%' : '—';
+            halEl.className = 'meta-val ' + (hal > 0.4 ? 'danger' : hal > 0.2 ? 'warn' : 'ok');
+
+            document.getElementById('latency').textContent =
+                data.latency_ms != null ? data.latency_ms + ' ms' : '—';
+
+            const fb = data.fallback_used;
+            document.getElementById('fallback-banner').classList.toggle('hidden', !fb);
+        }
+
+        document.getElementById('mode-display').textContent =
+            isSira ? 'SIRA (sketch + weighted BM25)' : 'Plain BM25';
+        if (data.sketch_model) {
+            document.getElementById('active-sketch-model').textContent = data.sketch_model;
+        }
+
+        // ranked results
+        const results = data.results || [];
+        document.getElementById('result-count').textContent = results.length;
+
+        const list = document.getElementById('results-list');
+        if (!results.length) {
+            list.innerHTML = '<p style="color:var(--text-secondary);font-size:0.9rem">No matching documents found.</p>';
+            return;
+        }
+
+        list.innerHTML = results.map((r, i) => {
+            const origTerms = (r.matched_original_terms || []);
+            const enrichTerms = (r.matched_enriched_terms || []);
+            const matchHtml = (origTerms.length || enrichTerms.length) ? `
+                <div class="match-row">
+                    ${origTerms.length ? `<span class="match-label">query:</span> ${origTerms.map(t => `<span class="match-pill-orig">${e(t)}</span>`).join('')}` : ''}
+                    ${enrichTerms.length ? `<span class="match-label">enriched:</span> ${enrichTerms.map(t => `<span class="match-pill-enrich">${e(t)}</span>`).join('')}` : ''}
+                </div>
+            ` : '';
+
+            return `
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="result-rank-title">
+                        <span class="result-rank">#${i + 1}</span>
+                        <span class="result-title">${e(r.title)}</span>
+                        <span class="result-id">${e(r.article_id)}</span>
+                    </div>
+                    <span class="result-score">score ${r.score}</span>
+                </div>
+                <div class="result-snippet">${e(r.snippet)}</div>
+                ${matchHtml}
+            </div>`;
+        }).join('');
+    }
+
+    function setPills(containerId, items) {
+        const el = document.getElementById(containerId);
+        if (!items.length) {
+            el.innerHTML = '<span class="pill none">none</span>';
+            return;
+        }
+        el.innerHTML = items.map(({text, cls}) =>
+            `<span class="pill ${cls}">${e(text)}</span>`
+        ).join('');
+    }
+</script>
+</body>
+</html>
