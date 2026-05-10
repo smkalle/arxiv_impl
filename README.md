@@ -6,7 +6,7 @@ Implementations of arXiv papers. Each paper implementation lives in its own fold
 
 | Folder | Paper | Summary | Status |
 |---|---|---|---|
-| `sira/` | Meta SIRA (arXiv:2605.06647) | Training-free support-ticket to KB retrieval via offline LLM enrichment + online sketch expansion + weighted BM25 | Iterations 1-5 code complete (placeholder eval set; real annotation data pending) |
+| `sira/` | [Meta SIRA (arXiv:2605.06647)](https://arxiv.org/abs/2605.06647) | Training-free support-ticket to KB retrieval via offline LLM enrichment + online sketch expansion + weighted BM25 | Iterations 1-5 code complete (placeholder eval set; real annotation data pending) |
 
 ## Usage
 
