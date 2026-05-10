@@ -220,16 +220,16 @@ __marimo__/
 # -----------------------------------------------------------------------------
 # Project-specific generated artifacts (SIRA implementation)
 # -----------------------------------------------------------------------------
-sira_arXiv:2605.06647/data/bm25_index.pkl
-sira_arXiv:2605.06647/data/df_store.json
-sira_arXiv:2605.06647/data/enriched_corpus*.jsonl
-sira_arXiv:2605.06647/data/feedback.jsonl
+sira/data/bm25_index.pkl
+sira/data/df_store.json
+sira/data/enriched_corpus*.jsonl
+sira/data/feedback.jsonl
 
 # Local runtime process/log files
-sira_arXiv:2605.06647/.ui_server.pid
-sira_arXiv:2605.06647/.api_server.pid
-sira_arXiv:2605.06647/.ui_server.log
-sira_arXiv:2605.06647/.api_server.log
+sira/.ui_server.pid
+sira/.api_server.pid
+sira/.ui_server.log
+sira/.api_server.log
 
 # Tooling output files
 tool-output/
