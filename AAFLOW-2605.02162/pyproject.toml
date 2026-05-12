@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kb-ingestor"
+version = "0.1.0"
+description = "Arrow-native support ticket to FAISS ingest pipeline"
+readme = "CLAUDE.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pyarrow>=15",
+  "faiss-cpu>=1.8",
+  "sentence-transformers>=3",
+  "numpy>=1.26",
+  "click>=8",
+  "rich>=13",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "faker",
+  "pandas",
+  "streamlit>=1.35",
+]
+
+[project.scripts]
+kb-ingest = "kb_ingestor.cli:cli"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

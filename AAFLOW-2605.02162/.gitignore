@@ -1,0 +1,16 @@
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Test/cache outputs
+.pytest_cache/
+
+# Validation and run artifacts
+artifacts/
+
+# Local outputs
+kb_output/
+benchmark_output/
+
+# Generated fixture output (regeneratable)
+fixtures/
