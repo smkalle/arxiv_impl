@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CatalogAgent — Product Spec v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── THEME ─────────────────────────────────────────────── */
+:root, [data-theme="light"] {
+  --bg: #faf8f5;
+  --surface: #ffffff;
+  --surface2: #f3f0eb;
+  --surface3: #ebe7e0;
+  --border: rgba(0,0,0,0.07);
+  --border-bright: rgba(0,0,0,0.14);
+  --text: #1e1a14;
+  --text-dim: #7a7268;
+  --accent: #b45309;        /* amber-700 */
+  --accent-dim: rgba(180,83,9,0.08);
+  --teal: #0f766e;
+  --teal-dim: rgba(15,118,110,0.08);
+  --red: #991b1b;
+  --red-dim: rgba(153,27,27,0.08);
+  --green: #166534;
+  --green-dim: rgba(22,101,52,0.08);
+  --blue: #1e40af;
+  --blue-dim: rgba(30,64,175,0.08);
+  --plum: #7e22ce;
+  --plum-dim: rgba(126,34,206,0.08);
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+[data-theme="dark"] {
+  --bg: #100f0d;
+  --surface: #1a1814;
+  --surface2: #231f1b;
+  --surface3: #2c2721;
+  --border: rgba(255,255,255,0.07);
+  --border-bright: rgba(255,255,255,0.14);
+  --text: #f0ebe2;
+  --text-dim: #948d82;
+  --accent: #f59e0b;
+  --accent-dim: rgba(245,158,11,0.1);
+  --teal: #2dd4bf;
+  --teal-dim: rgba(45,212,191,0.1);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.08);
+  --green: #4ade80;
+  --green-dim: rgba(74,222,128,0.08);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,0.08);
+  --plum: #c084fc;
+  --plum-dim: rgba(192,132,252,0.08);
+}
+
+/* ── RESET ─────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 70% 0%, var(--accent-dim) 0%, transparent 50%),
+    radial-gradient(ellipse at 10% 100%, var(--teal-dim) 0%, transparent 40%);
+  color: var(--text);
+  line-height: 1.65;
+  overflow-wrap: break-word;
+}
+
+/* ── NAV SIDEBAR ────────────────────────────────────────── */
+.layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.sidebar {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  background: var(--surface); border-right: 1px solid var(--border);
+  padding: 32px 0; scrollbar-width: thin;
+}
+.sidebar-logo {
+  padding: 0 24px 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.sidebar-logo__name {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  color: var(--accent); letter-spacing: -0.3px;
+}
+.sidebar-logo__sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.nav-group { margin-bottom: 20px; }
+.nav-group__label {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.8px;
+  color: var(--text-dim); padding: 0 24px; margin-bottom: 6px;
+}
+.nav-link {
+  display: block; padding: 7px 24px;
+  font-size: 13px; color: var(--text-dim);
+  text-decoration: none; border-left: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.nav-link:hover { color: var(--text); border-left-color: var(--border-bright); }
+.nav-link.active { color: var(--accent); border-left-color: var(--accent); font-weight: 500; }
+
+/* ── MAIN CONTENT ───────────────────────────────────────── */
+.main { max-width: 900px; padding: 56px 56px 100px; }
+
+/* ── HEADER ─────────────────────────────────────────────── */
+.doc-header { margin-bottom: 64px; }
+.doc-header__kicker {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--accent); margin-bottom: 18px;
+}
+.doc-header__title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 68px);
+  font-weight: 400; line-height: 1.0;
+  letter-spacing: -1px; margin-bottom: 20px;
+}
+.doc-header__title em { font-style: italic; color: var(--accent); }
+.doc-header__sub { font-size: 17px; color: var(--text-dim); max-width: 600px; line-height: 1.65; margin-bottom: 28px; }
+.meta-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.meta-chip {
+  font-family: var(--font-mono); font-size: 11px;
+  padding: 4px 10px; border-radius: 4px;
+  border: 1px solid var(--border); color: var(--text-dim);
+}
+.meta-chip--accent { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.meta-chip--green  { border-color: var(--green);  color: var(--green);  background: var(--green-dim); }
+.meta-chip--teal   { border-color: var(--teal);   color: var(--teal);   background: var(--teal-dim); }
+
+/* ── SECTION HEADINGS ───────────────────────────────────── */
+.spec-section { margin-bottom: 64px; scroll-margin-top: 32px; }
+.sec-label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--text-dim); margin-bottom: 8px;
+}
+.sec-title {
+  font-family: var(--font-display); font-size: 32px; font-weight: 400;
+  margin-bottom: 6px; line-height: 1.15;
+}
+.sec-desc { font-size: 14px; color: var(--text-dim); margin-bottom: 28px; line-height: 1.6; }
+hr.sec-rule { border: none; height: 1px; background: var(--border); margin-bottom: 28px; }
+
+/* ── CARDS ──────────────────────────────────────────────── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 22px; position: relative;
+}
+.card--hero {
+  background: color-mix(in srgb, var(--surface) 92%, var(--accent) 8%);
+  border-color: color-mix(in srgb, var(--border) 50%, var(--accent) 50%);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+}
+.card--teal   { border-left: 3px solid var(--teal); }
+.card--accent { border-left: 3px solid var(--accent); }
+.card--green  { border-left: 3px solid var(--green); }
+.card--red    { border-left: 3px solid var(--red); }
+.card--plum   { border-left: 3px solid var(--plum); }
+.card__label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.card__label::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor; display: inline-block; flex-shrink: 0;
+}
+.card__title { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+.card__body { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+/* ── GRID LAYOUTS ───────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.grid-2>*, .grid-3>*, .grid-4>* { min-width: 0; }
+
+/* ── PIPELINE ───────────────────────────────────────────── */
+.pipeline-wrap { overflow-x: auto; padding-bottom: 8px; margin: 24px 0; }
+.pipeline {
+  display: flex; align-items: stretch; gap: 0; min-width: 680px;
+}
+.pipe-step {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 16px; position: relative;
+  font-size: 12px; text-align: center;
+}
+.pipe-step + .pipe-step { border-radius: 0 8px 8px 0; margin-left: -1px; }
+.pipe-step:first-child { border-radius: 8px 0 0 8px; }
+.pipe-step__num {
+  font-family: var(--font-mono); font-size: 9px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
+}
+.pipe-step__name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.pipe-step__desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+.pipe-step--accent { border-top: 3px solid var(--accent); }
+.pipe-step--teal   { border-top: 3px solid var(--teal); }
+.pipe-step--green  { border-top: 3px solid var(--green); }
+.pipe-step--red    { border-top: 3px solid var(--red); }
+.pipe-step--plum   { border-top: 3px solid var(--plum); }
+.pipe-arrow {
+  display: flex; align-items: center; padding: 0 2px;
+  color: var(--text-dim); font-size: 14px; flex-shrink: 0;
+}
+
+/* ── FLOW DIAGRAM ───────────────────────────────────────── */
+.flow { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.flow-node {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 20px;
+}
+.flow-node--accent { border-left: 3px solid var(--accent); }
+.flow-node--teal   { border-left: 3px solid var(--teal); }
+.flow-node--green  { border-left: 3px solid var(--green); }
+.flow-node--red    { border-left: 3px solid var(--red); }
+.flow-node--plum   { border-left: 3px solid var(--plum); }
+.flow-conn {
+  display: flex; flex-direction: column; align-items: center; padding: 6px 0;
+  font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); gap: 2px;
+}
+.flow-conn svg { width: 16px; height: 16px; stroke: var(--border-bright); stroke-width: 2; fill: none; }
+.flow-node__label {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 5px;
+}
+.flow-node__title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.flow-node__body  { font-size: 12px; color: var(--text-dim); line-height: 1.55; }
+
+/* ── AGENT LOOP DIAGRAM ─────────────────────────────────── */
+.agent-loop {
+  display: grid; grid-template-columns: 1fr 280px; gap: 20px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin: 24px 0;
+}
+.agent-loop__main { padding: 24px; }
+.agent-loop__side {
+  background: var(--surface2); border-left: 1px solid var(--border);
+  padding: 20px;
+}
+.agent-loop__title { font-weight: 600; font-size: 13px; margin-bottom: 14px; }
+
+/* ── TABLE ──────────────────────────────────────────────── */
+.spec-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 20px 0; }
+.spec-table th {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim);
+  padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border-bright);
+  white-space: nowrap;
+}
+.spec-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.spec-table tr:hover td { background: var(--surface2); }
+.spec-table td:first-child { font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
+
+/* ── CODE ───────────────────────────────────────────────── */
+.code-block {
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.55;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px 18px; overflow-x: auto;
+  white-space: pre; margin: 16px 0;
+}
+.code-block--sm { font-size: 11px; padding: 12px 14px; }
+code {
+  font-family: var(--font-mono); font-size: 11px;
+  background: var(--accent-dim); color: var(--accent);
+  padding: 2px 5px; border-radius: 3px;
+}
+
+/* ── CALLOUT ────────────────────────────────────────────── */
+.callout {
+  padding: 14px 18px; border-radius: 8px; margin: 20px 0; font-size: 13px;
+  line-height: 1.6; border-left: 4px solid var(--accent);
+  background: var(--accent-dim); color: var(--text-dim);
+}
+.callout strong { color: var(--text); }
+.callout--teal  { border-left-color: var(--teal);  background: var(--teal-dim); }
+.callout--green { border-left-color: var(--green); background: var(--green-dim); }
+.callout--red   { border-left-color: var(--red);   background: var(--red-dim); }
+
+/* ── METRIC BOXES ───────────────────────────────────────── */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
+.kpi-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 18px; text-align: center;
+}
+.kpi-box__val {
+  font-family: var(--font-display); font-size: 36px; font-weight: 400;
+  line-height: 1; margin-bottom: 4px;
+}
+.kpi-box__label { font-size: 11px; color: var(--text-dim); line-height: 1.3; }
+.kpi-accent { color: var(--accent); }
+.kpi-green  { color: var(--green); }
+.kpi-teal   { color: var(--teal); }
+.kpi-plum   { color: var(--plum); }
+
+/* ── TAGS ───────────────────────────────────────────────── */
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.tag {
+  font-family: var(--font-mono); font-size: 10px; padding: 3px 8px;
+  border-radius: 4px; border: 1px solid var(--border); color: var(--text-dim);
+}
+.tag--teal   { border-color: var(--teal);   color: var(--teal);   background: var(--teal-dim); }
+.tag--accent { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.tag--green  { border-color: var(--green);  color: var(--green);  background: var(--green-dim); }
+.tag--red    { border-color: var(--red);    color: var(--red);    background: var(--red-dim); }
+.tag--plum   { border-color: var(--plum);   color: var(--plum);   background: var(--plum-dim); }
+
+/* ── NODE BADGE ─────────────────────────────────────────── */
+.node-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  padding: 3px 9px; border-radius: 4px; letter-spacing: 0.5px;
+}
+.node-badge--red   { background: var(--red-dim);   color: var(--red);   border: 1px solid var(--red); }
+.node-badge--black { background: var(--surface2);  color: var(--text-dim); border: 1px solid var(--border-bright); }
+.node-badge--pool  { background: var(--teal-dim);  color: var(--teal);  border: 1px solid var(--teal); }
+.node-badge--mem   { background: var(--accent-dim);color: var(--accent);border: 1px solid var(--accent); }
+
+/* ── ROADMAP ────────────────────────────────────────────── */
+.roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+.phase {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.phase__header {
+  padding: 14px 18px; font-weight: 600; font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.phase__header span {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 3px;
+}
+.phase__body { padding: 14px 18px; }
+.phase__item {
+  font-size: 12px; padding: 5px 0; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 8px; color: var(--text-dim);
+  line-height: 1.4;
+}
+.phase__item:last-child { border-bottom: none; }
+.phase__item::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 5px;
+}
+.phase--1 .phase__header { color: var(--teal); }
+.phase--1 .phase__item::before { background: var(--teal); }
+.phase--2 .phase__header { color: var(--accent); }
+.phase--2 .phase__item::before { background: var(--accent); }
+.phase--3 .phase__header { color: var(--green); }
+.phase--3 .phase__item::before { background: var(--green); }
+
+/* ── RISK TABLE ─────────────────────────────────────────── */
+.risk-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; margin-right: 6px;
+}
+
+/* ── THEME TOGGLE ───────────────────────────────────────── */
+.theme-btn {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);
+  z-index: 200; transition: border-color 0.2s;
+}
+.theme-btn:hover { border-color: var(--border-bright); color: var(--text); }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 32px 20px 80px; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  .roadmap { grid-template-columns: 1fr; }
+  .agent-loop { grid-template-columns: 1fr; }
+  .agent-loop__side { border-left: none; border-top: 1px solid var(--border); }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- SIDEBAR NAV -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo__name">CatalogAgent</div>
+    <div class="sidebar-logo__sub">Product Spec v0.1 · 2026</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group__label">Overview</div>
+    <a class="nav-link active" href="#problem">Problem</a>
+    <a class="nav-link" href="#solution">Solution</a>
+    <a class="nav-link" href="#metrics">Success Metrics</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group__label">Architecture</div>
+    <a class="nav-link" href="#agent-loop">Agent Loop</a>
+    <a class="nav-link" href="#components">Core Components</a>
+    <a class="nav-link" href="#data-sources">Data Sources</a>
+    <a class="nav-link" href="#api">API Contract</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group__label">Product</div>
+    <a class="nav-link" href="#features">Features</a>
+    <a class="nav-link" href="#ux">UX Flows</a>
+    <a class="nav-link" href="#integrations">Integrations</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group__label">Delivery</div>
+    <a class="nav-link" href="#roadmap">Roadmap</a>
+    <a class="nav-link" href="#risks">Risks</a>
+    <a class="nav-link" href="#openquestions">Open Questions</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ══════════════════════════════════════
+  HEADER
+═══════════════════════════════════════ -->
+<header class="doc-header">
+  <div class="doc-header__kicker">AI Agent Product Spec · DataMaster Framework · </div>
+  <h1 class="doc-header__title"><em>CatalogAgent</em><br>E-Commerce Catalog<br>Quality Agent</h1>
+  <p class="doc-header__sub">An autonomous data agent that discovers, merges, and validates external product attribute data to close catalog quality gaps — boosting search ranking and conversion without retraining any ranking model.</p>
+  <div class="meta-row">
+    <span class="meta-chip meta-chip--accent">Status: Draft</span>
+    <span class="meta-chip meta-chip--green">3-Month MVP</span>
+    <span class="meta-chip meta-chip--teal">Connects to CatalogLab</span>
+    <span class="meta-chip">v0.1 · May 2026</span>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════
+  1. PROBLEM
+═══════════════════════════════════════ -->
+<section class="spec-section" id="problem">
+  <div class="sec-label">Section 01</div>
+  <h2 class="sec-title">Problem Statement</h2>
+  <p class="sec-desc">Why this exists and what it costs Marketplace Ichiba today.</p>
+  <hr class="sec-rule">
+
+  <div class="kpi-row">
+    <div class="kpi-box">
+      <div class="kpi-box__val kpi-accent">43%</div>
+      <div class="kpi-box__label">of product listings have at least one missing required attribute</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-box__val kpi-green">2.3×</div>
+      <div class="kpi-box__label">higher conversion rate for attribute-complete listings vs. incomplete</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-box__val kpi-teal">100M+</div>
+      <div class="kpi-box__label">SKUs in Marketplace Ichiba catalog requiring continuous enrichment</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-box__val kpi-plum">₹0</div>
+      <div class="kpi-box__label">model retraining cost — agent improves data, not the model</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:20px">
+    <div class="card card--red">
+      <div class="card__label" style="color:var(--red)">Root Cause</div>
+      <div class="card__title">Catalog Quality Is Manually Gated</div>
+      <div class="card__body">Merchant-provided data is the only input. Merchants omit or misclassify attributes because catalog tools are complex and incentives are misaligned. No automated enrichment from external authoritative sources exists today.</div>
+    </div>
+    <div class="card card--accent">
+      <div class="card__label" style="color:var(--accent)">Downstream Impact</div>
+      <div class="card__title">Search & Ranking Model is Data-Starved</div>
+      <div class="card__body">The ranking model is frozen post-deployment. Its performance is now entirely constrained by input data quality. Every missing attribute is a missed ranking signal — and a missed conversion opportunity — invisible to the model.</div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:20px">
+    <strong>Key insight from DataMaster paper (arXiv 2605.10906):</strong> a fixed model can achieve significant performance gains (+32% on MLE-Bench Lite) through autonomous data pipeline optimization alone. CatalogAgent applies this principle directly: the ranking model does not change — only the data fed to it improves.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+  2. SOLUTION
+═══════════════════════════════════════ -->
+<section class="spec-section" id="solution">
+  <div class="sec-label">Section 02</div>
+  <h2 class="sec-title">Solution Overview</h2>
+  <p class="sec-desc">CatalogAgent in one sentence: an autonomous agent that hunts external product data, tests each enrichment against the live ranking model, and commits only what measurably improves search score.</p>
+  <hr class="sec-rule">
+
+  <div class="card card--hero" style="margin-bottom:24px">
+    <div class="card__label" style="color:var(--accent)">Value Proposition</div>
+    <div class="card__title" style="font-size:18px">Autonomous Catalog Enrichment with Downstream Score Validation</div>
+    <div class="card__body" style="font-size:14px;margin-top:8px">CatalogAgent runs a continuous loop: <strong>discover</strong> external product attribute data from open graphs (Open Food Facts, GS1, brand structured data) → <strong>merge</strong> with existing SKU catalog → <strong>score</strong> the impact using CatalogLab's frozen quality scorer → <strong>commit</strong> only enrichments that lift the score. Every decision is traceable via a versioned DataPool manifest.</div>
+    <div class="tag-row">
+      <span class="tag tag--teal">No model retraining</span>
+      <span class="tag tag--green">Measurable GMV lift</span>
+      <span class="tag tag--accent">Provenance on every enrichment</span>
+      <span class="tag tag--plum">Reusable across 100M+ SKUs</span>
+    </div>
+  </div>
+
+  <div class="pipeline-wrap">
+    <div class="pipeline">
+      <div class="pipe-step pipe-step--red">
+        <div class="pipe-step__num">Red Node</div>
+        <div class="pipe-step__name">Discover</div>
+        <div class="pipe-step__desc">Crawl GS1, Open Food Facts, brand sitemaps for matching attributes</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step pipe-step--teal">
+        <div class="pipe-step__num">DataPool</div>
+        <div class="pipe-step__name">Ingest</div>
+        <div class="pipe-step__desc">Store manifest with source, schema, coverage, provenance</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step pipe-step--accent">
+        <div class="pipe-step__num">Black Node</div>
+        <div class="pipe-step__name">Merge</div>
+        <div class="pipe-step__desc">Align schemas, resolve conflicts, generate candidate enriched SKU</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step pipe-step--plum">
+        <div class="pipe-step__num">Black Node</div>
+        <div class="pipe-step__name">Evaluate</div>
+        <div class="pipe-step__desc">Run CatalogLab scorer → delta score vs baseline</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step pipe-step--green">
+        <div class="pipe-step__num">Commit / Reject</div>
+        <div class="pipe-step__name">Promote</div>
+        <div class="pipe-step__desc">Write winners to production SKU store; log all to GlobalMemory</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+  3. SUCCESS METRICS
+═══════════════════════════════════════ -->
+<section class="spec-section" id="metrics">
+  <div class="sec-label">Section 03</div>
+  <h2 class="sec-title">Success Metrics</h2>
+  <p class="sec-desc">How we know it's working — with explicit measurement methodology.</p>
+  <hr class="sec-rule">
+
+  <table class="spec-table">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Definition</th>
+        <th>Baseline</th>
+        <th>MVP Target</th>
+        <th>Measurement</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>attr_fill_rate</code></td>
+        <td>% of required attributes populated per SKU</td>
+        <td>57%</td>
+        <td>75%</td>
+        <td>CatalogLab scorer, daily</td>
+      </tr>
+      <tr>
+        <td><code>catalog_quality_score</code></td>
+        <td>CatalogLab composite quality score (0–100)</td>
+        <td>62 avg</td>
+        <td>+12 pts avg</td>
+        <td>CatalogLab API, post-enrichment</td>
+      </tr>
+      <tr>
+        <td><code>search_rank_delta</code></td>
+        <td>Avg position improvement for enriched SKUs in organic search</td>
+        <td>—</td>
+        <td>+3 positions avg</td>
+        <td>A/B test (enriched vs. control cohort)</td>
+      </tr>
+      <tr>
+        <td><code>conversion_lift</code></td>
+        <td>Add-to-cart rate for enriched SKUs vs. control</td>
+        <td>—</td>
+        <td>+8% lift</td>
+        <td>A/B experiment, 4-week hold-out</td>
+      </tr>
+      <tr>
+        <td><code>enrichment_precision</code></td>
+        <td>% of agent-applied enrichments confirmed accurate by spot-check</td>
+        <td>—</td>
+        <td>&gt;92%</td>
+        <td>Manual sample audit, 500 SKUs/week</td>
+      </tr>
+      <tr>
+        <td><code>pool_reuse_rate</code></td>
+        <td>% of enrichment requests served from DataPool cache vs. new crawl</td>
+        <td>—</td>
+        <td>&gt;60%</td>
+        <td>DataPool manifest log</td>
+      </tr>
+      <tr>
+        <td><code>skus_enriched/day</code></td>
+        <td>Throughput of the agent loop</td>
+        <td>0</td>
+        <td>10,000</td>
+        <td>Agent job telemetry</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout--green">
+    <strong>Primary business KPI:</strong> GMV contribution from enriched SKUs in the 60 days post-enrichment, compared to a matched control cohort. This is the single metric that goes to the CAIO review.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+  4. AGENT LOOP ARCHITECTURE
+═══════════════════════════════════════ -->
+<section class="spec-section" id="agent-loop">
+  <div class="sec-label">Section 04</div>
+  <h2 class="sec-title">Agent Loop Architecture</h2>
+  <p class="sec-desc">The DataMaster loop adapted for catalog enrichment. Red nodes discover. Black nodes evaluate. The DataPool and GlobalMemory persist state across iterations.</p>
+  <hr class="sec-rule">
+
+  <div class="agent-loop">
+    <div class="agent-loop__main">
+      <div class="agent-loop__title">Main Loop — UCB-Scheduled Iteration</div>
+
+      <div class="flow">
+        <div class="flow-node flow-node--accent">
+          <div class="flow-node__label">Trigger</div>
+          <div class="flow-node__title">SKU Gap Detection</div>
+          <div class="flow-node__body">CatalogLab scorer flags SKUs below quality threshold. Batch queued to agent. Scheduler runs nightly or on new listing events.</div>
+        </div>
+        <div class="flow-conn">
+          <svg viewBox="0 0 16 16"><path d="M8 2 L8 14 M4 10 L8 14 L12 10"/></svg>
+          UCB node selection
+        </div>
+        <div class="flow-node flow-node--red">
+          <div class="flow-node__label"><span class="node-badge node-badge--red">RED NODE</span></div>
+          <div class="flow-node__title">External Data Discovery</div>
+          <div class="flow-node__body">Agent queries GS1 GEPIR, Open Food Facts API, Google Merchant structured data, and brand sitemaps using product identifiers (GTIN, JAN, EAN, brand+title). Discovered datasets written to DataPool as versioned manifests with source, schema, and coverage metadata.</div>
+        </div>
+        <div class="flow-conn">
+          <svg viewBox="0 0 16 16"><path d="M8 2 L8 14 M4 10 L8 14 L12 10"/></svg>
+          batch of 3 black nodes spawned
+        </div>
+        <div class="flow-node flow-node--plum">
+          <div class="flow-node__label"><span class="node-badge node-badge--black">BLACK NODE</span></div>
+          <div class="flow-node__title">Schema Alignment + Attribute Merge</div>
+          <div class="flow-node__body">Each black node picks a manifest from DataPool. Runs schema alignment (Marketplace attribute ontology → external field mapping), conflict resolution (merchant data wins on price/inventory; external wins on physical attributes), and generates a candidate enriched SKU record.</div>
+        </div>
+        <div class="flow-conn">
+          <svg viewBox="0 0 16 16"><path d="M8 2 L8 14 M4 10 L8 14 L12 10"/></svg>
+          pass to evaluator
+        </div>
+        <div class="flow-node flow-node--teal">
+          <div class="flow-node__label"><span class="node-badge node-badge--black">BLACK NODE</span></div>
+          <div class="flow-node__title">CatalogLab Downstream Evaluation</div>
+          <div class="flow-node__body">Candidate enriched SKU is scored by CatalogLab (frozen scorer). Score delta vs. baseline is computed. Only enrichments with Δ &gt; +2 pts are eligible for promotion. Results backpropagated to DataTree.</div>
+        </div>
+        <div class="flow-conn">
+          <svg viewBox="0 0 16 16"><path d="M8 2 L8 14 M4 10 L8 14 L12 10"/></svg>
+          winners promoted
+        </div>
+        <div class="flow-node flow-node--green">
+          <div class="flow-node__label">Output</div>
+          <div class="flow-node__title">Commit + Provenance Write</div>
+          <div class="flow-node__body">Enriched SKU record written to production catalog. Full provenance logged: source URL, manifest ID, attribute deltas, scorer delta, timestamp, operator. GlobalMemory updated with category-level enrichment pattern.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="agent-loop__side">
+      <div class="agent-loop__title">Persistent State</div>
+
+      <div class="card card--teal" style="margin-bottom:12px">
+        <div class="card__label" style="color:var(--teal)">DataPool</div>
+        <div class="card__title" style="font-size:13px">Enriched SKU Manifests</div>
+        <div class="card__body" style="font-size:12px">Key-value store: manifest_id → {source, schema, coverage, score_delta, parquet_path}. Avoids re-crawling sources already proven useful. Cache TTL: 30 days.</div>
+      </div>
+
+      <div class="card card--accent" style="margin-bottom:12px">
+        <div class="card__label" style="color:var(--accent)">GlobalMemory</div>
+        <div class="card__title" style="font-size:13px">Category Enrichment Rules</div>
+        <div class="card__body" style="font-size:12px">Accumulates: which sources reliably improve which categories, conflict resolution outcomes, attribute fill rates by source. Shared across all parallel runs. Grows in value over time.</div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div class="card__label" style="color:var(--text-dim)">DataTree</div>
+        <div class="card__title" style="font-size:13px">Search State (NetworkX DiGraph)</div>
+        <div class="card__body" style="font-size:12px">Red nodes = discovery branches. Black nodes = eval branches. UCB score = exploit (avg Δ) + explore (log-based). Backpropagation updates parent nodes.</div>
+      </div>
+
+      <div class="card">
+        <div class="card__label" style="color:var(--text-dim)">Artifact Store</div>
+        <div class="card__title" style="font-size:13px">Parquet + JSON</div>
+        <div class="card__body" style="font-size:12px">Every black node writes: enriched_sku_&lt;id&gt;.parquet + provenance_&lt;id&gt;.json. Enables full audit, rollback, and replay.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+  5. CORE COMPONENTS
+═══════════════════════════════════════ -->
+<section class="spec-section" id="components">
+  <div class="sec-label">Section 05</div>
+  <h2 class="sec-title">Core Components</h2>
+  <p class="sec-desc">Six modules. Each maps to a DataMaster primitive plus catalog-specific logic.</p>
+  <hr class="sec-rule">
+
+  <div class="grid-2">
+    <div class="card card--red">
+      <div class="card__label" style="color:var(--red)">Red Node Engine</div>
+      <div class="card__title">ExternalDataDiscoverer</div>
+      <div class="card__body">Takes a batch of SKUs with gap flags. Generates lookup queries per SKU using GTIN/JAN/EAN or title+brand+category. Calls configured source adapters in parallel. Writes each discovered dataset as a manifest to DataPool. Deduplicates against existing pool entries.</div>
+      <div class="tag-row"><span class="tag tag--red">Async</span><span class="tag">Configurable sources</span><span class="tag">Rate-limited</span></div>
+    </div>
+    <div class="card card--accent">
+      <div class="card__label" style="color:var(--accent)">Black Node Engine</div>
+      <div class="card__title">AttributeMerger</div>
+      <div class="card__body">Loads a manifest from DataPool. Runs schema alignment using Marketplace attribute ontology. Applies conflict resolution policy (configurable per attribute class). Outputs candidate enriched SKU as a Pydantic model. Tracks every field delta for provenance.</div>
+      <div class="tag-row"><span class="tag tag--accent">Policy-driven</span><span class="tag">Schema-aware</span></div>
+    </div>
+    <div class="card card--plum">
+      <div class="card__label" style="color:var(--plum)">Evaluation</div>
+      <div class="card__title">CatalogLabScorer (Frozen)</div>
+      <div class="card__body">Thin wrapper around the existing CatalogLab quality scoring API. Takes a candidate SKU record, returns a quality score 0–100. Computes delta vs. baseline score for that SKU. This is the only "model" in the system — and it never changes.</div>
+      <div class="tag-row"><span class="tag tag--plum">Frozen scorer</span><span class="tag">REST API</span></div>
+    </div>
+    <div class="card card--teal">
+      <div class="card__label" style="color:var(--teal)">Shared DataPool</div>
+      <div class="card__title">ManifestStore</div>
+      <div class="card__body">Redis-backed (or Postgres JSONB for MVP). Key: manifest_id. Value: source metadata + score_delta + schema fingerprint + parquet path + TTL. Candidate selection uses relevance score: category match × source reliability × recency weight.</div>
+      <div class="tag-row"><span class="tag tag--teal">Versioned</span><span class="tag">Cache-first</span><span class="tag">TTL-aware</span></div>
+    </div>
+    <div class="card card--accent">
+      <div class="card__label" style="color:var(--accent)">GlobalMemory</div>
+      <div class="card__title">CategoryInsightStore</div>
+      <div class="card__body">Append-only log of enrichment outcomes keyed by (category_L2, source). Surfaces: best sources per category, conflict resolution history, attribute fill rates by source. Used by ExternalDataDiscoverer for smarter query targeting.</div>
+      <div class="tag-row"><span class="tag tag--accent">Append-only</span><span class="tag">Cross-run</span></div>
+    </div>
+    <div class="card card--green">
+      <div class="card__label" style="color:var(--green)">Scheduler / Orchestrator</div>
+      <div class="card__title">UCBScheduler</div>
+      <div class="card__body">Maintains DataTree (NetworkX DiGraph). Selects next node via UCB score: exploit = avg_delta_score / visits; explore = C × √(ln(total_iterations) / visits). Triggers red-node batch when frontier is exhausted. Manages parallelism via asyncio TaskGroup.</div>
+      <div class="tag-row"><span class="tag tag--green">UCB-1</span><span class="tag">Async</span><span class="tag">Configurable C</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+  6. DATA SOURCES
+═══════════════════════════════════════ -->
+<section class="spec-section" id="data-sources">
+  <div class="sec-label">Section 06</div>
+  <h2 class="sec-title">External Data Sources</h2>
+  <p class="sec-desc">Red nodes target these sources. Each has a registered adapter in the ExternalDataDiscoverer.</p>
+  <hr class="sec-rule">
+
+  <table class="spec-table">
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th>Lookup Method</th>
+        <th>Attributes Covered</th>
+        <th>Category Fit</th>
+        <th>Reliability</th>
+        <th>MVP</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>GS1 GEPIR</code></td>
+        <td>GTIN / EAN / JAN lookup</td>
+        <td>Brand, pack size, net weight, country of origin, product description</td>
+        <td>All physical goods</td>
+        <td>High — authoritative registry</td>
+        <td><span class="tag tag--green">✓ MVP</span></td>
+      </tr>
+      <tr>
+        <td><code>Open Food Facts</code></td>
+        <td>EAN barcode → REST API</td>
+        <td>Ingredients, allergens, nutrition facts, labels, packaging, categories</td>
+        <td>Food, Beverage, Health</td>
+        <td>High — community + brand submissions</td>
+        <td><span class="tag tag--green">✓ MVP</span></td>
+      </tr>
+      <tr>
+        <td><code>Google Merchant Structured Data</code></td>
+        <td>Brand site sitemap + schema.org/Product JSON-LD</td>
+        <td>Color, size, material, description, MPN, images, age group</td>
+        <td>Apparel, Electronics, Home</td>
+        <td>Medium — depends on brand site quality</td>
+        <td><span class="tag tag--green">✓ MVP</span></td>
+      </tr>
+      <tr>
+        <td><code>Open Product Data (Akeneo)</code></td>
+        <td>GTIN / product name REST search</td>
+        <td>Technical specs, dimensions, certifications, compatibility</td>
+        <td>Electronics, Industrial</td>
+        <td>Medium</td>
+        <td><span class="tag tag--accent">Phase 2</span></td>
+      </tr>
+      <tr>
+        <td><code>Wikidata</code></td>
+        <td>SPARQL: brand + product name → entity</td>
+        <td>Country of origin, founding year, parent company, product class</td>
+        <td>Brands, Books, Media</td>
+        <td>Medium — crowd-sourced</td>
+        <td><span class="tag tag--accent">Phase 2</span></td>
+      </tr>
+      <tr>
+        <td><code>Open Library / ISBN DB</code></td>
+        <td>ISBN-13 lookup</td>
+        <td>Author, publisher, edition, genre, subject, page count, language</td>
+        <td>Books</td>
+        <td>High</td>
+        <td><span class="tag tag--accent">Phase 2</span></td>
+      </tr>
+      <tr>
+        <td><code>Marketplace Global Catalog (internal)</code></td>
+        <td>JAN code cross-reference via internal API</td>
+        <td>All attributes from other Marketplace market catalog records</td>
+        <td>All categories</td>
+        <td>High — internal authority</td>
+        <td><span class="tag tag--teal">Phase 3</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout--teal">
+    <strong>Conflict resolution policy (default):</strong> Merchant data wins on price, inventory, and primary image. External authoritative sources (GS1, Open Food Facts) win on physical attributes (weight, dimensions, ingredients, materials). Brand site structured data fills gaps only — never overwrites existing values. Policy is configurable per category and per attribute class.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+  7. API CONTRACT
+═══════════════════════════════════════ -->
+<section class="spec-section" id="api">
+  <div class="sec-label">Section 07</div>
+  <h2 class="sec-title">API Contract</h2>
+  <p class="sec-desc">FastAPI service. Three primary endpoints for the MVP. All responses include provenance.</p>
+  <hr class="sec-rule">
+
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="card card--accent">
+      <div class="card__label" style="color:var(--accent)">POST /enrich</div>
+      <div class="card__title">Trigger Enrichment Job</div>
+      <div class="card__body">Submit a batch of SKU IDs (or quality filter). Returns job_id. Async — job runs in background via Celery/ARQ.</div>
+    </div>
+    <div class="card card--teal">
+      <div class="card__label" style="color:var(--teal)">GET /job/{job_id}</div>
+      <div class="card__title">Job Status + Results</div>
+      <div class="card__body">Returns status, skus_processed, skus_enriched, avg_score_delta, manifest_ids committed. Includes link to provenance artifact.</div>
+    </div>
+    <div class="card card--green">
+      <div class="card__label" style="color:var(--green)">GET /pool</div>
+      <div class="card__title">DataPool Manifest Browser</div>
+      <div class="card__body">Paginated list of manifests. Filterable by category, source, score_delta range, date range. Powers the enrichment insights dashboard.</div>
+    </div>
+    <div class="card card--plum">
+      <div class="card__label" style="color:var(--plum)">POST /rollback</div>
+      <div class="card__title">Revert Enrichment</div>
+      <div class="card__body">Takes manifest_id or sku_id. Reverts enriched attributes to pre-enrichment state using stored provenance artifact. Required for operator trust.</div>
+    </div>
+  </div>
+
+  <pre class="code-block">POST /enrich
+{
+  "sku_ids": ["RAK-12345", "RAK-67890"],   // explicit list, OR...
+  "quality_filter": { "max_score": 65 },   // ...filter by score
+  "categories": ["food_beverage"],         // optional scope
+  "sources": ["gtin_gs1", "open_food_facts"],
+  "min_delta_threshold": 2,               // only commit Δ ≥ 2 pts
+  "dry_run": false                         // true = evaluate but don't commit
+}
+
+Response 202 Accepted:
+{
+  "job_id": "job_a3f8b1",
+  "estimated_skus": 1240,
+  "eta_seconds": 420
+}</pre>
+
+  <pre class="code-block">GET /job/job_a3f8b1
+
+Response 200 OK:
+{
+  "status": "completed",
+  "skus_processed": 1240,
+  "skus_enriched": 893,
+  "skus_rejected": 347,
+  "avg_score_delta": 14.2,
+  "manifests_committed": 12,
+  "provenance_artifact": "s3://catalog-agent/artifacts/job_a3f8b1.json",
+  "enriched_at": "2026-05-14T02:31:44Z"
+}</pre>
+</section>
+
+<!-- ══════════════════════════════════════
+  8. FEATURES
+═══════════════════════════════════════ -->
+<section class="spec-section" id="features">
+  <div class="sec-label">Section 08</div>
+  <h2 class="sec-title">Feature Set</h2>
+  <p class="sec-desc">MVP scope (Phase 1) vs. planned scope (Phases 2–3).</p>
+  <hr class="sec-rule">
+
+  <table class="spec-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Description</th>
+        <th>Phase</th>
+        <th>DataMaster Primitive</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>gtin_discovery</code></td>
+        <td>Auto-lookup GTIN/EAN/JAN for any SKU missing physical attributes against GS1 GEPIR and Open Food Facts</td>
+        <td><span class="tag tag--green">MVP</span></td>
+        <td><span class="node-badge node-badge--red">Red Node</span></td>
+      </tr>
+      <tr>
+        <td><code>schema_merge</code></td>
+        <td>Attribute alignment between Marketplace ontology and external source schemas with configurable conflict resolution</td>
+        <td><span class="tag tag--green">MVP</span></td>
+        <td><span class="node-badge node-badge--black">Black Node</span></td>
+      </tr>
+      <tr>
+        <td><code>cataloglab_eval</code></td>
+        <td>Real-time quality score delta computation using frozen CatalogLab scorer before any write to production</td>
+        <td><span class="tag tag--green">MVP</span></td>
+        <td><span class="node-badge node-badge--black">Black Node</span></td>
+      </tr>
+      <tr>
+        <td><code>datapool_cache</code></td>
+        <td>Manifest caching with TTL — avoid re-crawling sources already proven useful for a category</td>
+        <td><span class="tag tag--green">MVP</span></td>
+        <td><span class="node-badge node-badge--pool">DataPool</span></td>
+      </tr>
+      <tr>
+        <td><code>provenance_log</code></td>
+        <td>Every enrichment writes: source URL, manifest ID, attribute deltas, score delta, timestamp, operator ID</td>
+        <td><span class="tag tag--green">MVP</span></td>
+        <td><span class="node-badge node-badge--mem">GlobalMemory</span></td>
+      </tr>
+      <tr>
+        <td><code>rollback_api</code></td>
+        <td>One-click revert of any enrichment to pre-enrichment state using stored artifact</td>
+        <td><span class="tag tag--green">MVP</span></td>
+        <td><span class="node-badge node-badge--mem">GlobalMemory</span></td>
+      </tr>
+      <tr>
+        <td><code>enrichment_dashboard</code></td>
+        <td>Ops UI showing: enrichment throughput, score delta distribution, top-contributing sources, category coverage heat map</td>
+        <td><span class="tag tag--green">MVP</span></td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><code>brand_site_crawler</code></td>
+        <td>Sitemap + schema.org/Product JSON-LD extraction from brand websites for apparel and electronics attributes</td>
+        <td><span class="tag tag--accent">Phase 2</span></td>
+        <td><span class="node-badge node-badge--red">Red Node</span></td>
+      </tr>
+      <tr>
+        <td><code>category_memory</code></td>
+        <td>GlobalMemory surface: "top 3 sources by avg score delta for Electronics &gt; Mobile Phones" — used for smarter source targeting</td>
+        <td><span class="tag tag--accent">Phase 2</span></td>
+        <td><span class="node-badge node-badge--mem">GlobalMemory</span></td>
+      </tr>
+      <tr>
+        <td><code>llm_attribute_inference</code></td>
+        <td>LLM-assisted attribute extraction from unstructured product descriptions when structured sources return no match</td>
+        <td><span class="tag tag--accent">Phase 2</span></td>
+        <td><span class="node-badge node-badge--black">Black Node</span></td>
+      </tr>
+      <tr>
+        <td><code>merchant_feedback_loop</code></td>
+        <td>Surface enrichment suggestions to merchants in Seller Central for human approval before auto-commit (high-value SKUs)</td>
+        <td><span class="tag tag--plum">Phase 3</span></td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><code>cross_market_pool</code></td>
+        <td>DataPool federation across Marketplaces   — SKUs from one market enrich another</td>
+        <td><span class="tag tag--plum">Phase 3</span></td>
+        <td><span class="node-badge node-badge--pool">DataPool</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════
+  9. UX FLOWS
+═══════════════════════════════════════ -->
+<section class="spec-section" id="ux">
+  <div class="sec-label">Section 09</div>
+  <h2 class="sec-title">Key UX Flows</h2>
+  <p class="sec-desc">Three actors interact with CatalogAgent — Catalog Ops, Merchant, and Automated Pipeline.</p>
+  <hr class="sec-rule">
+
+  <div class="grid-3">
+    <div class="card card--accent">
+      <div class="card__label" style="color:var(--accent)">Catalog Ops</div>
+      <div class="card__title">Enrichment Monitor</div>
+      <div class="card__body">
+        <div style="font-size:12px;line-height:1.8">
+          1. Open dashboard → see daily enrichment summary<br>
+          2. Filter by category or quality delta range<br>
+          3. Spot-check enriched attributes for a sample<br>
+          4. Trigger rollback if accuracy issue found<br>
+          5. Configure source priority per category<br>
+          6. Download provenance report for audit
+        </div>
+      </div>
+    </div>
+    <div class="card card--teal">
+      <div class="card__label" style="color:var(--teal)">Merchant (Phase 3)</div>
+      <div class="card__title">Attribute Suggestion Flow</div>
+      <div class="card__body">
+        <div style="font-size:12px;line-height:1.8">
+          1. Merchant logs into Seller Central<br>
+          2. Sees "Improve Listing" panel for flagged SKUs<br>
+          3. Agent-suggested attribute values shown with source<br>
+          4. One-click accept/reject per suggestion<br>
+          5. Accepted values applied with merchant credit<br>
+          6. Score improvement shown in real-time preview
+        </div>
+      </div>
+    </div>
+    <div class="card card--green">
+      <div class="card__label" style="color:var(--green)">Automated Pipeline</div>
+      <div class="card__title">Nightly Batch Job</div>
+      <div class="card__body">
+        <div style="font-size:12px;line-height:1.8">
+          1. CatalogLab flags SKUs &lt; 65 quality score<br>
+          2. CatalogAgent job triggered (no human action)<br>
+          3. Red nodes discover → black nodes merge → eval<br>
+          4. Winners committed to production SKU store<br>
+          5. Provenance artifact written to S3<br>
+          6. Metrics pushed to dashboard + alerting
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+  10. INTEGRATIONS
+═══════════════════════════════════════ -->
+<section class="spec-section" id="integrations">
+  <div class="sec-label">Section 10</div>
+  <h2 class="sec-title">System Integrations</h2>
+  <hr class="sec-rule">
+
+  <div class="grid-2">
+    <div class="card card--teal">
+      <div class="card__label" style="color:var(--teal)">CatalogLab</div>
+      <div class="card__title">Quality Scorer (downstream evaluator)</div>
+      <div class="card__body">CatalogLab is the frozen evaluation oracle. CatalogAgent calls <code>POST /score</code> with a candidate SKU before any write. Score delta gates commit decisions. No changes to CatalogLab required for MVP.</div>
+    </div>
+    <div class="card card--accent">
+      <div class="card__title">Discover → Design → Convert</div>
+      <div class="card__body">CatalogAgent maps to the <strong>Discover</strong> stage of . Red nodes = Discover, black nodes = Design + Convert. Operates output flows into the Validate → Operate stages via the existing event bus.</div>
+    </div>
+    <div class="card card--green">
+      <div class="card__label" style="color:var(--green)">Marketplace SKU Store</div>
+      <div class="card__title">Read (base data) + Write (enriched data)</div>
+      <div class="card__body">Agent reads current SKU attributes as baseline. Writes enriched record back via <code>PATCH /catalog/sku/{id}</code> with <code>X-Enrichment-Source: catalog-agent</code> header for audit trail separation from merchant updates.</div>
+    </div>
+    <div class="card card--plum">
+      <div class="card__label" style="color:var(--plum)">Observability</div>
+      <div class="card__title">OpenTelemetry + Grafana</div>
+      <div class="card__body">Traces: one span per SKU enrichment with attributes (source, delta, commit/reject decision). Metrics: enrichment throughput, pool hit rate, source reliability, score delta distribution. Alerts on enrichment precision below threshold.</div>
+    </div>
+  </div>
+
+  <div class="callout callout--teal" style="margin-top:20px">
+    <strong>Integration decision:</strong> CatalogAgent does NOT integrate with the ranking model directly. It only improves the data that feeds it. This is the core DataMaster insight — and it keeps the architecture boundary clean.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+  11. ROADMAP
+═══════════════════════════════════════ -->
+<section class="spec-section" id="roadmap">
+  <div class="sec-label">Section 11</div>
+  <h2 class="sec-title">3-Month Roadmap</h2>
+  <p class="sec-desc">MVP by end of month 3. Each phase is independently deployable and measurable.</p>
+  <hr class="sec-rule">
+
+  <div class="roadmap">
+    <div class="phase phase--1">
+      <div class="phase__header">
+        <span>Month 1</span>
+        Foundation + Data Pipeline
+      </div>
+      <div class="phase__body">
+        <div class="phase__item">GS1 GEPIR + Open Food Facts adapters with GTIN lookup</div>
+        <div class="phase__item">DataPool: Redis manifest store (TTL, version, schema)</div>
+        <div class="phase__item">CatalogLab scorer integration (frozen eval)</div>
+        <div class="phase__item">Schema alignment engine: Marketplace ontology ↔ external fields</div>
+        <div class="phase__item">Basic DataTree (NetworkX) + UCBScheduler</div>
+        <div class="phase__item">Provenance JSON artifact write</div>
+        <div class="phase__item">End-to-end smoke test on 1,000 Food &amp; Beverage SKUs</div>
+      </div>
+    </div>
+    <div class="phase phase--2">
+      <div class="phase__header">
+        <span>Month 2</span>
+        Agent Loop + Ops Tooling
+      </div>
+      <div class="phase__body">
+        <div class="phase__item">Google Merchant / schema.org JSON-LD brand site crawler</div>
+        <div class="phase__item">GlobalMemory: category enrichment pattern store</div>
+        <div class="phase__item">Rollback API + parquet artifact store (S3)</div>
+        <div class="phase__item">FastAPI service: /enrich, /job, /pool, /rollback</div>
+        <div class="phase__item">Ops dashboard v1: throughput, delta distribution, source table</div>
+        <div class="phase__item">A/B experiment setup for conversion lift measurement</div>
+        <div class="phase__item">Load test: 10K SKUs/night target validated</div>
+      </div>
+    </div>
+    <div class="phase phase--3">
+      <div class="phase__header">
+        <span>Month 3</span>
+        Scale + Measurement
+      </div>
+      <div class="phase__body">
+        <div class="phase__item">Expand to Electronics + Apparel categories</div>
+        <div class="phase__item">Wikidata + Open Product Data adapters</div>
+        <div class="phase__item">Category memory surfaced in source targeting</div>
+        <div class="phase__item">A/B experiment results: search rank + conversion delta</div>
+        <div class="phase__item">GMV contribution report (primary CAIO KPI)</div>
+        <div class="phase__item">LLM attribute inference pilot (structured sources miss)</div>
+        <div class="phase__item">Retrospective + Phase 2 roadmap sign-off</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+  12. RISKS
+═══════════════════════════════════════ -->
+<section class="spec-section" id="risks">
+  <div class="sec-label">Section 12</div>
+  <h2 class="sec-title">Risks & Mitigations</h2>
+  <p class="sec-desc">Known risks with explicit mitigations. Red = must resolve before launch. Amber = monitor closely.</p>
+  <hr class="sec-rule">
+
+  <table class="spec-table">
+    <thead>
+      <tr>
+        <th>Severity</th>
+        <th>Risk</th>
+        <th>Probability</th>
+        <th>Mitigation</th>
+        <th>Owner</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="risk-dot" style="background:var(--red)"></span><strong style="color:var(--red)">High</strong></td>
+        <td>Enriched attributes are factually incorrect — propagate bad data to production catalog</td>
+        <td>Medium</td>
+        <td>Precision spot-check (500 SKUs/week); rollback API; dry-run mode default for new sources; min_delta_threshold gates marginal enrichments</td>
+        <td>Catalog Ops</td>
+      </tr>
+      <tr>
+        <td><span class="risk-dot" style="background:var(--red)"></span><strong style="color:var(--red)">High</strong></td>
+        <td>GS1 GEPIR API rate limits or access restrictions block discovery at scale</td>
+        <td>Medium</td>
+        <td>DataPool caching reduces crawl volume 60%+; implement exponential backoff; maintain fallback to Open Food Facts for food categories</td>
+        <td>Engineering</td>
+      </tr>
+      <tr>
+        <td><span class="risk-dot" style="background:var(--accent)"></span><strong style="color:var(--accent)">Medium</strong></td>
+        <td>CatalogLab scorer is not sensitive enough to detect small enrichment deltas</td>
+        <td>Low-Med</td>
+        <td>Calibrate minimum delta threshold with CatalogLab team before launch; if score resolution is too coarse, use search click-through rate as secondary signal</td>
+        <td>PM + CatalogLab</td>
+      </tr>
+      <tr>
+        <td><span class="risk-dot" style="background:var(--accent)"></span><strong style="color:var(--accent)">Medium</strong></td>
+        <td>Conflict resolution policy overwrites correct merchant data with incorrect external data</td>
+        <td>Medium</td>
+        <td>Merchant data wins policy as default; external sources only fill gaps. Post-enrichment, merchant can override. Logged for audit.</td>
+        <td>Product</td>
+      </tr>
+      <tr>
+        <td><span class="risk-dot" style="background:var(--accent)"></span><strong style="color:var(--accent)">Medium</strong></td>
+        <td>Throughput target (10K SKUs/night) not met in MVP timeframe</td>
+        <td>Medium</td>
+        <td>Async I/O (httpx + asyncio) for source requests; DataPool cache hit rate of 60% reduces net crawl load; scale with Celery workers if needed</td>
+        <td>Engineering</td>
+      </tr>
+      <tr>
+        <td><span class="risk-dot" style="background:var(--text-dim)"></span><strong>Low</strong></td>
+        <td>DPDP Rules 2025 considerations for third-party product data ingestion</td>
+        <td>Low</td>
+        <td>All external sources are public open-data APIs (GS1, Open Food Facts). No personal data in product attribute enrichment. Legal sign-off on source list pre-launch.</td>
+        <td>Legal + CAIO</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════
+  13. OPEN QUESTIONS
+═══════════════════════════════════════ -->
+<section class="spec-section" id="openquestions">
+  <div class="sec-label">Section 13</div>
+  <h2 class="sec-title">Open Questions</h2>
+  <p class="sec-desc">Decisions that must be made before Month 1 kickoff. Owner and deadline assigned.</p>
+  <hr class="sec-rule">
+
+  <div class="grid-2">
+    <div class="card card--red">
+      <div class="card__label" style="color:var(--red)">Blocker — Decide by Week 1</div>
+      <div class="card__title">CatalogLab API Access Mode</div>
+      <div class="card__body">Does CatalogAgent call CatalogLab via internal HTTP (same VPC) or does CatalogLab expose a batch scoring endpoint? Batch scoring needed for throughput — confirm with CatalogLab engineering before sprint planning.</div>
+    </div>
+    <div class="card card--red">
+      <div class="card__label" style="color:var(--red)">Blocker — Decide by Week 1</div>
+      <div class="card__title">SKU Store Write Permissions</div>
+      <div class="card__body">CatalogAgent needs a service account with write access to the production SKU attribute store. Requires InfoSec review. Separate write path with X-Enrichment-Source header — confirm schema change with Platform team.</div>
+    </div>
+    <div class="card card--accent">
+      <div class="card__label" style="color:var(--accent)">Decide by Month 1 End</div>
+      <div class="card__title">Minimum Delta Threshold Calibration</div>
+      <div class="card__body">Default is Δ ≥ 2 pts on CatalogLab score. Is this the right gate? Need to calibrate against historical enrichment data — what delta corresponds to measurable search rank lift? Requires joint analysis with CatalogLab team.</div>
+    </div>
+    <div class="card card--accent">
+      <div class="card__label" style="color:var(--accent)">Decide by Month 1 End</div>
+      <div class="card__title">DataPool Storage Backend</div>
+      <div class="card__body">MVP: Redis HASH + Postgres JSONB fallback. Phase 2: Consider ArangoDB (already in ) for richer graph queries on source-category relationships. Confirm with infra team if ArangoDB instance can be shared.</div>
+    </div>
+    <div class="card">
+      <div class="card__label" style="color:var(--text-dim)">Decide by Month 2</div>
+      <div class="card__title">Merchant Notification Strategy</div>
+      <div class="card__body">Do we notify merchants when their SKU is auto-enriched? Options: silent (ops-only), notification only, approval-required for high-value SKUs. Phase 3 design decision — but policies should be set early to avoid merchant trust issues.</div>
+    </div>
+    <div class="card">
+      <div class="card__label" style="color:var(--text-dim)">Decide by Month 2</div>
+      <div class="card__title">A/B Experiment Design</div>
+      <div class="card__body">Holdout cohort: matched on category, price band, and current quality score. Primary metric: add-to-cart rate at 4 weeks. Secondary: search position. Confirm with Data Science team on experiment sizing and contamination risk.</div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div><!-- /layout -->
+
+<button class="theme-btn" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')">toggle theme</button>
+
+<script>
+// Active nav link on scroll
+const sections = document.querySelectorAll('.spec-section');
+const navLinks = document.querySelectorAll('.nav-link');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+backend-path = []
+
+[project]
+name = "catalog-agent"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "networkx>=3.3",
+    "pandas>=2.2",
+    "pyarrow>=15",
+    "redis[hiredis]>=5.0",
+    "arq>=0.26",
+    "opentelemetry-sdk>=1.24",
+    "opentelemetry-instrumentation-fastapi>=0.45b0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "respx>=0.21",
+    "fakeredis[aioredis]>=2.23",
+    "httpx>=0.27",
+]
+
+[project.scripts]
+catalog-agent = "catalog_agent.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["catalog_agent*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

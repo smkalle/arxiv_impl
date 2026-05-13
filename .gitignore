@@ -233,3 +233,13 @@ sira/.api_server.log
 
 # Tooling output files
 tool-output/
+
+# Claude Code local settings (machine-specific, never commit)
+.claude/settings.local.json
+
+# -----------------------------------------------------------------------------
+# CatalogAgent (datamaster/) generated artifacts
+# -----------------------------------------------------------------------------
+datamaster/catalog-agent/artifacts_local/
+datamaster/catalog-agent/artifacts/
+datamaster/catalog-agent/.env
