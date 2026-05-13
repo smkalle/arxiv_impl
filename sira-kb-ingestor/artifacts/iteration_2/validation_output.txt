@@ -1,0 +1,19 @@
+Iteration 2 Validation
+
+Checks:
+- [PASS] Config discovery and parsing
+- [PASS] Config precedence merge (CLI > file > env > defaults)
+- [PASS] setup_full_system writes setup_summary.json
+- [PASS] setup_summary schema includes ticket_ingest, kb_enrichment, retrieval
+- [PASS] Iteration 2 tests pass with visible test intent logs
+
+What was validated (not black-box):
+- Config source precedence behavior with explicit expected result
+- Input existence checks for ticket and KB sources
+- Summary artifact creation and minimum schema contract
+- Returned result metrics/artifacts shape
+
+See:
+- pytest_output.txt
+- config_precedence_report.txt
+- setup_summary_sample.json

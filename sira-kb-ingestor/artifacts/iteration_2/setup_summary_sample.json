@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-05-13T11:16:30.611714+00:00",
+  "ticket_ingest": {
+    "rows_ingested": 2,
+    "elapsed_s": 0.0013,
+    "throughput_rps": 1545.1473,
+    "embed_model": "deterministic-hash",
+    "embed_dim": 384
+  },
+  "kb_enrichment": {
+    "articles_enriched": 2,
+    "elapsed_s": 0.001,
+    "enrichment_model": "qwen2.5-coder:3b",
+    "failed": 0,
+    "skipped": 0
+  },
+  "retrieval": {
+    "tau_default": 0.01,
+    "weight_default": 1.5
+  }
+}

@@ -1,0 +1,12 @@
+Iteration 4 Validation
+
+Checks:
+- [PASS] setup CLI parses flags, merges config, maps failures, and prints JSON summary
+- [PASS] query CLI returns JSON and exits non-zero on retrieval failures
+- [PASS] server CLI defaults to host 0.0.0.0, port 8000, workers 4
+- [PASS] benchmark runner writes benchmark_report.json and benchmark_table.md
+- [PASS] real Zendesk CSV and Jira JSON integration tests are present and skip with clear reasons when external services are unavailable
+
+See:
+- pytest_output.txt
+- benchmark_table.md

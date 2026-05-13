@@ -1,0 +1,5 @@
+batch_size 128
+embed_model deterministic-hash
+enrichment_model qwen2.5-coder:3b
+tau 0.01
+weight 1.5

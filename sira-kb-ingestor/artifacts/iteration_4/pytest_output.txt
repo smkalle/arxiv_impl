@@ -1,0 +1,34 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/userland/workspace/arxiv_impl/sira-kb-ingestor
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 12 items
+
+tests/test_cli.py::test_setup_merges_config_calls_orchestration_and_prints_summary [TEST] Validating setup CLI parses flags, merges config, and prints JSON summary
+PASSED
+tests/test_cli.py::test_setup_missing_input_maps_to_click_error [TEST] Validating setup CLI maps missing input to non-zero Click error
+PASSED
+tests/test_cli.py::test_setup_artifact_failure_maps_to_click_error [TEST] Validating setup CLI maps artifact build failures
+PASSED
+tests/test_cli.py::test_query_exits_nonzero_on_retrieval_error [TEST] Validating query CLI exits non-zero on RetrievalError
+PASSED
+tests/test_cli.py::test_server_defaults_match_spec [TEST] Validating server CLI defaults align to spec
+PASSED
+tests/test_cli.py::test_benchmark_writes_reports_and_prints_markdown [TEST] Validating benchmark CLI writes reports and prints Markdown table
+PASSED
+tests/test_cli_iteration3.py::test_query_command_prints_json [TEST] Validating query CLI prints retrieval JSON
+PASSED
+tests/test_cli_iteration3.py::test_server_command_invokes_runner [TEST] Validating server CLI passes host/port/workers/out to runner
+PASSED
+tests/test_benchmark.py::test_parse_row_counts [TEST] Validating benchmark row count parser
+PASSED
+tests/test_benchmark.py::test_run_setup_benchmark_writes_report_and_table [TEST] Validating benchmark runner prepares inputs and writes report artifacts
+PASSED
+tests/test_integration.py::test_real_e2e_setup_zendesk_csv [INTEGRATION] Running real setup flow with Zendesk CSV input
+PASSED
+tests/test_integration.py::test_real_e2e_setup_jira_json [INTEGRATION] Running real setup flow with Jira JSON input
+PASSED
+
+============================== 12 passed in 8.61s ==============================

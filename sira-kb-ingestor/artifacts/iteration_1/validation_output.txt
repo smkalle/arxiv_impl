@@ -1,0 +1,19 @@
+Iteration 1 Validation
+
+Checks:
+- [PASS] Package scaffold exists
+- [PASS] Public imports resolve
+- [PASS] Dataclass defaults match spec
+- [PASS] CLI help exposes setup/query/server/benchmark
+- [PASS] Iteration 1 tests pass with visible test intent logs
+
+What was validated (not black-box):
+- Config default contract (batch_size, models, tau/weight)
+- Config override behavior
+- Result object default safety
+- Public API export surface
+- CLI discoverability for planned command set
+
+See:
+- pytest_output.txt
+- defaults_check.txt

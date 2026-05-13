@@ -1,0 +1,48 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/userland/workspace/arxiv_impl/sira-kb-ingestor
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 14 items
+
+tests/test_config.py::test_discover_config_prefers_cwd [TEST] Validating config discovery prefers project local file
+PASSED
+tests/test_config.py::test_load_config_from_file [TEST] Validating TOML config values are loaded and typed
+PASSED
+tests/test_config.py::test_env_override [TEST] Validating env variables are applied when no CLI override
+PASSED
+tests/test_config.py::test_cli_precedence_over_file_and_env [TEST] Validating precedence order CLI > file > env > defaults
+PASSED
+tests/test_config.py::test_output_path_cast_from_string [TEST] Validating string output_path is cast to pathlib.Path
+PASSED
+tests/test_config.py::test_empty_env_mapping_does_not_read_process_env [TEST] Validating explicit empty env mapping suppresses process env
+PASSED
+tests/test_config.py::test_output_section_path_alias [TEST] Validating [output] path maps to output_path
+PASSED
+tests/test_orchestration.py::test_setup_writes_summary [TEST] Validating setup_full_system writes setup_summary.json artifact
+[MOCK] Simulating AAFLOW ingest with artifact generation
+[MOCK] Simulating SIRA enrichment output
+[MOCK] Simulating SIRA BM25 index build
+PASSED
+tests/test_orchestration.py::test_summary_schema_fields [TEST] Validating setup summary contains required schema fields
+[MOCK] Simulating AAFLOW ingest with artifact generation
+[MOCK] Simulating SIRA enrichment output
+[MOCK] Simulating SIRA BM25 index build
+PASSED
+tests/test_orchestration.py::test_missing_ticket_source_raises [TEST] Validating missing ticket source returns explicit file error
+PASSED
+tests/test_orchestration.py::test_missing_kb_source_raises [TEST] Validating missing KB source returns explicit file error
+PASSED
+tests/test_orchestration.py::test_result_shape_has_metrics_and_artifacts [TEST] Validating orchestration result exposes metrics and artifact contract
+[MOCK] Simulating AAFLOW ingest with artifact generation
+[MOCK] Simulating SIRA enrichment output
+[MOCK] Simulating SIRA BM25 index build
+PASSED
+tests/test_orchestration.py::test_missing_required_ticket_artifact_raises [TEST] Validating setup fails when AAFLOW artifacts are missing
+PASSED
+tests/test_orchestration.py::test_missing_required_kb_artifact_raises [TEST] Validating setup fails when SIRA artifacts are missing
+[MOCK] Simulating AAFLOW ingest with artifact generation
+PASSED
+
+============================== 14 passed in 0.22s ==============================

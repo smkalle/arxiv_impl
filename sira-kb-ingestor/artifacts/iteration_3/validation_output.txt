@@ -1,0 +1,12 @@
+Iteration 3 Validation
+
+Checks:
+- [PASS] Retriever runtime loads and reports KB index health
+- [PASS] Retriever maps SIRA output to integration response contract
+- [PASS] FastAPI /health, /retrieve, and /metrics endpoints are covered
+- [PASS] Missing ticket text and missing index failure modes are covered
+- [PASS] query/server CLI wiring is covered without starting a real server
+
+See:
+- pytest_output.txt
+- retrieve_response_sample.json

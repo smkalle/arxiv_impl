@@ -1,0 +1,34 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/userland/workspace/arxiv_impl/sira-kb-ingestor
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 12 items
+
+tests/test_retriever.py::test_retriever_health_reports_missing_index [TEST] Validating retriever health reports missing index
+PASSED
+tests/test_retriever.py::test_retriever_loads_index_and_reports_health [TEST] Validating retriever loads kb_index.pkl and reports corpus size
+PASSED
+tests/test_retriever.py::test_retriever_maps_sira_response [TEST] Validating retriever maps SIRA response into integration contract
+PASSED
+tests/test_retriever.py::test_retriever_preserves_fallback_audit [TEST] Validating retriever preserves SIRA fallback audit
+PASSED
+tests/test_retriever.py::test_retriever_load_failure_raises_retrieval_error [TEST] Validating corrupt index load raises RetrievalError
+PASSED
+tests/test_api.py::test_health_endpoint [TEST] Validating API health endpoint
+PASSED
+tests/test_api.py::test_retrieve_happy_path [TEST] Validating API retrieve happy path
+PASSED
+tests/test_api.py::test_retrieve_missing_ticket_text_returns_400 [TEST] Validating API retrieve rejects missing ticket_text
+PASSED
+tests/test_api.py::test_retrieve_unavailable_index_returns_503 [TEST] Validating API returns 503 when index is unavailable
+PASSED
+tests/test_api.py::test_metrics_endpoint_tracks_success_and_fallback [TEST] Validating API metrics counters
+PASSED
+tests/test_cli_iteration3.py::test_query_command_prints_json [TEST] Validating query CLI prints retrieval JSON
+PASSED
+tests/test_cli_iteration3.py::test_server_command_invokes_runner [TEST] Validating server CLI passes host/port/workers/out to runner
+PASSED
+
+============================== 12 passed in 7.29s ==============================

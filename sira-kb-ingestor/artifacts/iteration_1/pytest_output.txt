@@ -1,0 +1,20 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/userland/workspace/arxiv_impl/sira-kb-ingestor
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 5 items
+
+tests/test_models.py::test_config_defaults [TEST] Validating IngestAndRetrieveConfig default values from spec
+PASSED
+tests/test_models.py::test_config_override [TEST] Validating explicit config overrides replace defaults
+PASSED
+tests/test_models.py::test_result_defaults [TEST] Validating IngestAndRetrieveResult initializes safe empty containers
+PASSED
+tests/test_package_smoke.py::test_import_smoke [TEST] Validating public API exports and typed error constructors
+PASSED
+tests/test_package_smoke.py::test_cli_help_smoke [TEST] Validating CLI help exposes all planned subcommands
+PASSED
+
+============================== 5 passed in 0.75s ===============================

@@ -1,0 +1,21 @@
+# Python/runtime caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Local environments
+.venv/
+venv/
+.env
+
+# Local Ollama model store used by scripts/start_local_ollama.sh
+.ollama-models/
+
+# Runtime output from manual CLI runs
+sira-artifacts/
+
+# Generated benchmark smoke working directory; keep published summary files.
+artifacts/iteration_4/benchmark_smoke/

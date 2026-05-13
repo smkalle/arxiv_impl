@@ -1,0 +1,3 @@
+precedence_expected CLI > file > env > defaults
+batch_size_result 900
+status PASS
