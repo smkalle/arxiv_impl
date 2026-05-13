@@ -4,6 +4,8 @@
 
 This project implements a productized ingest path derived from the AAFLOW paper (`arXiv:2605.02162`) and is designed to feed retrieval systems such as SIRA.
 
+> **Admin Dashboard** — a purpose-built ops and admin console for this pipeline ships in [`dashboard/`](dashboard/). Start it with `bash dashboard/start.sh` and open `http://localhost:8000`.
+
 ## Key guarantees
 
 - Operator boundaries use `pyarrow.Table` throughout.

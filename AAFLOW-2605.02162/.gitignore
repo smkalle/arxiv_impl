@@ -14,3 +14,7 @@ benchmark_output/
 
 # Generated fixture output (regeneratable)
 fixtures/
+
+# Dashboard runtime artifacts
+dashboard/backend/kb_admin.db
+dashboard/backend/*.db

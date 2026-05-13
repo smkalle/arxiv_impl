@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KB Ingestor — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --bg:         #0c0f14;
+    --surface:    #131820;
+    --surface2:   #1a2130;
+    --surface3:   #202c3d;
+    --border:     rgba(42,62,88,0.7);
+    --border-lit: rgba(56,120,200,0.35);
+    --text:       #b8cce0;
+    --text-dim:   #5c7898;
+    --text-bright:#ddeeff;
+    --teal:       #0ea5c8;
+    --teal-dim:   rgba(14,165,200,0.12);
+    --gold:       #d4a73a;
+    --gold-dim:   rgba(212,167,58,0.12);
+    --green:      #3cba7a;
+    --green-dim:  rgba(60,186,122,0.12);
+    --red:        #e05252;
+    --red-dim:    rgba(224,82,82,0.1);
+    --slate:      #4a6fa5;
+    --slate-dim:  rgba(74,111,165,0.12);
+    --font:       'DM Sans', sans-serif;
+    --mono:       'Fira Code', monospace;
+    --r:          5px;
+  }
+  [data-theme="light"] {
+    --bg:         #f2f5f9;
+    --surface:    #ffffff;
+    --surface2:   #eef2f7;
+    --surface3:   #e4eaf3;
+    --border:     rgba(180,200,225,0.8);
+    --border-lit: rgba(14,120,200,0.3);
+    --text:       #2c3e55;
+    --text-dim:   #7090b0;
+    --text-bright:#0f1e30;
+    --teal:       #0284a8;
+    --teal-dim:   rgba(2,132,168,0.08);
+    --gold:       #a07820;
+    --gold-dim:   rgba(160,120,32,0.08);
+    --green:      #1e9060;
+    --green-dim:  rgba(30,144,96,0.08);
+    --red:        #c03838;
+    --red-dim:    rgba(192,56,56,0.07);
+    --slate:      #3056a0;
+    --slate-dim:  rgba(48,86,160,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13.5px;
+    line-height: 1.6;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(14,165,200,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(14,165,200,0.03) 1px, transparent 1px),
+      linear-gradient(rgba(14,165,200,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(14,165,200,0.015) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+  }
+
+  /* ── Layout ── */
+  #app { display: flex; height: 100vh; }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: 220px; flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .nav-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo-title { font-size: 13px; font-weight: 700; color: var(--text-bright); letter-spacing: -0.01em; }
+  .nav-logo-sub { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 3px; }
+  .nav-section {
+    padding: 12px 20px 4px;
+    font-family: var(--mono); font-size: 9.5px;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--text-dim); margin-top: 4px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 20px;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all 0.12s;
+    font-size: 12.5px;
+    user-select: none;
+  }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--teal); background: var(--teal-dim); border-left-color: var(--teal); }
+  .nav-item.disabled { opacity: 0.45; cursor: not-allowed; }
+  .nav-item.disabled:hover { background: none; color: var(--text-dim); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.6; flex-shrink: 0; }
+  .nav-footer {
+    margin-top: auto;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11.5px;
+  }
+  .role-badge {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 3px;
+    font-family: var(--mono); font-size: 10px;
+    border: 1px solid;
+    margin-top: 4px;
+  }
+  .role-admin  { color: var(--teal);  border-color: rgba(14,165,200,0.3);  background: var(--teal-dim);  }
+  .role-ops    { color: var(--gold);  border-color: rgba(212,167,58,0.3);  background: var(--gold-dim);  }
+  .role-readonly { color: var(--slate); border-color: rgba(74,111,165,0.3); background: var(--slate-dim); }
+
+  /* ── Main content area ── */
+  #main-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+  /* ── Top bar ── */
+  #topbar {
+    height: 48px; flex-shrink: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 28px; gap: 12px;
+  }
+  #page-title { font-size: 14px; font-weight: 600; color: var(--text-bright); }
+  #topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+  /* ── Content ── */
+  #content { flex: 1; padding: 28px 32px 60px; overflow-y: auto; }
+
+  /* ── Buttons ── */
+  .btn {
+    padding: 6px 14px; border-radius: var(--r);
+    font-family: var(--font); font-size: 12.5px; font-weight: 500;
+    cursor: pointer; border: 1px solid; transition: all 0.12s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary  { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border-color: var(--border); }
+  .btn-secondary:hover { border-color: var(--border-lit); color: var(--text-bright); }
+  .btn-danger   { background: var(--red-dim); color: var(--red); border-color: rgba(224,82,82,0.3); }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+  .btn-ghost    { background: transparent; color: var(--text-dim); border-color: transparent; }
+  .btn-ghost:hover { color: var(--text-bright); background: var(--surface2); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; filter: none !important; }
+  .btn-sm { padding: 3px 10px; font-size: 11.5px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; font-weight: 600; color: var(--text-bright);
+  }
+  .card-body { padding: 16px; }
+
+  /* ── KPI strip ── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 14px 16px;
+  }
+  .kpi-label { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 6px; }
+  .kpi-val   { font-size: 22px; font-weight: 700; color: var(--text-bright); line-height: 1; }
+  .kpi-sub   { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ── Tables ── */
+  .tbl-wrap { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead { background: var(--surface2); position: sticky; top: 0; z-index: 1; }
+  th {
+    padding: 8px 14px; text-align: left;
+    font-family: var(--mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-dim); font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td { padding: 9px 14px; color: var(--text); border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--teal-dim); }
+  .tr-link { cursor: pointer; }
+
+  /* ── Status badges ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 10px;
+    font-family: var(--mono); font-size: 10.5px;
+    border: 1px solid; white-space: nowrap;
+  }
+  .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge-done    { color: var(--green);  border-color: rgba(60,186,122,0.3);  background: var(--green-dim);  }
+  .badge-running { color: var(--teal);   border-color: rgba(14,165,200,0.3);  background: var(--teal-dim);   }
+  .badge-failed  { color: var(--red);    border-color: rgba(224,82,82,0.3);   background: var(--red-dim);    }
+  .badge-queued  { color: var(--gold);   border-color: rgba(212,167,58,0.3);  background: var(--gold-dim);   }
+  .badge-partial { color: var(--gold);   border-color: rgba(212,167,58,0.3);  background: var(--gold-dim);   }
+  .badge-running::before { animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── Pipeline progress bar ── */
+  .pipeline-bar { display: flex; gap: 4px; margin-bottom: 20px; }
+  .pipe-seg {
+    flex: 1; height: 36px; border-radius: var(--r);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .pipe-seg.idle    { background: var(--surface2); color: var(--text-dim); }
+  .pipe-seg.active  { background: var(--teal-dim); color: var(--teal); border-color: rgba(14,165,200,0.4);
+                      animation: shimmer 1.5s infinite; }
+  .pipe-seg.done    { background: var(--green-dim); color: var(--green); border-color: rgba(60,186,122,0.3); }
+  .pipe-seg.failed  { background: var(--red-dim);   color: var(--red);   border-color: rgba(224,82,82,0.3); }
+  @keyframes shimmer {
+    0%   { opacity: 0.7; }
+    50%  { opacity: 1;   }
+    100% { opacity: 0.7; }
+  }
+
+  /* ── Batch grid ── */
+  .batch-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+  .batch-cell {
+    width: 24px; height: 24px; border-radius: 3px;
+    cursor: pointer; border: 1px solid transparent;
+    transition: all 0.12s; flex-shrink: 0;
+  }
+  .batch-cell:hover { transform: scale(1.2); z-index: 1; }
+  .batch-cell.done    { background: var(--green);  opacity: 0.7; }
+  .batch-cell.running { background: var(--teal);   animation: pulse 1.2s infinite; }
+  .batch-cell.queued  { background: var(--gold);   opacity: 0.5; }
+  .batch-cell.failed  { background: var(--red);    opacity: 0.9; border-color: rgba(224,82,82,0.6); }
+  .batch-cell.not_started { background: var(--surface3); }
+  .batch-cell.selected { border-color: white; transform: scale(1.2); }
+
+  /* ── Stage timeline chart ── */
+  .stage-timeline { display: flex; gap: 12px; }
+  .stage-bar-wrap { flex: 1; }
+  .stage-bar-label { font-family: var(--mono); font-size: 9.5px; color: var(--text-dim); margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .stage-bar-track { height: 20px; background: var(--surface2); border-radius: 3px; overflow: hidden; position: relative; }
+  .stage-bar-fill  { height: 100%; border-radius: 3px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; font-size: 10px; font-family: var(--mono); color: rgba(255,255,255,0.8); transition: width 0.5s ease; }
+
+  /* ── Speedup gauge ── */
+  .speedup-display {
+    text-align: center;
+  }
+  .speedup-val { font-size: 36px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+  .speedup-slo { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ── Filters ── */
+  .filter-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-select, .filter-input {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 5px 10px; border-radius: var(--r);
+    font-family: var(--font); font-size: 12.5px;
+    outline: none;
+  }
+  .filter-select:focus, .filter-input:focus { border-color: var(--border-lit); }
+
+  /* ── Skeleton shimmer ── */
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-anim 1.5s infinite;
+    border-radius: 4px;
+  }
+  @keyframes skeleton-anim { 0%{background-position:200%} 100%{background-position:-200%} }
+  .skel-row { height: 14px; margin-bottom: 8px; }
+  .skel-kpi { height: 40px; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center; padding: 48px 24px;
+    color: var(--text-dim); font-size: 13px;
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+
+  /* ── Alert banners ── */
+  .alert-banner {
+    padding: 10px 16px; border-radius: var(--r); margin-bottom: 14px;
+    font-size: 12.5px; display: flex; align-items: center; gap: 10px; border: 1px solid;
+  }
+  .alert-error { background: var(--red-dim); color: var(--red); border-color: rgba(224,82,82,0.3); }
+  .alert-warn  { background: var(--gold-dim); color: var(--gold); border-color: rgba(212,167,58,0.3); }
+  .alert-info  { background: var(--teal-dim); color: var(--teal); border-color: rgba(14,165,200,0.3); }
+
+  /* ── Login screen ── */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 1000;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 36px 40px;
+    width: 380px;
+  }
+  .login-title { font-size: 20px; font-weight: 700; color: var(--text-bright); margin-bottom: 4px; }
+  .login-sub { font-size: 12.5px; color: var(--text-dim); margin-bottom: 28px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 5px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
+  .form-input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 8px 12px; border-radius: var(--r);
+    font-family: var(--font); font-size: 13.5px; outline: none;
+    transition: border-color 0.12s;
+  }
+  .form-input:focus { border-color: var(--border-lit); }
+  .login-hints {
+    background: var(--surface2); border-radius: var(--r);
+    padding: 12px 14px; margin-top: 20px;
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--text-dim); line-height: 1.8;
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 32px;
+    width: 440px; max-width: 90vw;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--text-bright); margin-bottom: 10px; }
+  .modal-body  { font-size: 13px; color: var(--text); line-height: 1.7; margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+
+  /* ── Wizard ── */
+  .wizard-steps { display: flex; gap: 0; margin-bottom: 28px; }
+  .wz-step {
+    flex: 1; text-align: center; position: relative;
+    padding-bottom: 10px;
+    font-size: 12px; color: var(--text-dim);
+    cursor: pointer;
+  }
+  .wz-step::after {
+    content: ''; position: absolute; bottom: 0; left: 50%; right: -50%;
+    height: 2px; background: var(--border);
+  }
+  .wz-step:last-child::after { display: none; }
+  .wz-step.active { color: var(--teal); }
+  .wz-step.active::after { background: var(--teal); }
+  .wz-step.done { color: var(--green); }
+  .wz-step.done::after { background: var(--green); }
+  .wz-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid currentColor; font-size: 11px; font-weight: 700;
+    margin-bottom: 4px; font-family: var(--mono);
+  }
+  .wz-step.done .wz-num::before { content: '✓'; }
+  .wz-step.done .wz-num span  { display: none; }
+
+  /* ── SSE banner ── */
+  #sse-banner {
+    display: none;
+    padding: 8px 16px; font-size: 12px; font-family: var(--mono);
+    background: var(--gold-dim); color: var(--gold);
+    border-bottom: 1px solid rgba(212,167,58,0.3);
+    text-align: center;
+  }
+
+  /* ── Detail panel ── */
+  .detail-panel {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 16px; margin-top: 16px;
+  }
+  .detail-panel-title { font-size: 12px; font-weight: 600; color: var(--text-dim); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .error-class-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,82,82,0.3); font-family: var(--mono); font-size: 11px; margin-bottom: 8px; }
+
+  /* ── Theme toggle ── */
+  #theme-btn {
+    position: fixed; bottom: 20px; right: 20px; z-index: 100;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 6px 12px; border-radius: var(--r);
+    cursor: pointer; font-family: var(--mono); font-size: 10.5px;
+    transition: all 0.15s;
+  }
+  #theme-btn:hover { color: var(--text-bright); border-color: var(--border-lit); }
+
+  /* ── Copy button ── */
+  .copy-json-btn {
+    padding: 4px 10px; border-radius: var(--r);
+    background: var(--surface3); border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer; font-size: 11px; font-family: var(--mono);
+  }
+  .copy-json-btn:hover { color: var(--text-bright); }
+
+  /* ── Run ID click to copy ── */
+  .run-id-link { color: var(--teal); cursor: pointer; font-family: var(--mono); font-size: 11.5px; }
+  .run-id-link:hover { text-decoration: underline; }
+
+  /* sparkline */
+  .sparkline-svg { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ── Login Screen ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-title">KB Ingestor Admin</div>
+    <div class="login-sub">Sign in to the operations dashboard</div>
+    <div id="login-error" style="display:none" class="alert-banner alert-error" style="margin-bottom:14px;"></div>
+    <div class="form-group">
+      <label class="form-label" for="login-user">Username</label>
+      <input class="form-input" id="login-user" type="text" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="login-pass">Password</label>
+      <input class="form-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" style="width:100%; justify-content:center; padding:10px;" onclick="App.doLogin()">
+      Sign In
+    </button>
+    <div class="login-hints">
+      <div style="color:var(--text-bright); margin-bottom:4px;">Test credentials:</div>
+      Admin: <strong>admin</strong> / <strong>admin123</strong><br>
+      Ops: <strong>ops</strong> / <strong>ops123</strong><br>
+      Read-only: <strong>readonly</strong> / <strong>read123</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main App Shell ── -->
+<div id="app" style="display:none;">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="nav-logo">
+      <div class="nav-logo-title">KB Ingestor Admin</div>
+      <div class="nav-logo-sub">v0.1.0 · ops console</div>
+    </div>
+
+    <div class="nav-section">Monitor</div>
+    <div class="nav-item" data-route="#/" onclick="App.navigate('#/')">
+      <span class="nav-dot"></span> Dashboard
+    </div>
+    <div class="nav-item" data-route="#/runs" onclick="App.navigate('#/runs')">
+      <span class="nav-dot"></span> Runs
+    </div>
+    <div class="nav-item" data-route="#/indexes" onclick="App.navigate('#/indexes')">
+      <span class="nav-dot"></span> Indexes
+    </div>
+
+    <div class="nav-section">Manage</div>
+    <div class="nav-item" id="nav-new-run" data-route="#/runs/new" onclick="App.navigate('#/runs/new')">
+      <span class="nav-dot"></span> New Ingestion
+    </div>
+    <div class="nav-item" data-route="#/audit" onclick="App.navigate('#/audit')">
+      <span class="nav-dot"></span> Audit Log
+    </div>
+    <div class="nav-item disabled" title="Requires Admin role — v0.2 feature">
+      <span class="nav-dot"></span> Schedules <span style="font-size:9.5px; margin-left:auto; opacity:0.6;">v0.2</span>
+    </div>
+    <div class="nav-item disabled" title="Requires Admin role — v0.2 feature">
+      <span class="nav-dot"></span> Alerts <span style="font-size:9.5px; margin-left:auto; opacity:0.6;">v0.2</span>
+    </div>
+
+    <div class="nav-footer">
+      <div style="color:var(--text-dim); font-size:11px;">Signed in as</div>
+      <div style="color:var(--text-bright); font-weight:600;" id="sidebar-username">—</div>
+      <div id="sidebar-role-badge" class="role-badge role-admin">admin</div>
+      <div style="margin-top:10px;">
+        <button class="btn btn-ghost btn-sm" onclick="App.logout()" style="padding:3px 0; font-size:11px; color:var(--text-dim);">Sign out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main area -->
+  <div id="main-area">
+    <div id="sse-banner">⟳ Reconnecting to live stream…</div>
+    <div id="topbar">
+      <span id="page-title">Dashboard</span>
+      <div id="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="App.logout()" style="font-size:12px; color:var(--text-dim); border:1px solid var(--border); padding:4px 12px; border-radius:4px;">Sign out</button>
+      </div>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<!-- Modal container -->
+<div id="modal-container"></div>
+
+<!-- Theme toggle -->
+<button id="theme-btn" onclick="App.toggleTheme()">◑ theme</button>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+window.API_BASE = 'http://localhost:8000';
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const h = (tag, attrs={}, ...children) => {
+  const el = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)) {
+    if (k === 'className') el.className = v;
+    else if (k === 'onclick') el.onclick = v;
+    else if (k === 'innerHTML') el.innerHTML = v;
+    else if (k === 'style') Object.assign(el.style, v);
+    else el.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (c == null) continue;
+    el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  }
+  return el;
+};
+
+function statusBadge(s) {
+  return `<span class="badge badge-${s}">${s}</span>`;
+}
+function fmtMs(ms) { if (!ms) return '—'; return ms > 1000 ? (ms/1000).toFixed(1)+'s' : ms+'ms'; }
+function fmtSpeedup(x) { if (!x) return '—'; return x.toFixed(2)+'×'; }
+function fmtRows(n) { if (!n && n!==0) return '—'; return n.toLocaleString(); }
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  return d.toLocaleDateString('en-US', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function speedupColor(x) {
+  if (!x) return 'var(--text-dim)';
+  if (x >= 2.5) return 'var(--green)';
+  if (x >= 1.8) return 'var(--gold)';
+  return 'var(--red)';
+}
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  });
+}
+
+// ── Auth store ────────────────────────────────────────────────────────────────
+const Auth = {
+  token: null, user: null, role: null,
+
+  load() {
+    const t = localStorage.getItem('kb_token');
+    if (t) { this.token = t; this._parse(); }
+  },
+  save(token) {
+    this.token = token;
+    localStorage.setItem('kb_token', token);
+    this._parse();
+  },
+  _parse() {
+    try {
+      const payload = JSON.parse(atob(this.token.split('.')[1]));
+      this.user = payload.sub;
+      this.role = payload.role;
+    } catch(e) { this.clear(); }
+  },
+  clear() {
+    this.token = null; this.user = null; this.role = null;
+    localStorage.removeItem('kb_token');
+  },
+  isAdmin() { return this.role === 'admin'; },
+  isOps()   { return this.role === 'ops' || this.role === 'admin'; },
+};
+
+// ── API ───────────────────────────────────────────────────────────────────────
+const API = {
+  async req(method, path, body, opts={}) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (Auth.token) headers['Authorization'] = 'Bearer ' + Auth.token;
+    const res = await fetch(API_BASE + path, {
+      method, headers,
+      body: body ? JSON.stringify(body) : undefined,
+      ...opts,
+    });
+    if (res.status === 401) { Auth.clear(); App.showLogin(); throw new Error('Unauthorized'); }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw { status: res.status, detail: data.detail || data };
+    return data;
+  },
+  get:    (p)    => API.req('GET',    p),
+  post:   (p, b) => API.req('POST',   p, b),
+  put:    (p, b) => API.req('PUT',    p, b),
+  delete: (p)    => API.req('DELETE', p),
+
+  login(u, p) { return API.req('POST', '/api/auth/token', {username:u, password:p}); },
+  runs(params='')   { return API.get('/api/runs' + params); },
+  run(id)           { return API.get('/api/runs/' + id); },
+  triggerRun(body)  { return API.post('/api/runs', body); },
+  retryRun(id, ids) { return API.post(`/api/runs/${id}/retry`, {batch_ids: ids}); },
+  validateRun(body) { return API.post('/api/runs/validate', body); },
+  estimateRun(body) { return API.post('/api/runs/estimate', body); },
+  indexes()         { return API.get('/api/indexes'); },
+  index(name)       { return API.get('/api/indexes/' + name); },
+  checkConsistency(name) { return API.post(`/api/indexes/${name}/check-consistency`); },
+  configs()         { return API.get('/api/configs'); },
+  createConfig(b)   { return API.post('/api/configs', b); },
+  audit(params='')  { return API.get('/api/audit' + params); },
+  sparkline()       { return API.get('/api/sparkline'); },
+};
+
+// ── Router ────────────────────────────────────────────────────────────────────
+const Router = {
+  handlers: {},
+  register(pattern, fn) { this.handlers[pattern] = fn; },
+  dispatch(hash) {
+    const h = hash || window.location.hash || '#/';
+    // exact match
+    if (this.handlers[h]) { this.handlers[h]({}); return; }
+    // pattern match
+    for (const [pat, fn] of Object.entries(this.handlers)) {
+      const re = new RegExp('^' + pat.replace(/:[^/]+/g, '([^/]+)') + '$');
+      const m = h.match(re);
+      if (m) {
+        const keys = [...pat.matchAll(/:([^/]+)/g)].map(x=>x[1]);
+        const params = Object.fromEntries(keys.map((k,i)=>[k, m[i+1]]));
+        fn(params); return;
+      }
+    }
+    // fallback
+    if (this.handlers['#/']) this.handlers['#/']({});
+  },
+};
+
+// ── App controller ────────────────────────────────────────────────────────────
+const App = {
+  sseSource: null,
+  sparklineTimer: null,
+  pollTimer: null,
+
+  init() {
+    Auth.load();
+    if (!Auth.token) { this.showLogin(); return; }
+    this.showApp();
+  },
+
+  showLogin() {
+    $('login-screen').style.display = 'flex';
+    $('app').style.display = 'none';
+  },
+
+  showApp() {
+    $('login-screen').style.display = 'none';
+    $('app').style.display = 'flex';
+    $('sidebar-username').textContent = Auth.user || '—';
+    const rb = $('sidebar-role-badge');
+    rb.textContent = Auth.role || '';
+    rb.className = 'role-badge role-' + (Auth.role || 'readonly');
+
+    // Hide new-ingestion nav item for non-admins
+    if (!Auth.isAdmin()) $('nav-new-run').classList.add('disabled');
+
+    // Setup router
+    Router.register('#/', () => this.renderDashboard());
+    Router.register('#/runs', () => this.renderRunsList());
+    Router.register('#/runs/new', () => Auth.isAdmin() ? this.renderNewRun() : this.renderDashboard());
+    Router.register('#/runs/:id', ({id}) => this.renderRunDetail(id));
+    Router.register('#/indexes', () => this.renderIndexes());
+    Router.register('#/indexes/:name', ({name}) => this.renderIndexDetail(name));
+    Router.register('#/audit', () => this.renderAudit());
+
+    window.addEventListener('hashchange', () => this.navigate(window.location.hash));
+    Router.dispatch(window.location.hash || '#/');
+  },
+
+  navigate(hash) {
+    this.stopSSE();
+    if (this.sparklineTimer) { clearInterval(this.sparklineTimer); this.sparklineTimer = null; }
+    if (this.pollTimer) { clearInterval(this.pollTimer); this.pollTimer = null; }
+    history.pushState(null, '', hash);
+    // Update nav active state
+    document.querySelectorAll('.nav-item').forEach(el => {
+      const r = el.dataset.route;
+      el.classList.toggle('active', r === hash || (r === '#/runs' && hash.startsWith('#/runs/') && hash !== '#/runs/new') );
+    });
+    Router.dispatch(hash);
+  },
+
+  async doLogin() {
+    const u = $('login-user').value.trim();
+    const p = $('login-pass').value;
+    const errEl = $('login-error');
+    errEl.style.display = 'none';
+    try {
+      const res = await API.login(u, p);
+      Auth.save(res.access_token);
+      this.showApp();
+    } catch(e) {
+      errEl.textContent = 'Invalid username or password';
+      errEl.style.display = 'flex';
+    }
+  },
+
+  logout() {
+    Auth.clear();
+    this.showLogin();
+  },
+
+  toggleTheme() {
+    const html = document.documentElement;
+    html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  },
+
+  setTitle(title) { $('page-title').textContent = title; },
+
+  setTopbarActions(html) { $('topbar-actions').innerHTML = html; },
+
+  showContent(html) { $('content').innerHTML = html; },
+
+  showSkeleton(rows=5) {
+    const skels = Array(rows).fill(0).map(() =>
+      `<div class="skel-row skeleton" style="width:${60+Math.random()*35}%"></div>`
+    ).join('');
+    $('content').innerHTML = `<div style="padding:8px 0">${skels}</div>`;
+  },
+
+  // ── Dashboard ──────────────────────────────────────────────────────────────
+
+  async renderDashboard() {
+    this.setTitle('Dashboard');
+    this.setTopbarActions(Auth.isAdmin() ? `
+      <button class="btn btn-primary btn-sm" onclick="App.navigate('#/runs/new')">+ New Ingestion</button>
+    ` : '');
+
+    // Show skeleton after 300ms
+    let skelTimer = setTimeout(() => this.showSkeleton(8), 300);
+
+    try {
+      const [runsData, indexes, sparkData] = await Promise.all([
+        API.runs('?limit=25'),
+        API.indexes(),
+        API.sparkline(),
+      ]);
+      clearTimeout(skelTimer);
+      this._renderDashboardContent(runsData, indexes, sparkData);
+    } catch(e) {
+      clearTimeout(skelTimer);
+      this.showContent(`<div class="alert-banner alert-error">Failed to load dashboard: ${e.message||'API error'}</div>`);
+    }
+  },
+
+  _renderDashboardContent(runsData, indexes, sparkData) {
+    const runs = runsData.items || [];
+    const active = runs.filter(r => r.status === 'running').length;
+    const todayRuns = runs.filter(r => r.completed_at && r.completed_at.startsWith('2026-05'));
+    const ticketsToday = todayRuns.reduce((s,r)=>s+(r.rows_ingested||0), 0);
+    const lastRun = runs[0];
+    const totalIndexSizeMB = (indexes.items||[]).reduce((s,i)=>s+(((i.size_bytes_arrow||0)+(i.size_bytes_faiss||0))/1048576),0);
+    const lastSpeedup = runs.find(r=>r.speedup_x)?.speedup_x;
+    const runningRun = runs.find(r=>r.status==='running');
+
+    // Build stage states from events (default all idle)
+    let stageStates = {op1:'idle',op2:'idle',op3:'idle',op4:'idle'};
+    if (runningRun) stageStates = {op1:'done',op2:'done',op3:'active',op4:'idle'};
+
+    const sparkPoints = (sparkData.points||[]).map(p=>p.v);
+
+    $('content').innerHTML = `
+      <!-- KPI Strip -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Active Runs</div>
+          <div class="kpi-val" style="color:${active>0?'var(--green)':'var(--text-bright)'}">${active}</div>
+          <div class="kpi-sub">${runs.filter(r=>r.status==='queued').length} queued</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Tickets Indexed</div>
+          <div class="kpi-val">${ticketsToday.toLocaleString()}</div>
+          <div class="kpi-sub">this month</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Last Run Status</div>
+          <div class="kpi-val" style="font-size:16px; margin-top:2px;">${lastRun ? `<span class="badge badge-${lastRun.status}">${lastRun.status}</span>` : '—'}</div>
+          <div class="kpi-sub">${lastRun ? fmtDate(lastRun.queued_at) : ''}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Index Size</div>
+          <div class="kpi-val">${totalIndexSizeMB.toFixed(0)} MB</div>
+          <div class="kpi-sub">${(indexes.items||[]).length} active indexes</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Speedup vs Baseline</div>
+          <div class="kpi-val" style="color:${speedupColor(lastSpeedup)}">${fmtSpeedup(lastSpeedup)}</div>
+          <div class="kpi-sub">SLO target: 2.5×</div>
+        </div>
+      </div>
+
+      <!-- Active run + sparkline -->
+      <div style="display:grid; grid-template-columns:1fr 280px; gap:16px; margin-bottom:20px;">
+        <div class="card">
+          <div class="card-head">Pipeline Status${runningRun ? ` — <span style="color:var(--teal); font-family:var(--mono); font-size:11px;">${runningRun.source_filename}</span>` : ''}</div>
+          <div class="card-body">
+            ${runningRun ? `
+              <div class="pipeline-bar">
+                <div class="pipe-seg done">OP-1 ✓<br><small style="font-size:9px;font-weight:400">Load</small></div>
+                <div class="pipe-seg done">OP-2 ✓<br><small style="font-size:9px;font-weight:400">Chunk</small></div>
+                <div class="pipe-seg active">OP-3 ●<br><small style="font-size:9px;font-weight:400">Embed</small></div>
+                <div class="pipe-seg idle">OP-4 ○<br><small style="font-size:9px;font-weight:400">Upsert</small></div>
+              </div>
+              <div style="display:flex; gap:24px; font-size:11.5px; color:var(--text-dim);">
+                <span>${fmtRows(runningRun.rows_ingested)} / ${fmtRows(runningRun.rows_total)} rows</span>
+                <button class="btn btn-ghost btn-sm" onclick="App.navigate('#/runs/${runningRun.run_id}')">View detail →</button>
+              </div>
+            ` : `<div class="empty-state" style="padding:24px 0;">
+              <div class="empty-title">No active runs</div>
+              ${Auth.isAdmin() ? `<button class="btn btn-primary btn-sm" onclick="App.navigate('#/runs/new')">Start ingestion</button>` : ''}
+            </div>`}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">Throughput <span style="font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-left:6px;">tickets/sec · 30min</span></div>
+          <div class="card-body" style="display:flex; flex-direction:column; gap:8px;">
+            ${sparkPoints.length ? `<svg class="sparkline-svg" id="sparkline-svg" width="100%" height="80"></svg>` : '<div style="color:var(--text-dim); font-size:12px; padding:16px 0; text-align:center;">No data yet</div>'}
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent runs -->
+      <div class="card">
+        <div class="card-head">
+          Recent Runs
+          <div style="display:flex; gap:8px; align-items:center;">
+            <select class="filter-select" style="font-size:11.5px;" onchange="App._filterDashboardRuns(this.value)">
+              <option value="">All status</option>
+              <option value="running">Running</option>
+              <option value="done">Done</option>
+              <option value="failed">Failed</option>
+              <option value="partial">Partial</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="App.navigate('#/runs')">View all →</button>
+          </div>
+        </div>
+        <div id="runs-table-wrap">
+          ${this._buildRunsTable(runs)}
+        </div>
+      </div>
+    `;
+
+    // Draw sparkline
+    if (sparkPoints.length) {
+      setTimeout(() => this._drawSparkline('sparkline-svg', sparkPoints), 50);
+    }
+
+    // Start sparkline refresh
+    this.sparklineTimer = setInterval(async () => {
+      try {
+        const sd = await API.sparkline();
+        const pts = (sd.points||[]).map(p=>p.v);
+        if (pts.length) this._drawSparkline('sparkline-svg', pts);
+      } catch(e){}
+    }, 10000);
+  },
+
+  _drawSparkline(svgId, points) {
+    const svg = document.getElementById(svgId);
+    if (!svg) return;
+    const W = svg.parentElement.offsetWidth || 240;
+    const H = 80;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    if (!points.length) return;
+
+    const min = Math.min(...points);
+    const max = Math.max(...points);
+    const range = max - min || 1;
+    const xs = points.map((_, i) => (i / (points.length-1)) * (W-4) + 2);
+    const ys = points.map(v => H - 4 - ((v - min) / range) * (H - 12));
+    const d = xs.map((x,i) => `${i===0?'M':'L'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+    const fillD = d + ` L${xs[xs.length-1]},${H} L${xs[0]},${H} Z`;
+
+    svg.innerHTML = `
+      <defs>
+        <linearGradient id="spark-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--teal)" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="var(--teal)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${fillD}" fill="url(#spark-grad)"/>
+      <path d="${d}" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <text x="${W-2}" y="${ys[ys.length-1]-4}" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--teal)">${points[points.length-1]}</text>
+    `;
+  },
+
+  _buildRunsTable(runs) {
+    if (!runs.length) return `<div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">No ingestion runs yet</div>
+      <p>Trigger your first run to see data here.</p>
+      ${Auth.isAdmin() ? `<br><button class="btn btn-primary btn-sm" onclick="App.navigate('#/runs/new')">+ New Ingestion</button>` : ''}
+    </div>`;
+
+    const rows = runs.map(r => `
+      <tr class="tr-link" onclick="App.navigate('#/runs/${r.run_id}')">
+        <td><span class="run-id-link" onclick="event.stopPropagation(); copyToClipboard('${r.run_id}'); this.textContent='copied!'; setTimeout(()=>this.textContent='${r.run_id}',1200)">${r.run_id}</span></td>
+        <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.source_filename}">${r.source_filename}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td>${fmtRows(r.rows_total)}</td>
+        <td>${fmtMs(r.t_total_ms)}</td>
+        <td style="color:${speedupColor(r.speedup_x)}">${fmtSpeedup(r.speedup_x)}</td>
+        <td><span style="font-family:var(--mono); font-size:11px; color:var(--teal)">${r.index_name}</span></td>
+        <td>
+          ${(r.status==='failed'||r.status==='partial') && Auth.isOps() ? `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); App._retryAllFailed('${r.run_id}')">Retry</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+
+    return `<table>
+      <thead><tr>
+        <th>Run ID</th><th>Source</th><th>Status</th><th>Rows</th><th>Elapsed</th><th>Speedup</th><th>Index</th><th>Actions</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  },
+
+  _filterDashboardRuns(status) {
+    const wrap = $('runs-table-wrap');
+    if (!wrap) return;
+    wrap.innerHTML = '<div style="padding:16px; text-align:center; color:var(--text-dim); font-size:12px;">Loading…</div>';
+    const q = status ? `?status=${status}` : '';
+    API.runs(q).then(d => { wrap.innerHTML = this._buildRunsTable(d.items||[]); })
+               .catch(() => { wrap.innerHTML = '<div class="alert-banner alert-error">Failed to load runs</div>'; });
+  },
+
+  // ── Runs list ──────────────────────────────────────────────────────────────
+
+  async renderRunsList() {
+    this.setTitle('Runs');
+    this.setTopbarActions(Auth.isAdmin() ? `<button class="btn btn-primary btn-sm" onclick="App.navigate('#/runs/new')">+ New Ingestion</button>` : '');
+
+    let skelTimer = setTimeout(() => this.showSkeleton(10), 300);
+    try {
+      const data = await API.runs('?limit=50');
+      clearTimeout(skelTimer);
+      const html = `
+        <div class="filter-bar">
+          <select class="filter-select" id="rl-status-filter" onchange="App._applyRunListFilter()">
+            <option value="">All status</option>
+            <option value="running">Running</option>
+            <option value="done">Done</option>
+            <option value="failed">Failed</option>
+            <option value="partial">Partial</option>
+          </select>
+          <input class="filter-input" id="rl-date-from" type="date" placeholder="From" onchange="App._applyRunListFilter()" style="width:140px;">
+          <input class="filter-input" id="rl-date-to"   type="date" placeholder="To"   onchange="App._applyRunListFilter()" style="width:140px;">
+          <span style="color:var(--text-dim); font-size:12px; margin-left:auto;">${data.total} total runs</span>
+        </div>
+        <div class="tbl-wrap" id="run-list-table">${this._buildRunsTable(data.items||[])}</div>
+      `;
+      $('content').innerHTML = html;
+    } catch(e) {
+      clearTimeout(skelTimer);
+      $('content').innerHTML = `<div class="alert-banner alert-error">Failed to load runs: ${e.message||''}</div>`;
+    }
+  },
+
+  _applyRunListFilter() {
+    const status = $('rl-status-filter')?.value || '';
+    const from   = $('rl-date-from')?.value || '';
+    const to     = $('rl-date-to')?.value || '';
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    if (from)   params.set('date_from', from + 'T00:00:00Z');
+    if (to)     params.set('date_to', to + 'T23:59:59Z');
+    params.set('limit', '100');
+    const wrap = $('run-list-table');
+    if (wrap) wrap.innerHTML = '<div style="padding:16px; text-align:center; color:var(--text-dim);">Loading…</div>';
+    API.runs('?' + params.toString())
+       .then(d => { if (wrap) wrap.innerHTML = this._buildRunsTable(d.items||[]); })
+       .catch(e => { if (wrap) wrap.innerHTML = `<div class="alert-banner alert-error">Error: ${e.message||''}</div>`; });
+  },
+
+  // ── Run Detail ─────────────────────────────────────────────────────────────
+
+  async renderRunDetail(runId) {
+    this.setTitle(`Run ${runId}`);
+    this.setTopbarActions(`<button class="btn btn-secondary btn-sm" onclick="App.navigate('#/runs')">← Back to Runs</button>`);
+
+    let skelTimer = setTimeout(() => this.showSkeleton(12), 300);
+    try {
+      const run = await API.run(runId);
+      clearTimeout(skelTimer);
+      this._renderRunDetailContent(run);
+
+      // Start SSE if running
+      if (run.status === 'running') {
+        this.startSSE(runId);
+      }
+    } catch(e) {
+      clearTimeout(skelTimer);
+      $('content').innerHTML = `<div class="alert-banner alert-error">Failed to load run: ${e.message||''}</div>`;
+    }
+  },
+
+  _renderRunDetailContent(run) {
+    const batches = run.batches || [];
+    const failedBatches = batches.filter(b => b.status === 'failed');
+    const totalMs = (run.t_load_ms||0) + (run.t_preprocess_ms||0) + (run.t_embed_ms||0) + (run.t_upsert_ms||0);
+    const stageData = [
+      { label: 'OP-1 · Load',       ms: run.t_load_ms,       color: 'var(--green)' },
+      { label: 'OP-2 · Chunk',      ms: run.t_preprocess_ms, color: 'var(--teal)' },
+      { label: 'OP-3 · Embed',      ms: run.t_embed_ms,      color: run.status==='failed'?'var(--red)':'var(--teal)' },
+      { label: 'OP-4 · Upsert',     ms: run.t_upsert_ms,     color: 'var(--slate)' },
+    ];
+
+    $('content').innerHTML = `
+      <!-- Run header KPIs -->
+      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px;">
+        <div class="kpi-card">
+          <div class="kpi-label">Status</div>
+          <div style="margin-top:6px;">${statusBadge(run.status)}</div>
+          <div class="kpi-sub">${run.source_type}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Rows Processed</div>
+          <div class="kpi-val">${fmtRows(run.rows_ingested)}</div>
+          <div class="kpi-sub">of ${fmtRows(run.rows_total)} total</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Success Rate</div>
+          <div class="kpi-val" style="color:${run.success_rate>=0.9?'var(--green)':run.success_rate>=0.8?'var(--gold)':'var(--red)'}">${run.success_rate ? (run.success_rate*100).toFixed(1)+'%' : '—'}</div>
+          <div class="kpi-sub">${fmtRows(run.rows_failed)} failed rows</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Elapsed</div>
+          <div class="kpi-val">${fmtMs(run.t_total_ms)}</div>
+          <div class="kpi-sub">${fmtDate(run.started_at)}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Speedup</div>
+          <div class="kpi-val" style="color:${speedupColor(run.speedup_x)}">${fmtSpeedup(run.speedup_x)}</div>
+          <div class="kpi-sub">SLO: 2.5×</div>
+        </div>
+      </div>
+
+      <!-- Two-col: timeline + actions -->
+      <div style="display:grid; grid-template-columns:1fr 240px; gap:16px; margin-bottom:20px;">
+        <!-- Stage timeline -->
+        <div class="card">
+          <div class="card-head">Stage Timeline</div>
+          <div class="card-body">
+            ${run.status === 'running' ? `
+              <div class="pipeline-bar" id="run-detail-pipeline">
+                ${['OP-1 Load','OP-2 Chunk','OP-3 Embed','OP-4 Upsert'].map((s,i)=>
+                  `<div class="pipe-seg ${i<2?'done':i===2?'active':'idle'}">${s.split(' ')[0]}</div>`
+                ).join('')}
+              </div>
+            ` : `
+              <div class="stage-timeline">
+                ${stageData.map(s => {
+                  const pct = totalMs > 0 && s.ms ? Math.max(5, (s.ms/totalMs)*100) : 0;
+                  return `<div class="stage-bar-wrap">
+                    <div class="stage-bar-label">
+                      <span>${s.label}</span><span>${fmtMs(s.ms)}</span>
+                    </div>
+                    <div class="stage-bar-track">
+                      <div class="stage-bar-fill" style="width:${pct}%; background:${s.color};">${pct>15?fmtMs(s.ms):''}</div>
+                    </div>
+                  </div>`;
+                }).join('')}
+              </div>
+            `}
+
+            ${run.t_total_ms && run.baseline_t_ms ? `
+              <div style="margin-top:16px; border-top:1px solid var(--border); padding-top:14px;">
+                <div style="font-family:var(--mono); font-size:9.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Serialization Overhead</div>
+                <div style="display:flex; gap:10px; align-items:flex-end;">
+                  <div style="flex:1;">
+                    <div style="font-size:10px; color:var(--teal); margin-bottom:3px;">Arrow Pipeline</div>
+                    <div style="height:28px; background:var(--teal); opacity:0.7; border-radius:3px; display:flex; align-items:center; padding-left:8px; font-size:11px; font-family:var(--mono); color:#fff;">${fmtMs(run.t_total_ms)}</div>
+                  </div>
+                  <div style="flex:${run.baseline_t_ms/run.t_total_ms};">
+                    <div style="font-size:10px; color:var(--text-dim); margin-bottom:3px;">Pandas Baseline</div>
+                    <div style="height:28px; background:var(--surface3); border:1px solid var(--border); border-radius:3px; display:flex; align-items:center; padding-left:8px; font-size:11px; font-family:var(--mono); color:var(--text-dim);">${fmtMs(run.baseline_t_ms)}</div>
+                  </div>
+                  <div style="font-size:20px; font-weight:700; font-family:var(--mono); color:${speedupColor(run.speedup_x)}; padding-bottom:2px;">${fmtSpeedup(run.speedup_x)}</div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Actions panel -->
+        <div class="card">
+          <div class="card-head">Actions</div>
+          <div class="card-body" style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <div style="font-size:11px; color:var(--text-dim); margin-bottom:6px;">Run ID</div>
+              <span class="run-id-link" onclick="copyToClipboard('${run.run_id}'); this.textContent='copied!'; setTimeout(()=>this.textContent='${run.run_id}',1200)">${run.run_id}</span>
+            </div>
+            <div>
+              <div style="font-size:11px; color:var(--text-dim); margin-bottom:6px;">Index</div>
+              <span style="font-family:var(--mono); font-size:12px; color:var(--teal)">${run.index_name}</span>
+            </div>
+            <div>
+              <div style="font-size:11px; color:var(--text-dim); margin-bottom:6px;">Model</div>
+              <span style="font-family:var(--mono); font-size:11px;">${run.embed_model}</span>
+            </div>
+            <hr style="border:none; border-top:1px solid var(--border);">
+            ${Auth.isOps() ? `
+              <button class="btn btn-secondary btn-sm" id="retry-btn"
+                onclick="App._retryAllFailed('${run.run_id}')"
+                ${run.status==='running' ? 'disabled title="Run is still active"' : failedBatches.length===0 ? 'disabled title="No failed batches"' : ''}>
+                ↺ Retry failed batches
+              </button>
+            ` : ''}
+            ${Auth.isAdmin() ? `
+              <button class="btn btn-danger btn-sm" onclick="App._confirmFullRerun('${run.run_id}')">
+                ⚠ Full re-run
+              </button>
+            ` : ''}
+            <hr style="border:none; border-top:1px solid var(--border);">
+            ${Auth.isOps() ? `
+              <a href="${API_BASE}/api/runs/${run.run_id}/artifacts/summary" target="_blank"
+                 style="font-size:12px; color:var(--teal); display:flex; align-items:center; gap:6px;">
+                ↓ run_summary.json
+              </a>
+              <a href="${API_BASE}/api/runs/${run.run_id}/artifacts/failed-rows" target="_blank"
+                 style="font-size:12px; color:var(--text-dim); display:flex; align-items:center; gap:6px;">
+                ↓ failed_rows.json
+              </a>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch grid + detail panel -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-head">Batch Status <span style="font-size:11px; color:var(--text-dim); margin-left:8px;">${batches.length} batches · click a cell for details</span></div>
+        <div class="card-body">
+          <div class="batch-grid" id="batch-grid">
+            ${batches.map((b,i) => `
+              <div class="batch-cell ${b.status}" id="bc-${b.batch_id}"
+                   title="${b.batch_id}: ${b.status}${b.error_class ? ' — '+b.error_class : ''}"
+                   onclick="App._showBatchDetail(${JSON.stringify(b).replace(/"/g,'&quot;')})">
+              </div>
+            `).join('')}
+          </div>
+          <div id="batch-detail-panel" style="display:none;"></div>
+        </div>
+      </div>
+
+      ${run.error_summary ? `
+        <div class="card" style="border-color:rgba(224,82,82,0.3);">
+          <div class="card-head" style="color:var(--red);">Run Errors</div>
+          <div class="card-body">
+            ${(typeof run.error_summary === 'string' ? JSON.parse(run.error_summary) : run.error_summary).map(e =>
+              `<div style="font-family:var(--mono); font-size:12px; color:var(--red); padding:4px 0; border-bottom:1px solid var(--border);">${e}</div>`
+            ).join('')}
+          </div>
+        </div>
+      ` : ''}
+    `;
+  },
+
+  _showBatchDetail(batch) {
+    document.querySelectorAll('.batch-cell').forEach(c => c.classList.remove('selected'));
+    const cell = document.getElementById(`bc-${batch.batch_id}`);
+    if (cell) cell.classList.add('selected');
+
+    const panel = $('batch-detail-panel');
+    const rows = batch.affected_row_ids;
+    const rowList = rows && rows.length ? rows.slice(0,10).join(', ') + (rows.length>10?` … +${rows.length-10} more`:'') : '—';
+    const errJson = JSON.stringify({
+      run_id: batch.run_id, batch_id: batch.batch_id,
+      error_class: batch.error_class, error_message: batch.error_message,
+      affected_row_ids: rows, timestamp: new Date().toISOString(),
+    }, null, 2);
+
+    panel.style.display = 'block';
+    panel.innerHTML = `
+      <div class="detail-panel">
+        <div class="detail-panel-title">Batch Detail — ${batch.batch_id}</div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:14px;">
+          <div><div style="font-size:10px; color:var(--text-dim); font-family:var(--mono); text-transform:uppercase; margin-bottom:3px;">Batch ID</div><div style="font-family:var(--mono); font-size:12px;">${batch.batch_id}</div></div>
+          <div><div style="font-size:10px; color:var(--text-dim); font-family:var(--mono); text-transform:uppercase; margin-bottom:3px;">Rows</div><div>${fmtRows(batch.rows)}</div></div>
+          <div><div style="font-size:10px; color:var(--text-dim); font-family:var(--mono); text-transform:uppercase; margin-bottom:3px;">Status</div><div>${statusBadge(batch.status)}</div></div>
+          <div><div style="font-size:10px; color:var(--text-dim); font-family:var(--mono); text-transform:uppercase; margin-bottom:3px;">Embed Time</div><div>${fmtMs(batch.embed_duration_ms)}</div></div>
+        </div>
+        ${batch.error_class ? `
+          <div class="error-class-badge">${batch.error_class}</div>
+          <div style="color:var(--red); font-size:12.5px; margin-bottom:10px;">${batch.error_message || ''}</div>
+          <div style="font-size:11.5px; color:var(--text-dim); margin-bottom:8px;">Affected rows: <span style="color:var(--text); font-family:var(--mono); font-size:11px;">${rowList}</span></div>
+          <button class="copy-json-btn" onclick="copyToClipboard(${JSON.stringify(errJson)}); this.textContent='✓ Copied!'; setTimeout(()=>this.textContent='Copy error JSON',1500)">Copy error JSON</button>
+        ` : `<div style="color:var(--green); font-size:12.5px;">✓ Batch completed successfully</div>`}
+        <button class="btn btn-ghost btn-sm" onclick="$('batch-detail-panel').style.display='none'" style="margin-top:12px; font-size:11px;">Close ✕</button>
+      </div>
+    `;
+  },
+
+  async _retryAllFailed(runId) {
+    try {
+      const run = await API.run(runId);
+      const failedIds = (run.batches||[]).filter(b=>b.status==='failed').map(b=>b.batch_id);
+      if (!failedIds.length) { alert('No failed batches to retry.'); return; }
+      await API.retryRun(runId, failedIds);
+      this.renderRunDetail(runId);
+    } catch(e) {
+      alert(`Retry failed: ${e.detail?.message || e.message || 'API error'}`);
+    }
+  },
+
+  _confirmFullRerun(runId) {
+    this._showModal({
+      title: 'Confirm Full Re-run',
+      body: `<p>This will trigger a new ingestion run with the same configuration as <strong>${runId}</strong>.</p><p style="margin-top:8px;">Type <strong>re-run</strong> to confirm:</p>
+             <input class="form-input" id="rerun-confirm" placeholder="re-run" style="margin-top:8px;">`,
+      confirmLabel: 'Start Re-run', confirmClass: 'btn-danger',
+      onConfirm: async () => {
+        const val = $('rerun-confirm')?.value?.trim();
+        if (val !== 're-run') { alert('Type "re-run" to confirm.'); return false; }
+        // Trigger new run (we'd need original config — simplified here)
+        this.navigate('#/runs');
+        return true;
+      }
+    });
+  },
+
+  // ── New Ingestion Wizard ───────────────────────────────────────────────────
+
+  _wzState: { step: 1, data: {} },
+
+  async renderNewRun() {
+    this.setTitle('New Ingestion');
+    this.setTopbarActions(`<button class="btn btn-secondary btn-sm" onclick="App.navigate('#/runs')">← Back</button>`);
+
+    // Load last-used config from localStorage
+    try {
+      const saved = JSON.parse(localStorage.getItem('kb_wz_last') || '{}');
+      this._wzState = { step: 1, data: { ...{
+        source_filename: '', source_type: 'zendesk',
+        batch_size: 128, max_workers: 4, max_chunk_chars: 512, null_policy: 'drop',
+        embed_model: 'all-MiniLM-L6-v2', index_name: 'support-kb', append_mode: false,
+      }, ...saved } };
+    } catch(e) {
+      this._wzState = { step: 1, data: {
+        source_filename: '', source_type: 'zendesk',
+        batch_size: 128, max_workers: 4, max_chunk_chars: 512, null_policy: 'drop',
+        embed_model: 'all-MiniLM-L6-v2', index_name: 'support-kb', append_mode: false,
+      }};
+    }
+    this._renderWizard();
+  },
+
+  _renderWizard() {
+    const s = this._wzState;
+    const steps = ['Source','Config','Model','Output','Review'];
+    const stepsHtml = steps.map((name,i) => {
+      const n = i+1;
+      const cls = n < s.step ? 'done' : n === s.step ? 'active' : '';
+      return `<div class="wz-step ${cls}" onclick="if(${n}<${s.step}) App._wzGoTo(${n})">
+        <div class="wz-num"><span>${n}</span></div>
+        <div>${name}</div>
+      </div>`;
+    }).join('');
+
+    const stepContent = this[`_wzStep${s.step}`](s.data);
+
+    $('content').innerHTML = `
+      <div style="max-width:640px; margin:0 auto;">
+        <div class="wizard-steps">${stepsHtml}</div>
+        <div class="card">
+          <div class="card-head">Step ${s.step} — ${steps[s.step-1]}</div>
+          <div class="card-body" id="wz-body">${stepContent}</div>
+          <div style="padding:14px 16px; border-top:1px solid var(--border); display:flex; justify-content:space-between; gap:10px;">
+            ${s.step > 1 ? `<button class="btn btn-secondary" onclick="App._wzGoTo(${s.step-1})">← Back</button>` : '<div></div>'}
+            ${s.step < 5
+              ? `<button class="btn btn-primary" onclick="App._wzNext()">Next →</button>`
+              : `<button class="btn btn-primary" id="wz-start-btn" disabled onclick="App._wzSubmit()">▶ Start Ingestion</button>`
+            }
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  _wzStep1(d) {
+    return `
+      <div class="form-group">
+        <label class="form-label">Source File</label>
+        <div style="border:2px dashed var(--border); border-radius:var(--r); padding:24px; text-align:center; color:var(--text-dim); cursor:pointer; margin-bottom:12px;" onclick="$('wz-file-input').click()">
+          <div style="font-size:24px; margin-bottom:8px;">↑</div>
+          <div style="font-size:13px; color:var(--text);">Click to upload CSV or JSON</div>
+          <div style="font-size:11px; margin-top:4px;">Max 500MB · Zendesk CSV or Jira JSON</div>
+          ${d.source_filename ? `<div style="margin-top:8px; font-family:var(--mono); font-size:11px; color:var(--teal);">${d.source_filename}</div>` : ''}
+        </div>
+        <input type="file" id="wz-file-input" accept=".csv,.json" style="display:none" onchange="App._wzFileSelect(this)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Or enter filename manually</label>
+        <input class="form-input" id="wz-filename" value="${d.source_filename||''}" placeholder="zendesk_export_2026-05-12.csv" oninput="App._wzState.data.source_filename=this.value">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Source Type</label>
+        <select class="form-input" id="wz-source-type" onchange="App._wzState.data.source_type=this.value">
+          <option value="zendesk" ${d.source_type==='zendesk'?'selected':''}>Zendesk CSV</option>
+          <option value="jira"    ${d.source_type==='jira'?'selected':''}>Jira JSON</option>
+        </select>
+      </div>
+    `;
+  },
+
+  _wzStep2(d) {
+    return `
+      <div class="form-group">
+        <label class="form-label">Batch Size</label>
+        <input class="form-input" type="number" id="wz-batch" min="16" max="512" value="${d.batch_size||128}" oninput="App._wzState.data.batch_size=+this.value; App._wzUpdateBatchPreview()">
+        <div id="batch-preview" style="font-size:11px; color:var(--text-dim); margin-top:4px;"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Max Workers</label>
+        <input class="form-input" type="number" min="1" max="16" value="${d.max_workers||4}" oninput="App._wzState.data.max_workers=+this.value">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Max Chunk Chars</label>
+        <input class="form-input" type="number" min="64" max="2048" value="${d.max_chunk_chars||512}" oninput="App._wzState.data.max_chunk_chars=+this.value">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Null Policy</label>
+        <select class="form-input" onchange="App._wzState.data.null_policy=this.value">
+          <option value="drop"  ${d.null_policy==='drop'?'selected':''}>drop — silently ignore null rows</option>
+          <option value="raise" ${d.null_policy==='raise'?'selected':''}>raise — fail on first null</option>
+        </select>
+      </div>
+    `;
+  },
+
+  _wzStep3(d) {
+    const models = [
+      {id:'all-MiniLM-L6-v2', dim:384, ram:'~90MB',  note:'Default — fast, good quality'},
+      {id:'all-mpnet-base-v2', dim:768, ram:'~420MB', note:'Higher quality, 2× larger'},
+      {id:'multi-qa-MiniLM-L6-cos-v1', dim:384, ram:'~90MB', note:'Optimised for Q&A retrieval'},
+    ];
+    return models.map(m => `
+      <label style="display:flex; align-items:flex-start; gap:12px; padding:12px; border-radius:var(--r); border:1px solid ${d.embed_model===m.id?'rgba(14,165,200,0.4)':'var(--border)'}; background:${d.embed_model===m.id?'var(--teal-dim)':'var(--surface2)'}; cursor:pointer; margin-bottom:10px;" onclick="App._wzState.data.embed_model='${m.id}'; App._renderWizard()">
+        <input type="radio" name="embed-model" value="${m.id}" ${d.embed_model===m.id?'checked':''} style="margin-top:3px; accent-color:var(--teal)">
+        <div>
+          <div style="font-family:var(--mono); font-size:12px; color:var(--text-bright);">${m.id}</div>
+          <div style="font-size:11.5px; color:var(--text-dim); margin-top:2px;">dim ${m.dim} · RAM ${m.ram} · ${m.note}</div>
+        </div>
+      </label>
+    `).join('');
+  },
+
+  _wzStep4(d) {
+    return `
+      <div class="form-group">
+        <label class="form-label">Target Index Name</label>
+        <input class="form-input" id="wz-index" value="${d.index_name||'support-kb'}" oninput="App._wzState.data.index_name=this.value" list="index-suggestions">
+        <datalist id="index-suggestions">
+          <option value="support-kb">
+          <option value="billing-kb">
+        </datalist>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Write Mode</label>
+        <div style="display:flex; gap:0; border:1px solid var(--border); border-radius:var(--r); overflow:hidden;">
+          <button class="btn ${!d.append_mode?'btn-primary':'btn-secondary'}" style="flex:1; border-radius:0; border:none;" onclick="App._wzState.data.append_mode=false; App._renderWizard()">Overwrite</button>
+          <button class="btn ${d.append_mode?'btn-primary':'btn-secondary'}" style="flex:1; border-radius:0; border:none; border-left:1px solid var(--border);" onclick="App._wzState.data.append_mode=true; App._renderWizard()">Append</button>
+        </div>
+      </div>
+    `;
+  },
+
+  _wzStep5(d) {
+    return `
+      <div style="margin-bottom:16px;">
+        <div style="font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-dim); margin-bottom:10px;">Configuration Summary</div>
+        <table style="width:100%; font-size:12.5px;">
+          <tbody>
+            ${Object.entries({
+              'Source file':      d.source_filename || '(not set)',
+              'Source type':      d.source_type,
+              'Batch size':       d.batch_size,
+              'Max workers':      d.max_workers,
+              'Max chunk chars':  d.max_chunk_chars,
+              'Null policy':      d.null_policy,
+              'Embed model':      d.embed_model,
+              'Target index':     d.index_name,
+              'Write mode':       d.append_mode ? 'append' : 'overwrite',
+            }).map(([k,v]) => `<tr>
+              <td style="padding:6px 0; color:var(--text-dim); width:160px;">${k}</td>
+              <td style="padding:6px 0; font-family:var(--mono); font-size:11.5px; color:var(--text-bright);">${v}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div id="wz-preflight-result"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="App._wzRunValidation()">✓ Run Schema Validation</button>
+        <button class="btn btn-secondary" onclick="App._wzEstimate()">⏱ Estimate Run Time</button>
+      </div>
+      <div id="wz-estimate-result" style="margin-top:12px;"></div>
+    `;
+  },
+
+  _wzFileSelect(input) {
+    const f = input.files[0];
+    if (!f) return;
+    this._wzState.data.source_filename = f.name;
+    this._wzState.data.source_type = f.name.endsWith('.csv') ? 'zendesk' : 'jira';
+    this._renderWizard();
+  },
+
+  _wzUpdateBatchPreview() {
+    const el = $('batch-preview');
+    if (!el) return;
+    const bs = this._wzState.data.batch_size || 128;
+    const rows = 10000;
+    el.textContent = `At batch_size=${bs} with ${rows.toLocaleString()} rows: ~${Math.ceil(rows/bs)} batches`;
+  },
+
+  _wzGoTo(step) {
+    this._wzState.step = step;
+    this._renderWizard();
+  },
+
+  _wzNext() {
+    const d = this._wzState.data;
+    // Sync form values
+    ['wz-filename','wz-batch','wz-index'].forEach(id => {
+      const el = $(id);
+      if (!el) return;
+      if (id==='wz-filename') d.source_filename = el.value;
+      if (id==='wz-batch') d.batch_size = +el.value;
+      if (id==='wz-index') d.index_name = el.value;
+    });
+    const wst = $('wz-source-type');
+    if (wst) d.source_type = wst.value;
+
+    if (this._wzState.step < 5) {
+      this._wzState.step++;
+      localStorage.setItem('kb_wz_last', JSON.stringify(d));
+      this._renderWizard();
+    }
+  },
+
+  async _wzRunValidation() {
+    const el = $('wz-preflight-result');
+    el.innerHTML = '<div class="alert-banner alert-info">Running pre-flight validation…</div>';
+    try {
+      const res = await API.validateRun({
+        source_filename: this._wzState.data.source_filename || 'test.csv',
+        source_type: this._wzState.data.source_type,
+      });
+      if (res.valid) {
+        el.innerHTML = `<div class="alert-banner alert-info" style="background:var(--green-dim); color:var(--green); border-color:rgba(60,186,122,0.3);">
+          ✓ Schema valid — ${fmtRows(res.row_count)} rows · ${res.detected_source_type} format · all required columns present
+        </div>`;
+        const btn = $('wz-start-btn');
+        if (btn) btn.disabled = false;
+      } else {
+        el.innerHTML = `<div class="alert-banner alert-error">
+          ✗ Missing columns: ${res.columns_missing.join(', ')}
+        </div>`;
+      }
+    } catch(e) {
+      el.innerHTML = `<div class="alert-banner alert-error">Validation failed: ${e.detail?.message || e.message || 'API error'}</div>`;
+    }
+  },
+
+  async _wzEstimate() {
+    const el = $('wz-estimate-result');
+    el.innerHTML = '<div style="color:var(--text-dim); font-size:12px;">Estimating…</div>';
+    try {
+      const res = await API.estimateRun({
+        row_count: 10000, batch_size: this._wzState.data.batch_size,
+        embed_model: this._wzState.data.embed_model,
+      });
+      el.innerHTML = `<div style="font-family:var(--mono); font-size:12px; color:var(--text-dim);">
+        Estimated: <span style="color:var(--text-bright);">${res.estimated_seconds}s</span> ·
+        p50 throughput: <span style="color:var(--teal);">${res.p50_throughput} rows/s</span> ·
+        ~${res.estimated_batches} batches
+      </div>`;
+    } catch(e) {}
+  },
+
+  async _wzSubmit() {
+    const d = this._wzState.data;
+    try {
+      const run = await API.triggerRun({
+        source_filename: d.source_filename || 'upload.csv',
+        source_type: d.source_type,
+        index_name: d.index_name,
+        batch_size: d.batch_size,
+        max_workers: d.max_workers,
+        embed_model: d.embed_model,
+        max_chunk_chars: d.max_chunk_chars,
+        null_policy: d.null_policy,
+        append_mode: d.append_mode,
+      });
+      localStorage.setItem('kb_wz_last', JSON.stringify(d));
+      this.navigate(`#/runs/${run.run_id}`);
+    } catch(e) {
+      $('wz-preflight-result').innerHTML = `<div class="alert-banner alert-error">Failed to trigger run: ${e.detail?.message || e.message || 'API error'}</div>`;
+    }
+  },
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+
+  async renderIndexes() {
+    this.setTitle('Index Health');
+    this.setTopbarActions('');
+
+    let skelTimer = setTimeout(() => this.showSkeleton(6), 300);
+    try {
+      const data = await API.indexes();
+      clearTimeout(skelTimer);
+      const indexes = data.items || [];
+
+      if (!indexes.length) {
+        $('content').innerHTML = `<div class="empty-state">
+          <div class="empty-icon">🗂</div>
+          <div class="empty-title">No indexes yet</div>
+          <p>Indexes will appear here after ingestion runs complete.</p>
+        </div>`;
+        return;
+      }
+
+      const rows = indexes.map(idx => {
+        const sizeMB = ((idx.size_bytes_arrow||0)+(idx.size_bytes_faiss||0))/1048576;
+        const consColor = {ok:'var(--green)', mismatch:'var(--red)', unchecked:'var(--text-dim)'}[idx.consistency_status] || 'var(--text-dim)';
+        const consIcon  = {ok:'✓', mismatch:'⚠', unchecked:'—'}[idx.consistency_status] || '—';
+        return `
+          <tr class="tr-link" onclick="App.navigate('#/indexes/${idx.index_name}')">
+            <td><span style="font-family:var(--mono); font-size:12px; color:var(--teal);">${idx.index_name}</span></td>
+            <td>${fmtRows(idx.doc_count)}</td>
+            <td><span style="font-family:var(--mono); font-size:11px;">${idx.embed_dim}</span></td>
+            <td>${fmtDate(idx.last_updated)}</td>
+            <td>${sizeMB > 0 ? sizeMB.toFixed(0)+' MB' : '—'}</td>
+            <td style="color:${consColor}; font-family:var(--mono); font-size:12px;">${consIcon} ${idx.consistency_status}</td>
+            <td>
+              ${Auth.isAdmin() ? `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); App._checkConsistency('${idx.index_name}', this)">Check</button>` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      $('content').innerHTML = `
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Index Name</th><th>Doc Count</th><th>Dim</th><th>Last Updated</th><th>Size</th><th>Consistency</th><th>Actions</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    } catch(e) {
+      clearTimeout(skelTimer);
+      $('content').innerHTML = `<div class="alert-banner alert-error">Failed to load indexes: ${e.message||''}</div>`;
+    }
+  },
+
+  async renderIndexDetail(name) {
+    this.setTitle(`Index: ${name}`);
+    this.setTopbarActions(`<button class="btn btn-secondary btn-sm" onclick="App.navigate('#/indexes')">← Back</button>`);
+
+    let skelTimer = setTimeout(() => this.showSkeleton(8), 300);
+    try {
+      const idx = await API.index(name);
+      clearTimeout(skelTimer);
+
+      const sizeMB = ((idx.size_bytes_arrow||0)+(idx.size_bytes_faiss||0))/1048576;
+      const runs = idx.runs || [];
+      const consColor = {ok:'var(--green)', mismatch:'var(--red)', unchecked:'var(--text-dim)'}[idx.consistency_status] || 'var(--text-dim)';
+
+      $('content').innerHTML = `
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px;">
+          <div class="kpi-card"><div class="kpi-label">Doc Count</div><div class="kpi-val">${fmtRows(idx.doc_count)}</div></div>
+          <div class="kpi-card"><div class="kpi-label">Embedding Dim</div><div class="kpi-val" style="font-family:var(--mono)">${idx.embed_dim}</div></div>
+          <div class="kpi-card"><div class="kpi-label">Size on Disk</div><div class="kpi-val">${sizeMB.toFixed(0)} MB</div></div>
+          <div class="kpi-card"><div class="kpi-label">Consistency</div><div style="color:${consColor}; font-size:16px; font-weight:700; margin-top:4px;">${idx.consistency_status}</div></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 220px; gap:16px; margin-bottom:20px;">
+          <div class="card">
+            <div class="card-head">Contributing Runs</div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead><tr><th>Run ID</th><th>Status</th><th>Rows</th><th>Date</th><th>Speedup</th></tr></thead>
+                <tbody>
+                  ${runs.length ? runs.map(r=>`
+                    <tr class="tr-link" onclick="App.navigate('#/runs/${r.run_id}')">
+                      <td class="run-id-link" style="font-family:var(--mono); font-size:11.5px; color:var(--teal);">${r.run_id}</td>
+                      <td>${statusBadge(r.status)}</td>
+                      <td>${fmtRows(r.rows_ingested)}</td>
+                      <td>${fmtDate(r.completed_at)}</td>
+                      <td style="color:${speedupColor(r.speedup_x)}">${fmtSpeedup(r.speedup_x)}</td>
+                    </tr>
+                  `).join('') : `<tr><td colspan="5" style="text-align:center; color:var(--text-dim); padding:20px;">No runs yet</td></tr>`}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">Actions</div>
+            <div class="card-body" style="display:flex; flex-direction:column; gap:10px;">
+              <div style="font-size:11px; color:var(--text-dim);">Model: <span style="font-family:var(--mono); color:var(--text)">${idx.embed_model}</span></div>
+              <div style="font-size:11px; color:var(--text-dim);">Last checked: <span style="color:var(--text);">${fmtDate(idx.consistency_checked_at)}</span></div>
+              <hr style="border:none; border-top:1px solid var(--border);">
+              ${Auth.isAdmin() ? `
+                <button class="btn btn-secondary btn-sm" id="consist-btn" onclick="App._checkConsistency('${name}', this)">↺ Check Consistency</button>
+              ` : ''}
+              ${Auth.isOps() ? `
+                <div style="font-size:11.5px; color:var(--text-dim);">Artifact downloads:</div>
+                <a href="#" style="font-size:12px; color:var(--teal);">↓ tickets.arrow</a>
+                <a href="#" style="font-size:12px; color:var(--teal);">↓ index.faiss</a>
+                <a href="#" style="font-size:12px; color:var(--teal);">↓ run_summary.json</a>
+              ` : ''}
+              ${Auth.isAdmin() ? `
+                <hr style="border:none; border-top:1px solid var(--border); margin-top:4px;">
+                <button class="btn btn-danger btn-sm" onclick="App._retireIndex('${name}')">⚠ Retire Index</button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    } catch(e) {
+      clearTimeout(skelTimer);
+      $('content').innerHTML = `<div class="alert-banner alert-error">Failed to load index: ${e.message||''}</div>`;
+    }
+  },
+
+  async _checkConsistency(name, btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+    try {
+      const res = await API.checkConsistency(name);
+      if (btn) { btn.disabled = false; btn.textContent = '↺ Check Consistency'; }
+      alert(`Consistency check: ${res.consistency_status} (checked at ${fmtDate(res.checked_at)})`);
+      this.navigate('#/indexes/' + name);
+    } catch(e) {
+      if (btn) { btn.disabled = false; btn.textContent = '↺ Check Consistency'; }
+      alert(`Check failed: ${e.detail?.message || e.message || 'API error'}`);
+    }
+  },
+
+  _retireIndex(name) {
+    this._showModal({
+      title: 'Retire Index',
+      body: `<p>This will soft-delete the index <strong>${name}</strong>. You have 30 seconds to undo.</p>
+             <p style="margin-top:8px;">Type <strong>${name}</strong> to confirm:</p>
+             <input class="form-input" id="retire-confirm" placeholder="${name}" style="margin-top:8px;">`,
+      confirmLabel: 'Retire Index', confirmClass: 'btn-danger',
+      onConfirm: async () => {
+        const val = $('retire-confirm')?.value?.trim();
+        if (val !== name) { alert(`Type "${name}" exactly to confirm.`); return false; }
+        try {
+          await API.req('DELETE', `/api/indexes/${name}`, null, {
+            headers: { 'Authorization': 'Bearer ' + Auth.token, 'Content-Type': 'application/json', 'X-Confirm-Index-Name': name }
+          });
+          this.navigate('#/indexes');
+          return true;
+        } catch(e) {
+          alert(`Delete failed: ${e.detail?.message || e.message || 'API error'}`);
+          return false;
+        }
+      }
+    });
+  },
+
+  // ── Audit Log ──────────────────────────────────────────────────────────────
+
+  async renderAudit() {
+    this.setTitle('Audit Log');
+    this.setTopbarActions('');
+
+    let skelTimer = setTimeout(() => this.showSkeleton(8), 300);
+    try {
+      const data = await API.audit('?limit=50');
+      clearTimeout(skelTimer);
+      const entries = data.items || [];
+
+      if (!entries.length) {
+        $('content').innerHTML = `<div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-title">No audit entries</div>
+          <p>Audit entries are recorded for run triggers, retries, index changes, and config updates.</p>
+        </div>`;
+        return;
+      }
+
+      const rows = entries.map(e => {
+        const detail = typeof e.detail === 'object' ? JSON.stringify(e.detail, null, 2) : (e.detail || '—');
+        return `<tr>
+          <td style="font-family:var(--mono); font-size:11px; color:var(--text-dim); white-space:nowrap;">${fmtDate(e.recorded_at)}</td>
+          <td style="font-weight:600; color:var(--text-bright);">${e.username}</td>
+          <td><span style="font-family:var(--mono); font-size:11px; color:var(--teal);">${e.action}</span></td>
+          <td style="font-family:var(--mono); font-size:11px;">${e.target_id || '—'}</td>
+          <td style="font-family:var(--mono); font-size:10.5px; color:var(--text-dim); max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${detail.replace(/"/g,'&quot;')}">${detail}</td>
+        </tr>`;
+      }).join('');
+
+      $('content').innerHTML = `
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    } catch(e) {
+      clearTimeout(skelTimer);
+      $('content').innerHTML = `<div class="alert-banner alert-error">Failed to load audit log: ${e.message||''}</div>`;
+    }
+  },
+
+  // ── SSE ────────────────────────────────────────────────────────────────────
+
+  startSSE(runId) {
+    this.stopSSE();
+    let retryDelay = 1000;
+    let retryCount = 0;
+
+    const connect = () => {
+      const url = `${API_BASE}/api/runs/${runId}/stream`;
+      const headers = {};
+      if (Auth.token) headers['Authorization'] = 'Bearer ' + Auth.token;
+
+      // Use EventSource polyfill-style via fetch for auth header
+      // Since EventSource doesn't support auth headers, we use a fetch-based reader
+      const ctrl = new AbortController();
+      this._sseCtrl = ctrl;
+
+      fetch(url, { headers: { 'Authorization': 'Bearer ' + Auth.token }, signal: ctrl.signal })
+        .then(res => {
+          if (!res.ok) throw new Error('SSE connect failed');
+          $('sse-banner').style.display = 'none';
+          retryCount = 0;
+          retryDelay = 1000;
+
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let buf = '';
+
+          const read = () => {
+            reader.read().then(({done, value}) => {
+              if (done) { reconnect(); return; }
+              buf += decoder.decode(value, {stream: true});
+              const parts = buf.split('\n\n');
+              buf = parts.pop() || '';
+              for (const part of parts) {
+                const evLine = part.match(/^event: (.+)/m)?.[1]?.trim();
+                const dataLine = part.match(/^data: (.+)/m)?.[1]?.trim();
+                if (evLine && dataLine) {
+                  try { App._handleSSEEvent(runId, evLine, JSON.parse(dataLine)); } catch(e) {}
+                }
+              }
+              read();
+            }).catch(reconnect);
+          };
+          read();
+        }).catch(reconnect);
+    };
+
+    const reconnect = () => {
+      if (retryCount >= 3) {
+        $('sse-banner').style.display = 'none';
+        // Fall back to polling
+        this.pollTimer = setInterval(() => API.run(runId).then(r => {
+          if (r.status !== 'running') {
+            clearInterval(this.pollTimer);
+            this.renderRunDetail(runId);
+          }
+        }).catch(()=>{}), 5000);
+        return;
+      }
+      retryCount++;
+      $('sse-banner').style.display = 'block';
+      $('sse-banner').textContent = `⟳ Reconnecting to live stream (attempt ${retryCount}/3)…`;
+      setTimeout(connect, retryDelay);
+      retryDelay = Math.min(retryDelay * 2, 8000);
+    };
+
+    connect();
+  },
+
+  stopSSE() {
+    if (this._sseCtrl) { this._sseCtrl.abort(); this._sseCtrl = null; }
+    $('sse-banner').style.display = 'none';
+  },
+
+  _handleSSEEvent(runId, eventType, data) {
+    if (eventType === 'stage_update') {
+      // Update pipeline bar on run detail page
+      const stages = {'OP-1':0,'OP-2':1,'OP-3':2,'OP-4':3};
+      const idx = stages[data.stage];
+      const bar = document.getElementById('run-detail-pipeline');
+      if (bar) {
+        const segs = bar.querySelectorAll('.pipe-seg');
+        if (segs[idx]) {
+          segs[idx].className = `pipe-seg ${data.status === 'running' ? 'active' : data.status === 'done' ? 'done' : 'failed'}`;
+        }
+      }
+    } else if (eventType === 'batch_update') {
+      const cell = document.getElementById(`bc-${data.batch_id}`);
+      if (cell) cell.className = `batch-cell ${data.status}`;
+    } else if (eventType === 'run_complete') {
+      this.stopSSE();
+      // Refresh the run detail
+      setTimeout(() => this.renderRunDetail(runId), 500);
+    } else if (eventType === 'throughput_tick') {
+      // Update sparkline if on dashboard
+      // (handled by timer on dashboard page)
+    } else if (eventType === 'close') {
+      this.stopSSE();
+    }
+  },
+
+  // ── Modal helper ───────────────────────────────────────────────────────────
+
+  _showModal({title, body, confirmLabel='Confirm', confirmClass='btn-primary', onConfirm}) {
+    const container = $('modal-container');
+    container.innerHTML = `
+      <div class="modal-overlay" onclick="event.target===this && App._closeModal()">
+        <div class="modal-box">
+          <div class="modal-title">${title}</div>
+          <div class="modal-body">${body}</div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="App._closeModal()">Cancel</button>
+            <button class="btn ${confirmClass}" onclick="App._onModalConfirm()">
+              ${confirmLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    this._modalConfirmFn = onConfirm;
+  },
+
+  async _onModalConfirm() {
+    if (!this._modalConfirmFn) return;
+    const result = await this._modalConfirmFn();
+    if (result !== false) this._closeModal();
+  },
+
+  _closeModal() {
+    $('modal-container').innerHTML = '';
+    this._modalConfirmFn = null;
+  },
+};
+
+// Enter key on login
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') App.doLogin();
+});
+document.getElementById('login-user').addEventListener('keydown', e => {
+  if (e.key === 'Enter') $('login-pass').focus();
+});
+
+// Boot
+App.init();
+</script>
+</body>
+</html>
