@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}System Health{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><div class="tb-title">System Health</div><div class="tb-sub">Python {{ python_version }} · {{ platform }}</div></div>
+  <div class="tb-right"><span class="badge bg-green">● OK</span></div>
+</div>
+<div class="page-body">
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-label">Python</div>
+      <div class="stat-val mono" style="font-size:16px">{{ python_version }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Architecture</div>
+      <div class="stat-val mono" style="font-size:16px">{{ platform }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">SimpleMem Mode</div>
+      <div class="stat-val mono" style="font-size:14px;color:{% if simplemem_mode=='stub' %}var(--amber){% else %}var(--green){% endif %}">{{ simplemem_mode }}</div>
+      <div class="stat-sub">{% if simplemem_mode=='stub' %}set SIMPLEMEM_USE_STUB=false for real{% endif %}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">LLM Provider</div>
+      <div class="stat-val mono" style="font-size:14px">{{ llm_provider }}</div>
+      <div class="stat-sub">DIAGNOSIS_LLM_PROVIDER</div>
+    </div>
+  </div>
+  <div class="sec-hdr"><div class="sec-title">Loop States</div></div>
+  <div class="tbl-wrap gap">
+    <table class="tbl">
+      <thead><tr><th>Loop</th><th>Status</th><th>Rounds</th><th>Best Fitness</th><th>State File</th></tr></thead>
+      <tbody>
+        {% for lid, s in loop_states.items() %}
+        <tr>
+          <td><span class="badge {% if lid=='L3' %}bg-amber{% elif lid=='L1' %}bg-green{% elif lid=='L2' %}bg-blue{% else %}bg-purple{% endif %}">{{ lid }}</span></td>
+          <td class="mono" style="color:{% if s.status=='complete' %}var(--green){% elif s.status=='running' %}var(--amber){% else %}var(--muted){% endif %}">{{ s.get('status','idle') }}</td>
+          <td class="mono dim">{{ s.get('rounds_done',0) }}/{{ s.get('max_rounds','—') }}</td>
+          <td class="mono">{{ "%.4f"|format(s.get('best_fitness',0)) if s.get('best_fitness') else '—' }}</td>
+          <td class="mono muted" style="font-size:9px">data/loop_states/{{ lid.lower() }}_state.json</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="sec-hdr"><div class="sec-title">Paths</div></div>
+  <div class="code-block">
+<span style="color:var(--muted)">LanceDB URI:</span>    <span style="color:var(--amber)">{{ lancedb_dir }}</span>
+<span style="color:var(--muted)">Loop states:</span>    data/loop_states/
+<span style="color:var(--muted)">Evolved configs:</span> data/evolved/
+<span style="color:var(--muted)">Failure log:</span>    data/failure_log.jsonl
+<span style="color:var(--muted)">API docs:</span>       <a href="http://localhost:8001/docs" style="color:var(--blue)">http://localhost:8001/docs</a>
+  </div>
+</div>
+{% endblock %}

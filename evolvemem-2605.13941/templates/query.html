@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Query Inspector{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><div class="tb-title">Query Inspector</div><div class="tb-sub">Live retrieval trace · POST {{ api_url }}/diagnose</div></div>
+  <div class="tb-right"><span class="badge bg-green">● :8001</span></div>
+</div>
+<div class="page-body">
+  <div class="g2 gap">
+    <div>
+      <div class="sec-hdr"><div class="sec-title">Ticket Text</div></div>
+      <textarea id="ticket-input" style="width:100%;background:var(--bg);border:1px solid var(--border3);border-radius:2px;color:var(--text);font-family:var(--sans);font-size:12px;padding:9px 11px;resize:vertical;outline:none;line-height:1.5" rows="5"
+        onfocus="this.style.borderColor='var(--amber)'" onblur="this.style.borderColor='var(--border3)'">app keeps crashing when I try to login after changing my password</textarea>
+      <div style="margin-top:8px;display:flex;gap:8px">
+        <button class="btn btn-amber btn-sm" onclick="runTrace()">Run Trace</button>
+        <span id="latency-badge" class="badge bg-blue" style="margin-left:auto"></span>
+      </div>
+    </div>
+    <div>
+      <div class="sec-hdr"><div class="sec-title">Results</div></div>
+      <div id="results-panel" class="code-block" style="min-height:120px">
+        <span style="color:var(--muted)">Run a trace to see retrieval results.</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+async function runTrace() {
+  const text = document.getElementById('ticket-input').value.trim();
+  if (!text) return;
+  const panel = document.getElementById('results-panel');
+  panel.innerHTML = '<span style="color:var(--amber)">querying...</span>';
+  try {
+    const r = await fetch('{{ api_url }}/diagnose', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ticket_text: text, top_k: 5}),
+    });
+    const data = await r.json();
+    document.getElementById('latency-badge').textContent = data.latency_ms + 'ms';
+    let html = '';
+    (data.results || []).forEach((res, i) => {
+      html += `<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">`;
+      html += `<div style="color:var(--amber);font-size:9px;letter-spacing:.1em">#${i+1} · ${res.article_id} · score ${res.score?.toFixed(4)}</div>`;
+      html += `<div style="color:var(--text);font-size:11px;margin:3px 0">${res.title}</div>`;
+      html += `<div style="color:var(--dim);font-size:10px">${(res.snippet||'').slice(0,120)}…</div>`;
+      html += '</div>';
+    });
+    panel.innerHTML = html || '<span style="color:var(--muted)">No results.</span>';
+  } catch(e) {
+    panel.innerHTML = `<span style="color:var(--red)">Error: ${e.message} — is the API running on :8001?</span>`;
+  }
+}
+</script>
+{% endblock %}

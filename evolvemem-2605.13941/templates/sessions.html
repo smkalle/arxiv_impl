@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Failure Log{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><div class="tb-title">Failure Log</div><div class="tb-sub">data/failure_log.jsonl · all four loops</div></div>
+  <div class="tb-right"><span class="badge bg-blue">{{ log_entries|length }} entries</span></div>
+</div>
+<div class="page-body">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Loop</th><th>Round</th><th>Fitness Before</th><th>Fitness After</th><th>Delta</th><th>Accepted</th><th>Reason</th></tr></thead>
+      <tbody>
+        {% for e in log_entries | reverse %}
+        <tr>
+          <td><span class="badge {% if e.loop_id=='L3' %}bg-amber{% elif e.loop_id=='L1' %}bg-green{% elif e.loop_id=='L2' %}bg-blue{% else %}bg-purple{% endif %}">{{ e.loop_id }}</span></td>
+          <td class="mono">R{{ e.round_no }}</td>
+          <td class="mono dim">{{ "%.4f"|format(e.fitness_before) }}</td>
+          <td class="mono {% if e.fitness_after > e.fitness_before %}up{% endif %}">{{ "%.4f"|format(e.fitness_after) }}</td>
+          <td class="mono {% if e.delta > 0 %}up{% elif e.delta < 0 %}down{% endif %}">
+            {{ '+' if e.delta > 0 else '' }}{{ "%.4f"|format(e.delta) }}
+          </td>
+          <td>{% if e.accepted %}<span class="tag tag-green">✓</span>{% else %}<span class="tag tag-red">✗</span>{% endif %}</td>
+          <td class="muted" style="font-size:10px">{{ e.revert_reason or '' | truncate(50) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="muted" style="text-align:center;padding:20px">No failure log entries yet. Run the loops first.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

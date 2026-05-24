@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Loop Monitor{% endblock %}
+
+{% macro status_color(status) %}
+  {%- if status == 'complete' %}var(--green)
+  {%- elif status == 'running' %}var(--amber)
+  {%- elif status == 'error' %}var(--red)
+  {%- else %}var(--muted){% endif -%}
+{% endmacro %}
+
+{% macro status_label(status) %}
+  {%- if status == 'complete' %}✓ COMPLETE
+  {%- elif status == 'running' %}◉ RUNNING
+  {%- elif status == 'error' %}✗ ERROR
+  {%- else %}○ IDLE{% endif -%}
+{% endmacro %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="tb-title">Four-Loop AutoResearch Monitor</div>
+    <div class="tb-sub">L1 DEV SET → L2 INGESTOR → L3 RETRIEVAL → L4 PROMPT</div>
+  </div>
+  <div class="tb-right">
+    {% if any_running %}<span class="badge bg-amber">● RUNNING</span>{% endif %}
+    <form method="post" action="/loops/run" style="display:inline">
+      <button class="btn btn-amber btn-sm" type="submit">Run All Loops</button>
+    </form>
+  </div>
+</div>
+
+<div class="page-body"
+     {% if any_running %}
+     hx-get="/partials/loop-states"
+     hx-trigger="every 5s"
+     hx-swap="outerHTML"
+     hx-target="closest .page-body"
+     {% endif %}>
+
+  <!-- Stats row -->
+  <div class="stat-row">
+    {% set all_histories = [] %}
+    {% for lid, s in loop_states.items() %}{% if s.fitness_history %}{% set _ = all_histories.append(s) %}{% endif %}{% endfor %}
+    <div class="stat-card">
+      <div class="stat-label">Loops Complete</div>
+      <div class="stat-val">{{ loop_states.values()|selectattr('status','eq','complete')|list|length }}/4</div>
+      <div class="stat-sub">{% for lid, s in loop_states.items() %}{{ lid }} {% if s.status=='complete' %}✓{% else %}○{% endif %} {% endfor %}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">L3 Best F1@5</div>
+      <div class="stat-val" style="color:var(--amber)">
+        {{ "%.3f"|format(loop_states.get('L3',{}).get('best_fitness',0)) }}
+      </div>
+      <div class="stat-sub">baseline {{ "%.3f"|format(loop_states.get('L3',{}).get('baseline_fitness',0)) }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Rounds Run</div>
+      <div class="stat-val">
+        {% set total = namespace(n=0) %}
+        {% for s in loop_states.values() %}{% set total.n = total.n + s.get('rounds_done',0) %}{% endfor %}
+        {{ total.n }}
+      </div>
+      <div class="stat-sub">across all loops</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Failure Log</div>
+      <div class="stat-val mono" style="font-size:16px">
+        <a href="/sessions" style="color:inherit;text-decoration:none">→ log</a>
+      </div>
+      <div class="stat-sub">data/failure_log.jsonl</div>
+    </div>
+  </div>
+
+  <!-- Dependency chain -->
+  <div class="dep-chain gap">
+    {% for lid, col, name, target in [
+        ('L1','l1-col','dev_set.py','DEV SET'),
+        ('L2','l2-col','ingestor.py','INGESTOR'),
+        ('L3','l3-col','RetrievalConfig','RETRIEVAL'),
+        ('L4','l4-col','diagnosis.py','PROMPT'),
+    ] %}
+    {% if not loop.first %}<div class="dep-arrow">→</div>{% endif %}
+    {% set s = loop_states.get(lid, {}) %}
+    <div class="dep-node">
+      <div class="dep-box {{ col }} {% if s.status not in ('complete','running') and not loop.first %}blocked{% endif %}">
+        <div class="dep-lid">{{ lid }} · {{ target }}</div>
+        <div class="dep-name">{{ name }}</div>
+        <div class="dep-stat" style="color:{{ status_color(s.get('status','idle')) }}">
+          {{ status_label(s.get('status','idle')) }}
+          {% if s.status == 'running' %}R{{ s.get('rounds_done',0)+1 }}/{{ s.get('max_rounds','?') }}{% endif %}
+        </div>
+        <div class="dep-f1" style="color:{{ status_color(s.get('status','idle')) }}">
+          {% if s.best_fitness %}{{ "%.4f"|format(s.best_fitness) }}{% else %}—{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Loop mini-cards -->
+  <div class="loop-cards gap">
+    {% for lid, col_n, col_var, name, target, rounds_max in [
+        ('L1',1,'--l1','Dev Set Quality','dev_set.py',3),
+        ('L2',2,'--l2','Memory Quality','ingestor.py',3),
+        ('L3',3,'--l3','Retrieval Config','RetrievalConfig',7),
+        ('L4',4,'--l4','Diagnosis Prompt','DIAGNOSIS_PROMPT',3),
+    ] %}
+    {% set s = loop_states.get(lid, {}) %}
+    <div class="loop-card lc-{{ col_n }}" style="{% if s.status not in ('complete','running') and col_n > 1 %}opacity:0.45;{% endif %}">
+      <div class="lc-lid" style="color:var({{ col_var }})">{{ lid }} · {{ target.upper() }}</div>
+      <div class="lc-name">{{ name }}</div>
+      <div class="lc-target">edit: {{ target }}</div>
+      <div class="lc-fitness" style="color:var({{ col_var }})">
+        {{ "%.4f"|format(s.get('best_fitness',0)) if s.get('best_fitness') else '—' }}
+      </div>
+      <div class="lc-delta" style="color:{% if s.get('best_fitness',0) > s.get('baseline_fitness',0) %}var(--green){% else %}var(--muted){% endif %}">
+        {% set delta = s.get('best_fitness',0) - s.get('baseline_fitness',0) %}
+        {% if delta > 0 %}↑ +{{ "%.4f"|format(delta) }}{% else %}—{% endif %}
+      </div>
+      <div class="lc-rounds">
+        {{ s.get('rounds_done',0) }}/{{ s.get('max_rounds', rounds_max) }} rounds
+        · {{ s.get('status','idle') }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Round logs -->
+  {% for lid, col_var, name in [('L3','--l3','Retrieval Config'),('L1','--l1','Dev Set'),('L2','--l2','Ingestor'),('L4','--l4','Prompt')] %}
+  {% set s = loop_states.get(lid, {}) %}
+  {% if s.get('accepted_patches') or s.get('fitness_history') %}
+  <div class="card gap">
+    <div class="card-hdr">
+      <span class="card-title" style="color:var({{ col_var }})">{{ lid }} {{ name }} — Round Log</span>
+      <span class="badge" style="background:var(--bg2);color:var(--dim)">
+        F1 history: {{ s.get('fitness_history',[]) | join(' → ') | truncate(80) }}
+      </span>
+    </div>
+    <div class="card-body">
+      {% for patch in s.get('accepted_patches',[]) %}
+      <div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px">
+        <span style="font-family:var(--mono);font-size:9px;color:var(--muted);width:52px;flex-shrink:0">R{{ patch.get('__round','?') }}</span>
+        <div style="flex:1">
+          <span class="tag tag-green">accepted</span>
+          {% for k, v in patch.items() if not k.startswith('__') %}
+          <span class="tag">{{ k }}={{ v }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div style="color:var(--muted);font-size:11px">No accepted patches yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+</div>
+{% endblock %}

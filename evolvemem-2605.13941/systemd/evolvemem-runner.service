@@ -1,0 +1,15 @@
+[Unit]
+Description=EvolveMem AutoResearch Loop Runner
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=no
+WorkingDirectory=%h/arxiv_impl/evolvemem-2605.13941
+EnvironmentFile=-%h/arxiv_impl/evolvemem-2605.13941/.env
+ExecStart=%h/.local/bin/python -m evolvemem_runner
+StandardOutput=append:%h/arxiv_impl/evolvemem-2605.13941/logs/evolvemem.log
+StandardError=append:%h/arxiv_impl/evolvemem-2605.13941/logs/evolvemem.log
+
+[Install]
+WantedBy=default.target

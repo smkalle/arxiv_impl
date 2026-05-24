@@ -1,0 +1,201 @@
+ticket_id,ticket_text,ground_truth_kb_id,product_area,resolved_at,csat_score,agent_notes
+T-0001,I keep getting 401 errors when I call your API but my token is definitely not expired,KB-1001,auth,2026-01-10,5,Customer confirmed JWT not expired. Clock skew issue.
+T-0002,The password reset email never arrived in my inbox,KB-1002,auth,2026-01-11,4,Checked spam. Email was in bounce list.
+T-0003,Single sign-on stopped working after we updated our identity provider,KB-1003,auth,2026-01-12,5,SAML audience mismatch in IdP config.
+T-0004,After changing my password all my integrations stopped working,KB-1004,auth,2026-01-13,4,Refresh tokens invalidated by design.
+T-0005,Customers are getting logged out randomly on our site,KB-1005,auth,2026-01-16,4,Load balancer sticky sessions not configured.
+T-0006,My authenticator app codes are all being rejected,KB-1006,auth,2026-01-19,5,Device time not synced.
+T-0007,Account locked after entering password wrong a few times how do I unlock it,KB-1007,auth,2026-01-21,4,Admin unlocked via panel.
+T-0008,We rotated our API keys and now our pipeline is broken,KB-1008,auth,2026-01-23,5,Old key still in use. Grace period explained.
+T-0009,LDAP user sync has been failing since yesterday,KB-1009,auth,2026-01-26,4,LDAP service account password expired.
+T-0010,Token validation returns inactive for tokens we just issued,KB-1010,auth,2026-01-29,5,Multi-instance token store not shared.
+T-0011,We got charged twice this month for the same subscription,KB-1016,billing,2026-01-30,5,Duplicate charge from retry after timeout. Refund issued.
+T-0012,Our invoice is showing the wrong VAT amount for Germany,KB-1018,billing,2026-02-01,4,Tax table needed update for new EU VAT rates.
+T-0013,The coupon code we were given is not applying any discount,KB-1019,billing,2026-02-04,4,Coupon exceeded max redemptions.
+T-0014,We downgraded our plan but the proration seems wrong,KB-1014,billing,2026-02-06,4,Proration breakdown exported and explained.
+T-0015,Card is being declined even though there is plenty of money in the account,KB-1015,billing,2026-02-09,5,Bank fraud prevention blocking. Customer called bank.
+T-0016,We updated our subscription but the invoice was not generated,KB-1012,billing,2026-02-11,4,Invoice job queue backlogged. Triggered manually.
+T-0017,Refund was processed but it's not showing on the customer's card,KB-1013,billing,2026-02-13,5,Bank processing delay. Customer informed.
+T-0018,Subscription renewed and charged the wrong amount compared to quoted price,KB-1020,billing,2026-02-16,4,Manual price override found and corrected.
+T-0019,Credit card expired and subscription didn't renew,KB-1017,billing,2026-02-17,5,Customer updated card. Charge retried successfully.
+T-0020,Recurring payment keeps failing with a cryptic error,KB-1011,billing,2026-02-19,4,Idempotency key collision on subscription update.
+T-0021,Application is crashing at startup on our production server,KB-1021,crash,2026-02-20,5,Corrupt native module rebuilt.
+T-0022,The app is using more memory than it should and eventually crashes,KB-1022,crash,2026-02-21,4,Memory profiler found unbounded cache.
+T-0023,Background jobs keep failing with an unhandled exception,KB-1023,crash,2026-02-22,5,Missing error boundary in task handler.
+T-0024,System becomes completely unresponsive under heavy load,KB-1024,crash,2026-02-23,4,Connection pool exhausted. Pool size increased.
+T-0025,Server had a kernel panic after the OS update we installed,KB-1025,crash,2026-02-24,5,Previous kernel used until driver fixed.
+T-0026,Database connections are maxing out and causing failures,KB-1026,crash,2026-02-25,4,Pool size and slow query both addressed.
+T-0027,Our service keeps getting killed by systemd,KB-1027,crash,2026-02-26,5,Watchdog keepalive not implemented. Added.
+T-0028,Stack overflow error in our data processing script,KB-1028,crash,2026-02-27,4,Converted recursive function to iterative.
+T-0029,App does not shut down cleanly and hangs forever,KB-1029,crash,2026-02-28,5,Blocking DB transaction not rolling back on shutdown.
+T-0030,Getting intermittent core dumps but the service restarts okay,KB-1030,crash,2026-03-01,4,Race condition detected with ASan in staging.
+T-0031,App crashes when I tap on a link from a notification,KB-1031,mobile,2026-03-02,5,Deep link hit expired session. Deferred routing added.
+T-0032,Push notifications stopped arriving on iPhones after our update,KB-1032,mobile,2026-03-03,4,APNs cert expired. Renewed and uploaded.
+T-0033,Android app crashes when hitting the back button from payment screen,KB-1033,mobile,2026-03-04,5,Payment fragment detach null pointer fixed.
+T-0034,Battery draining very fast when our app runs in background,KB-1034,mobile,2026-03-05,4,Wake lock not released. WorkManager migration done.
+T-0035,Fingerprint login broken on Samsung Galaxy devices,KB-1035,mobile,2026-03-06,5,AndroidX Biometric library added. Fallback PIN provided.
+T-0036,App stuck on loading screen after updating to iOS 17,KB-1036,mobile,2026-03-07,4,Main thread blocked on DB migration. Moved to background.
+T-0037,Data entered offline is not syncing after reconnecting to internet,KB-1037,mobile,2026-03-08,5,Sync queue not persisted across restarts. Fixed.
+T-0038,Can't purchase the premium plan through the app,KB-1038,mobile,2026-03-09,4,Product ID mismatch with Play Console.
+T-0039,App crashes on first launch on my new iPad,KB-1039,mobile,2026-03-10,5,Missing tablet layout for the onboarding screen.
+T-0040,Settings I configured are gone after updating the app,KB-1040,mobile,2026-03-11,4,Settings schema changed without migration layer.
+T-0041,API calls from the mobile app keep timing out on cellular network,KB-1041,mobile,2026-03-12,5,Client timeout too low for mobile. Increased to 30s.
+T-0042,Deep links stopped working after upgrading the nav library,KB-1042,mobile,2026-03-13,4,Navigation graph rebuild needed after upgrade.
+T-0043,Video in the app keeps buffering even on good WiFi,KB-1043,mobile,2026-03-14,5,Fixed bitrate too high. ABR streaming implemented.
+T-0044,App was rejected from the App Store for purchase policy,KB-1044,mobile,2026-03-15,4,Digital goods using external payment. IAP migration done.
+T-0045,App crashes on devices with very little storage,KB-1045,mobile,2026-03-16,5,Disk space check added before file write.
+T-0046,Website not loading — getting DNS errors,KB-1046,network,2026-03-17,4,Secondary DNS resolver added as fallback.
+T-0047,Internal services can't connect to each other with TLS,KB-1047,network,2026-03-18,5,OCSP stapling enabled. Cert chain was incomplete.
+T-0048,WebSocket connection drops after about a minute of inactivity,KB-1048,network,2026-03-19,4,Proxy timeout at 60s. Ping frames added every 30s.
+T-0049,Getting random 502 errors from the API,KB-1049,network,2026-03-20,5,Circuit breaker added at gateway layer.
+T-0050,Our internal CA certificates are not trusted by client devices,KB-1050,network,2026-03-21,4,CA root cert deployed via Group Policy.
+T-0051,Seeing HTTP 401 on the API even with a fresh token — maybe a clock issue?,KB-1001,auth,2026-01-15,5,Clock skew confirmed. NTP fixed.
+T-0052,Password reset link is not arriving at the user's email,KB-1002,auth,2026-01-16,4,User in bounce suppression list. Removed.
+T-0053,SAML login fails with audience mismatch error,KB-1003,auth,2026-01-17,5,SP entity ID corrected in IdP settings.
+T-0054,All service integrations broke after we changed the user's password,KB-1004,auth,2026-01-18,4,Service account OAuth credentials advised.
+T-0055,Users complaining about random logouts on the web app,KB-1005,auth,2026-01-19,5,HAProxy sticky session cookie added.
+T-0056,2FA codes from the authenticator app are all invalid today,KB-1006,auth,2026-01-20,4,TOTP window extended to 90s.
+T-0057,Account got locked after too many failed attempts — how do I get back in?,KB-1007,auth,2026-01-21,5,Unlocked via admin panel.
+T-0058,New API key rotated but old services still failing,KB-1008,auth,2026-01-22,4,Updated key in all services during grace period.
+T-0059,LDAP sync job is throwing bind errors overnight,KB-1009,auth,2026-01-23,5,Password expiry reset. Credential updated.
+T-0060,Just issued a token but introspection says it's inactive,KB-1010,auth,2026-01-24,4,Token store set to shared mode.
+T-0061,Invoice generated twice for the same billing period,KB-1016,billing,2026-02-05,5,Idempotency fix applied. Duplicate refunded.
+T-0062,Germany office billing showing wrong tax,KB-1018,billing,2026-02-06,4,Tax table updated for current VAT rates.
+T-0063,Promo code entered at checkout but no discount applied,KB-1019,billing,2026-02-07,5,Coupon expired. Issued new one.
+T-0064,Downgrade proration calculation doesn't match expectations,KB-1014,billing,2026-02-08,4,Breakdown exported. Formula explained.
+T-0065,Payment declined — card has enough funds,KB-1015,billing,2026-02-09,5,International card limit. Alternative method used.
+T-0066,Invoice missing from portal after payment went through,KB-1012,billing,2026-02-10,4,Background job manually triggered.
+T-0067,Refund showing as processed but customer doesn't see it,KB-1013,billing,2026-02-11,5,Bank delay. Customer given refund reference number.
+T-0068,Annual subscription charged more than we agreed,KB-1020,billing,2026-02-12,4,Price lock verified. Override removed.
+T-0069,Subscription not renewing because card expired last month,KB-1017,billing,2026-02-13,5,Card updated. Charge succeeded.
+T-0070,Monthly charge is failing every time since we changed plans,KB-1011,billing,2026-02-14,4,Idempotency key now includes version number.
+T-0071,Server crashes immediately at startup,KB-1021,crash,2026-02-15,5,Segfault from missing shared lib. Rebuilt.
+T-0072,Worker pod runs out of memory and gets OOM killed,KB-1022,crash,2026-02-16,4,Heap snapshot showed large unclosed cursor.
+T-0073,Background task queue failing with exceptions we can't catch,KB-1023,crash,2026-02-17,5,Try/except wrapper added to task handler.
+T-0074,Everything freezes when we run the end-of-month batch,KB-1024,crash,2026-02-18,4,Deadlock in connection pool. Pool size tripled.
+T-0075,Server kernel panic right after patching,KB-1025,crash,2026-02-19,5,Booted from previous kernel. Problematic module identified.
+T-0076,Too many database connections causing timeouts for everyone,KB-1026,crash,2026-02-20,4,Slow queries fixed. Pool increased.
+T-0077,Systemd keeps killing our service every hour,KB-1027,crash,2026-02-21,5,sd_notify watchdog calls added to service.
+T-0078,Recursive processing function causes a stack overflow crash,KB-1028,crash,2026-02-22,4,Converted to iterative stack-based approach.
+T-0079,Service hangs during shutdown and doesn't stop,KB-1029,crash,2026-02-23,5,30s shutdown timeout added. DB transactions cleanup fixed.
+T-0080,Occasional core dump but app recovers on its own,KB-1030,crash,2026-02-24,4,Race condition in cache eviction found with ASan.
+T-0081,App crashes when opening from a notification link,KB-1031,mobile,2026-02-25,5,Deep link auth check redirects before opening destination.
+T-0082,iPhone users not getting push notifications after last release,KB-1032,mobile,2026-02-26,4,APNs cert rotated.
+T-0083,Payment page causes crash on Android when going back,KB-1033,mobile,2026-02-27,5,Null check added to payment result callback.
+T-0084,App draining battery very quickly in background,KB-1034,mobile,2026-02-28,4,Wake lock release issue. WorkManager used instead.
+T-0085,Fingerprint authentication not working on several Samsung models,KB-1035,mobile,2026-03-01,5,AndroidX Biometric library compatibility fix applied.
+T-0086,App stuck loading forever after upgrading to latest iOS,KB-1036,mobile,2026-03-02,4,Database migration moved off main thread.
+T-0087,Changes made offline are lost when connection comes back,KB-1037,mobile,2026-03-03,5,SQLite offline sync queue now persisted.
+T-0088,Can't buy premium subscription inside the iOS app,KB-1038,mobile,2026-03-04,4,Product IDs updated to match App Store Connect.
+T-0089,New iPad crashes on first app open,KB-1039,mobile,2026-03-05,5,Tablet layout added for onboarding fragment.
+T-0090,Settings reset after updating the app version,KB-1040,mobile,2026-03-06,4,Migration from old settings keys added.
+T-0091,Mobile client times out making API requests on LTE,KB-1041,mobile,2026-03-07,5,Timeout increased. Retry backoff added.
+T-0092,Deep link navigation broke after we upgraded react-navigation,KB-1042,mobile,2026-03-08,4,Navigation graph rebuilt.
+T-0093,Video keeps stopping and buffering in the app,KB-1043,mobile,2026-03-09,5,ABR streaming enabled.
+T-0094,App rejected from App Store for in-app purchase violations,KB-1044,mobile,2026-03-10,4,All digital goods moved to StoreKit IAP.
+T-0095,App crashes when device is low on storage,KB-1045,mobile,2026-03-11,5,FileManager.allocatedSizeOfItem check added.
+T-0096,DNS lookup failures causing random connection errors,KB-1046,network,2026-03-12,4,Backup DNS resolver configured.
+T-0097,TLS handshake keeps timing out on our internal network,KB-1047,network,2026-03-13,5,OCSP stapling fixed. Intermediate cert added.
+T-0098,WebSocket keeps disconnecting every minute,KB-1048,network,2026-03-14,4,Heartbeat ping added. Proxy timeout increased.
+T-0099,Getting 502 errors from the API gateway on and off,KB-1049,network,2026-03-15,5,Circuit breaker threshold tuned.
+T-0100,Clients don't trust our internal SSL certificates,KB-1050,network,2026-03-16,4,Internal CA deployed via MDM profile.
+T-0101,HTTP2 requests failing but HTTP1 works fine,KB-1051,network,2026-03-17,5,ALPN negotiation fixed on load balancer.
+T-0102,Random packet loss causing transaction rollbacks,KB-1052,network,2026-03-18,4,Lossy network hop identified with mtr. Path rerouted.
+T-0103,Services fail to find each other right after a pod restarts in k8s,KB-1053,network,2026-03-19,5,Readiness probe delay added to wait for DNS propagation.
+T-0104,VPN users can't access internal APIs,KB-1054,network,2026-03-20,4,Internal subnets added to VPN include list.
+T-0105,Our integration is being rate limited unfairly,KB-1055,network,2026-03-21,5,Enterprise rate limit tier applied.
+T-0106,Unauthorised access attempt to deleted account still worked,KB-1057,auth,2026-02-03,5,Token revocation blocklist implemented.
+T-0107,Webhook delivery is failing with connection refused,KB-1058,network,2026-03-22,4,Retry with backoff added. Webhook endpoint firewall rule fixed.
+T-0108,International customers seeing wrong billing currency,KB-1059,billing,2026-02-26,5,Currency migration path provided via support.
+T-0109,Push tokens stopped working after user logged out and back in,KB-1060,mobile,2026-03-23,4,Token re-registration added on login.
+T-0110,Signup blocked for user with valid email address,KB-1061,auth,2026-02-06,5,False positive in spam filter. CAPTCHA override added.
+T-0111,Report service crashes every few days,KB-1062,crash,2026-03-26,4,PDF writer leak found. Explicit close added.
+T-0112,Billing summary page times out for enterprise accounts,KB-1063,billing,2026-03-02,5,Composite index added. Query time from 45s to 0.3s.
+T-0113,Background refresh not working on iOS 17 devices,KB-1064,mobile,2026-05-03,4,BGAppRefreshTask migration done.
+T-0114,CORS error when calling API from browser extension,KB-1065,network,2026-05-17,5,CORSMiddleware configured with correct headers.
+T-0115,SMS verification code not arriving in certain countries,KB-1066,auth,2026-01-23,4,Regional SMS provider switched for affected countries.
+T-0116,Bulk CSV import missing some rows without any error,KB-1067,crash,2026-03-29,5,max_line_length increased. Long row validation added.
+T-0117,Stripe webhook failing to validate signature,KB-1068,billing,2026-03-06,4,Raw body capture before JSON parsing fixed.
+T-0118,App crashes when attaching large photos,KB-1069,mobile,2026-04-29,5,Image size limit and background processing added.
+T-0119,Kubernetes cluster not autoscaling under load,KB-1070,network,2026-05-21,4,HPA config fixed. CPU limits set.
+T-0120,Login button stops working after wrong CAPTCHA,KB-1071,auth,2026-02-09,5,Button re-enabled and CAPTCHA reset on error.
+T-0121,File upload fails for documents with accented characters in the name,KB-1072,crash,2026-03-31,4,Filename sanitised. RFC 6266 encoding applied.
+T-0122,Account suspended during billing retry window,KB-1073,billing,2026-03-09,5,Pause-on-first-failure bug fixed. Grace period extended.
+T-0123,Android home screen widget crashes after phone restart,KB-1074,mobile,2026-05-06,4,WorkManager widget update migration done.
+T-0124,API response gets slower every day until we restart the server,KB-1075,network,2026-06-02,5,Memory endpoint added. Restart scheduled until leak fixed.
+T-0125,Email verification link expired before I could verify my account,KB-1076,auth,2026-02-11,4,Expiry extended to 72h. Resend link added.
+T-0126,App starts with 'address already in use' error,KB-1077,crash,2026-04-02,5,Port conflict resolved. Systemd restart backoff added.
+T-0127,GraphQL subscription keeps disconnecting under load,KB-1078,network,2026-06-04,4,Event batching added. Reconnection with cursor replay.
+T-0128,Credit note not automatically applied to next month's invoice,KB-1079,billing,2026-03-11,5,Auto-apply credit setting enabled.
+T-0129,Mobile app shows old profile info after I updated it on the website,KB-1080,mobile,2026-05-09,4,Cache TTL reduced. SSE push for profile updates.
+T-0130,Two support tickets have the same ID and data is getting mixed up,KB-1081,crash,2026-04-04,5,Auto-increment ID + UNIQUE constraint added.
+T-0131,Virtual card payments keep failing at checkout,KB-1082,billing,2026-03-13,5,AVS strict matching disabled for virtual card BIN ranges.
+T-0132,Rate limit counter still shows zero at the start of the hour,KB-1083,network,2026-06-06,4,Fixed-window rate limit algorithm implemented.
+T-0133,User is still getting push notifications after turning them off,KB-1084,mobile,2026-05-11,5,Server-side preference check added to notification sender.
+T-0134,Search results are still showing old data after we imported everything,KB-1085,network,2026-06-09,5,Manual reindex triggered after bulk import.
+T-0135,New users getting two welcome emails,KB-1086,auth,2026-02-13,4,Idempotency check added to email sender.
+T-0136,Users get logged out mid-session even though they are active,KB-1087,auth,2026-02-16,5,Session store error handling fixed.
+T-0137,Cancelled subscription still receiving promotional emails,KB-1088,billing,2026-03-16,4,Subscription check at send time added.
+T-0138,Customer not notified when their payment failed,KB-1089,billing,2026-03-19,5,Null email check added to webhook handler.
+T-0139,First login attempt always fails but second try works,KB-1090,mobile,2026-05-13,4,Await added for token storage before redirect.
+T-0140,Download link expires during a large file download,KB-1091,network,2026-06-11,5,URL expiry increased. Chunked signed URL refreshing added.
+T-0141,Report export crashes for accounts with lots of data,KB-1092,crash,2026-04-06,5,Async background job with email notification implemented.
+T-0142,OAuth login fails after we updated the redirect URL,KB-1093,auth,2026-02-19,4,Redirect URI cache cleared. Re-tested.
+T-0143,Barcode scanner screen freezes after a few minutes,KB-1094,mobile,2026-05-16,5,Camera session released on background. Reopened on foreground.
+T-0144,Admin actions not showing up in the audit log,KB-1095,auth,2026-02-21,5,Bulk ops routed through service layer.
+T-0145,Can't update payment method when there is a pending invoice,KB-1096,billing,2026-03-21,4,Pending invoice settled first. Card updated.
+T-0146,App search shows no results on new device after install,KB-1097,mobile,2026-05-19,5,Initial sync indicator added. Priority indexing implemented.
+T-0147,Circuit breaker keeps tripping even though errors are minimal,KB-1098,network,2026-06-13,4,Thresholds tuned. Volume minimum raised.
+T-0148,Tests pass locally but timeout in CI,KB-1099,crash,2026-04-09,5,CI timeout increased. External calls mocked.
+T-0149,GDPR export does not include all customer data,KB-1100,auth,2026-02-23,4,Secondary databases added to export script.
+T-0150,Getting rejected on API calls even though token is fresh,KB-1001,auth,2026-01-30,5,JWT signing key mismatch. JWKS endpoint fixed.
+T-0151,The app keeps crashing whenever I try to log in after changing my password,KB-1031,mobile,2026-03-28,5,Deep link expired session. Token refresh added.
+T-0152,Login failing with 401 even though credentials look correct — could be a server time sync issue,KB-1001,auth,2026-01-31,4,NTP sync fixed on auth server.
+T-0153,Crash when app opens via push notification deep link,KB-1031,mobile,2026-03-29,5,Null destination check added to deep link handler.
+T-0154,App crashes on the login screen when session has expired overnight,KB-1031,mobile,2026-03-30,4,Background token refresh implemented.
+T-0155,Server keeps crashing with what looks like a memory fault at startup,KB-1021,crash,2026-03-10,5,Missing .so file. Rebuild fixed segfault.
+T-0156,OOM crash in our API service every Tuesday morning,KB-1022,crash,2026-03-11,4,Heap analysis revealed weekly batch unclosed cursors.
+T-0157,Segmentation fault during initialisation of the recommendation engine,KB-1021,crash,2026-03-12,5,Incompatible native module rebuilt.
+T-0158,Process getting killed by the system — not sure why,KB-1022,crash,2026-03-13,4,OOM kill confirmed. Cache size bounded.
+T-0159,Billing charge failed silently and no one was notified,KB-1089,billing,2026-03-22,5,Payment.failed webhook handler fixed. Notification sent.
+T-0160,Subscription was paused too early during the retry window,KB-1073,billing,2026-03-23,4,Retry policy corrected to 3 failures before pause.
+T-0161,Credit on account not being used for invoices,KB-1079,billing,2026-03-24,5,Auto-apply credits enabled globally.
+T-0162,VAT on invoice is wrong for French customers,KB-1018,billing,2026-03-25,4,Tax table updated. Affected invoices recalculated.
+T-0163,Card update failing because there is an unsettled invoice,KB-1096,billing,2026-03-26,5,Invoice settled. Card updated successfully.
+T-0164,Service keeps disconnecting WebSocket clients,KB-1048,network,2026-05-01,4,Ping frames + proxy timeout adjustment done.
+T-0165,Sporadic 502 errors from API — no obvious pattern,KB-1049,network,2026-05-02,5,Circuit breaker tuned. Upstream service health improved.
+T-0166,Kubernetes pods can't reach each other right after restart,KB-1053,network,2026-05-03,4,Readiness probe and startup delay added.
+T-0167,VPN clients unable to access internal API endpoints,KB-1054,network,2026-05-04,5,Split tunnel include list updated.
+T-0168,Our API client is being rate limited despite being a paying customer,KB-1055,network,2026-05-05,4,Custom rate limit tier applied to API key.
+T-0169,DNS errors intermittently for some of our users,KB-1046,network,2026-05-06,5,Secondary resolver added. TTL reduced.
+T-0170,TLS handshake failures on internal microservice calls,KB-1047,network,2026-05-07,4,OCSP stapling enabled. Cert chain completed.
+T-0171,App not getting any iOS push notifications after the last update,KB-1032,mobile,2026-04-10,5,APNs cert renewed and uploaded.
+T-0172,Android back button from checkout screen crashes the app,KB-1033,mobile,2026-04-11,4,Null check in payment callback.
+T-0173,App is killing the battery on background,KB-1034,mobile,2026-04-12,5,Wake lock released. WorkManager scheduled correctly.
+T-0174,Touch ID and Face ID not working on some Android devices,KB-1035,mobile,2026-04-13,4,AndroidX biometric compat layer added.
+T-0175,App freezes on startup after OS update,KB-1036,mobile,2026-04-14,5,Initialisation moved off main thread.
+T-0176,Offline edits not syncing to server after reconnect,KB-1037,mobile,2026-04-15,4,Persistent sync queue implemented.
+T-0177,Can't complete purchase inside the app,KB-1038,mobile,2026-04-16,5,Product IDs corrected in store console.
+T-0178,Fresh install crashes on my iPad Pro,KB-1039,mobile,2026-04-17,4,Large screen layout added.
+T-0179,All my app preferences got wiped after the update,KB-1040,mobile,2026-04-18,5,Settings migration layer implemented.
+T-0180,API calls constantly timing out on 4G connection,KB-1041,mobile,2026-04-19,4,Mobile timeout profile applied.
+T-0181,Links from notifications don't open the right screen anymore,KB-1042,mobile,2026-04-20,5,Deep link patterns re-registered after nav library upgrade.
+T-0182,Video stops and buffers constantly in the app,KB-1043,mobile,2026-04-21,4,HLS ABR streaming implemented.
+T-0183,Apple rejected our app update because of in-app purchases,KB-1044,mobile,2026-04-22,5,External payment removed. StoreKit flow added.
+T-0184,App crashes on low storage devices,KB-1045,mobile,2026-04-23,4,Storage check before file write added.
+T-0185,Users reporting random logouts — session not extending on activity,KB-1087,auth,2026-02-28,5,Session store write error now logged and retried.
+T-0186,New user account getting two onboarding emails,KB-1086,auth,2026-03-01,4,Duplicate email prevention via user_id idempotency key.
+T-0187,Audit log missing bulk delete operations,KB-1095,auth,2026-03-02,5,Bulk delete routed through service layer with audit.
+T-0188,GDPR export missing event stream data,KB-1100,auth,2026-03-03,4,Event store added to GDPR export pipeline.
+T-0189,OAuth redirect URI mismatch after we updated our domain,KB-1093,auth,2026-03-04,5,OAuth app registration updated. Codes refreshed.
+T-0190,LDAP sync failing every night with authentication error,KB-1009,auth,2026-03-05,4,LDAP bind account password expired again. Auto-rotation set up.
+T-0191,Account locked out after wrong password — can't figure out how to unlock,KB-1007,auth,2026-03-06,5,Self-service unlock via email added to login page.
+T-0192,Old API key still failing even during the grace period,KB-1008,auth,2026-03-07,4,Confirmed key in grace period. Service config updated.
+T-0193,2FA token keeps getting rejected — phone time seems correct,KB-1006,auth,2026-03-08,5,TOTP tolerance window extended. Re-enrolled device.
+T-0194,Email verification link already expired — I just signed up,KB-1076,auth,2026-03-09,4,72h expiry applied. Resend available.
+T-0195,Duplicate invoice generated for the same month,KB-1016,billing,2026-04-01,5,Payment intent idempotency key fix deployed.
+T-0196,VAT calculation wrong for customers in Italy,KB-1018,billing,2026-04-02,4,Italy VAT rate corrected in tax table.
+T-0197,Proration when upgrading mid-cycle doesn't look right,KB-1014,billing,2026-04-03,5,Proration formula verified. Customer explanation sent.
+T-0198,Customer card declined with no obvious reason,KB-1015,billing,2026-04-04,4,Daily transaction limit reached. Customer advised.
+T-0199,Invoice queue backed up — invoices delayed by hours,KB-1012,billing,2026-04-05,5,Job queue scaled up. Manual trigger for pending invoices.
+T-0200,Annual plan amount doesn't match the price on the pricing page,KB-1020,billing,2026-04-06,4,Price lock verified. Page price was outdated. Page updated.
