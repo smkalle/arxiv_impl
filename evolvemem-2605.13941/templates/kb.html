@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}KB Management{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div><div class="tb-title">KB Management</div><div class="tb-sub">data/raw/kb_articles.csv · {{ total }} articles</div></div>
+  <div class="tb-right">
+    <span class="badge bg-green">● {{ total }} articles</span>
+  </div>
+</div>
+<div class="page-body">
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-label">KB Articles</div><div class="stat-val">{{ total }}</div></div>
+    <div class="stat-card"><div class="stat-label">Domains</div><div class="stat-val">5</div><div class="stat-sub">auth, billing, crash, mobile, network</div></div>
+    <div class="stat-card"><div class="stat-label">Ingestor</div><div class="stat-val mono" style="font-size:14px">paragraph</div><div class="stat-sub">L2 edit target</div></div>
+    <div class="stat-card"><div class="stat-label">LanceDB</div><div class="stat-val mono" style="font-size:14px;color:var(--green)">OK</div></div>
+  </div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>KB ID</th><th>Title</th><th>Product Area</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for a in articles %}
+        <tr>
+          <td class="mono">{{ a.get('kb_id','') }}</td>
+          <td>{{ a.get('title','') | truncate(70) }}</td>
+          <td><span class="tag tag-{{ 'blue' if a.get('product_area')=='auth' else 'amber' if a.get('product_area')=='billing' else 'red' if a.get('product_area')=='crash' else 'green' if a.get('product_area')=='mobile' else '' }}">{{ a.get('product_area','') }}</span></td>
+          <td class="muted mono">{{ a.get('created_at','') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
