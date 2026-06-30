@@ -1,0 +1,122 @@
+[
+  {
+    "task_id": "palindrome",
+    "prompt": "def is_palindrome(s: str) -> bool:\n    return s == s[::-1]",
+    "test_code": "assert is_palindrome('racecar') == True\nassert is_palindrome('hello') == False\nassert is_palindrome('') == True",
+    "difficulty": "easy"
+  },
+  {
+    "task_id": "max_two",
+    "prompt": "def max_two(a: int, b: int) -> int:\n    return a if a >= b else b",
+    "test_code": "assert max_two(1, 2) == 2\nassert max_two(5, 3) == 5\nassert max_two(-1, -1) == -1",
+    "difficulty": "easy"
+  },
+  {
+    "task_id": "fizzbuzz",
+    "prompt": "def fizzbuzz(n: int) -> list:\n    return ['FizzBuzz' if x % 15 == 0 else 'Buzz' if x % 5 == 0 else 'Fizz' if x % 3 == 0 else str(x) for x in range(1, n + 1)]",
+    "test_code": "assert fizzbuzz(3) == ['1', '2', 'Fizz']\nassert fizzbuzz(5) == ['1', '2', 'Fizz', '4', 'Buzz']\nassert fizzbuzz(15)[14] == 'FizzBuzz'",
+    "difficulty": "medium"
+  },
+  {
+    "task_id": "flatten",
+    "prompt": "def flatten(lst: list) -> list:\n    return [item for sub in lst for item in sub]",
+    "test_code": "assert flatten([[1, 2], [3], [4, 5]]) == [1, 2, 3, 4, 5]\nassert flatten([]) == []\nassert flatten([[], [1]]) == [1]",
+    "difficulty": "medium"
+  },
+  {
+    "task_id": "fib",
+    "prompt": "def fib(n: int) -> int:\n    if n <= 0:\n        return 0\n    a, b = 0, 1\n    for _ in range(1, n):\n        a, b = b, a + b\n    return b",
+    "test_code": "assert fib(0) == 0\nassert fib(1) == 1\nassert fib(10) == 55\nassert fib(20) == 6765",
+    "difficulty": "hard"
+  },
+  {
+    "task_id": "is_even",
+    "prompt": "def is_even(n: int) -> bool:\n    return n % 2 == 0",
+    "test_code": "assert is_even(0) is True\nassert is_even(2) is True\nassert is_even(3) is False",
+    "difficulty": "easy"
+  },
+  {
+    "task_id": "add",
+    "prompt": "def add(a: int, b: int) -> int:\n    return a + b",
+    "test_code": "assert add(1, 2) == 3\nassert add(-1, 5) == 4\nassert add(0, 0) == 0",
+    "difficulty": "easy"
+  },
+  {
+    "task_id": "reverse_string",
+    "prompt": "def reverse_string(s: str) -> str:\n    return s[::-1]",
+    "test_code": "assert reverse_string('abc') == 'cba'\nassert reverse_string('') == ''\nassert reverse_string('a') == 'a'",
+    "difficulty": "easy"
+  },
+  {
+    "task_id": "gcd_two",
+    "prompt": "def gcd_two(a: int, b: int) -> int:\n    while b:\n        a, b = b, a % b\n    return abs(a)",
+    "test_code": "assert gcd_two(6, 9) == 3\nassert gcd_two(10, 5) == 5\nassert gcd_two(7, 1) == 1",
+    "difficulty": "medium"
+  },
+  {
+    "task_id": "is_prime",
+    "prompt": "def is_prime(n: int) -> bool:\n    if n < 2:\n        return False\n    if n == 2:\n        return True\n    if n % 2 == 0:\n        return False\n    d = 3\n    while d * d <= n:\n        if n % d == 0:\n            return False\n        d += 2\n    return True",
+    "test_code": "assert is_prime(2) is True\nassert is_prime(9) is False\nassert is_prime(1) is False",
+    "difficulty": "medium"
+  },
+  {
+    "task_id": "triangle_area",
+    "prompt": "def triangle_area(base: int, height: int) -> float:\n    return (base * height) / 2",
+    "test_code": "assert triangle_area(2, 4) == 4\nassert triangle_area(5, 0) == 0",
+    "difficulty": "easy"
+  },
+  {
+    "task_id": "is_sorted",
+    "prompt": "def is_sorted(values: list) -> bool:\n    return all(values[i] <= values[i + 1] for i in range(len(values) - 1))",
+    "test_code": "assert is_sorted([1, 1, 2, 3]) is True\nassert is_sorted([3, 1, 2]) is False\nassert is_sorted([]) is True",
+    "difficulty": "medium"
+  },
+  {
+    "task_id": "count_vowels",
+    "prompt": "def count_vowels(s: str) -> int:\n    return sum(1 for ch in s if ch.lower() in 'aeiou')",
+    "test_code": "assert count_vowels('aeiou') == 5\nassert count_vowels('rhythm') == 0\nassert count_vowels('AeiO') == 4",
+    "difficulty": "medium"
+  },
+  {
+    "task_id": "square",
+    "prompt": "def square(n: int) -> int:\n    return n * n",
+    "test_code": "assert square(0) == 0\nassert square(2) == 4\nassert square(-3) == 9",
+    "difficulty": "easy"
+  },
+  {
+    "task_id": "join_strings",
+    "prompt": "def join_strings(words: list) -> str:\n    return ' '.join(words)",
+    "test_code": "assert join_strings(['a', 'b', 'c']) == 'a b c'\nassert join_strings([]) == ''\nassert join_strings(['x']) == 'x'",
+    "difficulty": "easy"
+  },
+  {
+    "task_id": "max_list",
+    "prompt": "def max_list(values: list) -> int:\n    return max(values) if values else 0",
+    "test_code": "assert max_list([1, 2, 3]) == 3\nassert max_list([-1, -3]) == -1\nassert max_list([]) == 0",
+    "difficulty": "medium"
+  },
+  {
+    "task_id": "contains_zero",
+    "prompt": "def contains_zero(values: list) -> bool:\n    return 0 in values",
+    "test_code": "assert contains_zero([0, 1, 2]) is True\nassert contains_zero([1, 2, 3]) is False\nassert contains_zero([]) is False",
+    "difficulty": "easy"
+  },
+  {
+    "task_id": "unique_items",
+    "prompt": "def unique_items(values: list) -> list:\n    out = []\n    for x in values:\n        if x not in out:\n            out.append(x)\n    return out",
+    "test_code": "assert unique_items([1,2,2,3,1]) == [1,2,3]\nassert unique_items([]) == []\nassert unique_items(['a','a']) == ['a']",
+    "difficulty": "medium"
+  },
+  {
+    "task_id": "sum_positive",
+    "prompt": "def sum_positive(values: list) -> int:\n    return sum(v for v in values if v > 0)",
+    "test_code": "assert sum_positive([1,-1,2,3]) == 6\nassert sum_positive([-1,-2]) == 0\nassert sum_positive([]) == 0",
+    "difficulty": "easy"
+  },
+  {
+    "task_id": "factorial",
+    "prompt": "def factorial(n: int) -> int:\n    if n <= 1:\n        return 1\n    x = 1\n    for i in range(2, n + 1):\n        x *= i\n    return x",
+    "test_code": "assert factorial(0) == 1\nassert factorial(5) == 120\nassert factorial(3) == 6",
+    "difficulty": "hard"
+  }
+]

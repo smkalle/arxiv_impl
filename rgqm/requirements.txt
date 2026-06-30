@@ -1,0 +1,7 @@
+scipy>=1.15
+numpy>=2.2
+pytest>=9.0
+
+# optional:
+# matplotlib            # plot.py chart (falls back to text summary without it)
+# google-generativeai  # real Gemini calls (set GEMINI_API_KEY; otherwise stub mode)

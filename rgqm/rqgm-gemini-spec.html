@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EpochForge Lite · Simplified Prototype Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --font-body:'IBM Plex Sans',system-ui,sans-serif; --font-mono:'IBM Plex Mono',monospace; --font-serif:'Instrument Serif',Georgia,serif; }
+
+[data-theme="light"] {
+  --bg:#faf8f5; --surface:#fff; --surface-2:#f4f1ec; --surface-3:#ede9e2;
+  --border:rgba(80,60,30,.10); --border-bright:rgba(80,60,30,.18);
+  --text:#1a1208; --text-dim:#5a4a30; --text-faint:#9a8a70;
+  --rust:#b8420e; --rust-dim:rgba(184,66,14,.08);
+  --teal:#0d6e6e; --teal-dim:rgba(13,110,110,.08);
+  --indigo:#2a4a8a; --indigo-dim:rgba(42,74,138,.08);
+  --amber:#b86a00; --amber-dim:rgba(184,106,0,.09);
+  --sage:#3a6a40; --sage-dim:rgba(58,106,64,.08);
+  --rose:#9a2040; --rose-dim:rgba(154,32,64,.08);
+}
+[data-theme="dark"] {
+  --bg:#0e0c09; --surface:#181410; --surface-2:#211d17; --surface-3:#2a241c;
+  --border:rgba(200,170,100,.10); --border-bright:rgba(200,170,100,.20);
+  --text:#e8dfc8; --text-dim:#a09070; --text-faint:#5a4a30;
+  --rust:#e07040; --rust-dim:rgba(224,112,64,.10);
+  --teal:#2eaaaa; --teal-dim:rgba(46,170,170,.10);
+  --indigo:#6a9aee; --indigo-dim:rgba(106,154,238,.10);
+  --amber:#e8a830; --amber-dim:rgba(232,168,48,.10);
+  --sage:#5aaa60; --sage-dim:rgba(90,170,96,.10);
+  --rose:#e05070; --rose-dim:rgba(224,80,112,.10);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);line-height:1.65;font-size:15px}
+
+.layout{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--surface-2);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column}
+.sidebar-logo{padding:0 18px 18px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sidebar-logo-tag{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:3px}
+.sidebar-logo-name{font-family:var(--font-serif);font-size:1rem;color:var(--text);font-style:italic}
+.sidebar-logo-version{font-family:var(--font-mono);font-size:9px;color:var(--sage);margin-top:2px}
+.nav-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);padding:4px 18px;margin-top:6px}
+.nav-item{display:block;padding:6px 18px;font-size:0.78rem;color:var(--text-dim);text-decoration:none;border-left:2px solid transparent;transition:all .15s}
+.nav-item:hover{color:var(--text);background:var(--surface-3)}
+.nav-item.active{color:var(--rust);border-left-color:var(--rust);background:var(--rust-dim)}
+.sidebar-footer{margin-top:auto;padding:14px 18px 0;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:9px;color:var(--text-faint);line-height:1.9}
+
+/* MAIN */
+.main{flex:1;min-width:0;padding:0 0 80px}
+.theme-toggle{position:fixed;top:14px;right:18px;z-index:200;background:var(--surface-2);border:1px solid var(--border-bright);color:var(--text-dim);font-family:var(--font-mono);font-size:10px;padding:4px 10px;border-radius:20px;cursor:pointer;letter-spacing:.06em}
+
+/* DOC HEADER */
+.doc-header{background:var(--surface);border-bottom:1px solid var(--border);padding:44px 56px 36px}
+.doc-eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--rust);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.doc-eyebrow::after{content:'';flex:1;height:1px;background:var(--border);max-width:180px}
+.doc-title{font-family:var(--font-serif);font-size:clamp(1.7rem,3vw,2.6rem);font-weight:400;line-height:1.15;margin-bottom:8px}
+.doc-title em{font-style:italic;color:var(--rust)}
+.doc-sub{font-size:.92rem;color:var(--text-dim);max-width:580px;margin-bottom:24px}
+.meta-row{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;max-width:640px}
+.meta-cell{padding:10px 16px;border-right:1px solid var(--border);flex:1;min-width:120px}
+.meta-cell:last-child{border-right:none}
+.meta-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:3px}
+.meta-value{font-size:.8rem;font-weight:500;color:var(--text)}
+.meta-value.highlight{color:var(--sage);font-family:var(--font-mono)}
+
+/* DELTA STRIP */
+.delta-strip{background:var(--surface-2);border-bottom:1px solid var(--border);padding:20px 56px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.delta-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-right:4px}
+.delta-pill{font-family:var(--font-mono);font-size:10px;padding:4px 10px;border-radius:4px;display:inline-flex;align-items:center;gap:5px}
+.delta-pill.cut{background:var(--rose-dim);color:var(--rose);border:1px solid var(--rose)}
+.delta-pill.keep{background:var(--sage-dim);color:var(--sage);border:1px solid var(--sage)}
+.delta-pill.new{background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal)}
+.delta-pill.changed{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber)}
+
+/* SECTION */
+.section-wrap{padding:40px 56px;border-bottom:1px solid var(--border)}
+.section-wrap:last-child{border-bottom:none}
+.section-eyebrow{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px}
+.section-eyebrow .num{color:var(--rust)}
+.section-heading{font-family:var(--font-serif);font-size:1.45rem;font-weight:400;margin-bottom:20px;line-height:1.2}
+p{color:var(--text-dim);margin-bottom:12px;font-size:.88rem;line-height:1.7}
+p:last-child{margin-bottom:0}
+strong{color:var(--text);font-weight:600}
+
+/* CALLOUTS */
+.callout{padding:13px 16px;border-radius:6px;margin-bottom:14px;font-size:.83rem;line-height:1.65;display:flex;gap:10px;align-items:flex-start}
+.callout p{margin:0;font-size:.83rem}
+.callout-icon{flex-shrink:0;margin-top:1px}
+.callout.info{background:var(--indigo-dim);border:1px solid var(--indigo);color:var(--text-dim)}
+.callout.warn{background:var(--amber-dim);border:1px solid var(--amber);color:var(--text-dim)}
+.callout.success{background:var(--sage-dim);border:1px solid var(--sage);color:var(--text-dim)}
+.callout.cut{background:var(--rose-dim);border:1px solid var(--rose);color:var(--text-dim)}
+
+/* TABLES */
+.spec-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:18px}
+.spec-table th{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);padding:9px 13px;text-align:left;background:var(--surface-2);border:1px solid var(--border-bright)}
+.spec-table td{padding:9px 13px;border:1px solid var(--border);color:var(--text-dim);vertical-align:top}
+.spec-table tr:hover td{background:var(--surface-2)}
+.spec-table .mono{font-family:var(--font-mono);font-size:.76rem;color:var(--rust)}
+.spec-table .strong{font-weight:600;color:var(--text)}
+.spec-table .cut-row td{text-decoration:line-through;opacity:.45}
+.spec-table .new-row td{background:var(--teal-dim)!important}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+.badge::before{content:'●';font-size:7px}
+.badge.p0{background:var(--rose-dim);color:var(--rose);border:1px solid var(--rose)}
+.badge.p1{background:var(--rust-dim);color:var(--rust);border:1px solid var(--rust)}
+.badge.p2{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber)}
+.badge.cut{background:var(--surface-3);color:var(--text-faint);border:1px solid var(--border-bright);text-decoration:line-through}
+
+/* FILE TREE */
+.file-tree{background:var(--surface-3);border:1px solid var(--border-bright);border-radius:8px;padding:18px 20px;font-family:var(--font-mono);font-size:.78rem;line-height:2;color:var(--text-dim)}
+.file-tree .dir{color:var(--teal)}
+.file-tree .file{color:var(--text-dim)}
+.file-tree .ann{color:var(--text-faint)}
+.file-tree .new-file{color:var(--sage)}
+
+/* CODE */
+.code-block{background:var(--surface-3);border:1px solid var(--border);border-radius:6px;padding:14px 16px;font-family:var(--font-mono);font-size:.76rem;color:var(--text-dim);line-height:1.9;overflow-x:auto;margin-bottom:16px;white-space:pre}
+.code-block .comment{color:var(--text-faint)}
+.code-block .key{color:var(--rust)}
+.code-block .str{color:var(--teal)}
+.code-block .num{color:var(--amber)}
+.code-block .fn{color:var(--indigo)}
+
+/* SCOPE GRID */
+.scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.scope-list{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.scope-header{padding:9px 15px;font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.scope-header.in{background:var(--sage-dim);color:var(--sage)}
+.scope-header.out{background:var(--rose-dim);color:var(--rose)}
+.scope-list ul{list-style:none;padding:8px 0}
+.scope-list li{padding:6px 15px;font-size:.8rem;color:var(--text-dim);border-bottom:1px solid var(--border);display:flex;gap:7px;align-items:flex-start}
+.scope-list li:last-child{border-bottom:none}
+.scope-list.in-scope li::before{content:'✓';color:var(--sage);font-weight:700;flex-shrink:0}
+.scope-list.out-scope li::before{content:'✗';color:var(--rose);font-weight:700;flex-shrink:0}
+
+/* SCHEMA */
+.schema-block{background:var(--surface-3);border:1px solid var(--border-bright);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.schema-header{padding:8px 15px;background:var(--surface-2);border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);display:flex;justify-content:space-between;align-items:center}
+.schema-header span{color:var(--text-faint);font-size:9px}
+.schema-body{padding:10px 15px}
+.schema-field{display:grid;grid-template-columns:170px 90px 1fr;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:.76rem}
+.schema-field:last-child{border-bottom:none}
+.field-name{font-family:var(--font-mono);color:var(--rust)}
+.field-type{font-family:var(--font-mono);color:var(--teal)}
+.field-desc{color:var(--text-dim)}
+
+/* PHASE CARDS */
+.phase-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.phase-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;position:relative;overflow:hidden}
+.phase-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.phase-card.p1::before{background:var(--rust)}
+.phase-card.p2::before{background:var(--sage)}
+.phase-tag{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.phase-card.p1 .phase-tag{color:var(--rust)}
+.phase-card.p2 .phase-tag{color:var(--sage)}
+.phase-card h3{font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:8px}
+.phase-card p{font-size:.78rem;margin-bottom:10px}
+.phase-tasks{list-style:none;padding:0}
+.phase-tasks li{font-size:.76rem;color:var(--text-dim);padding:4px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.phase-tasks li:last-child{border-bottom:none}
+
+/* COST TABLE */
+.cost-compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.cost-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
+.cost-card.before{border-color:var(--rose)}
+.cost-card.after{border-color:var(--sage)}
+.cost-card-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.cost-card.before .cost-card-label{color:var(--rose)}
+.cost-card.after .cost-card-label{color:var(--sage)}
+.cost-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);font-size:.78rem}
+.cost-row:last-child{border-bottom:none}
+.cost-row .item{color:var(--text-dim)}
+.cost-row .amount{font-family:var(--font-mono);font-size:.78rem}
+.cost-card.before .cost-row .amount{color:var(--rose)}
+.cost-card.after .cost-row .amount{color:var(--sage)}
+.cost-total{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 0;border-top:1px solid var(--border-bright);font-size:.85rem;font-weight:600;margin-top:6px}
+.cost-card.before .cost-total .amount{color:var(--rose);font-family:var(--font-mono)}
+.cost-card.after .cost-total .amount{color:var(--sage);font-family:var(--font-mono)}
+
+/* METRICS */
+.metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.metric-cell{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:14px}
+.metric-cell .label{font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px}
+.metric-cell .val{font-family:var(--font-mono);font-size:1.4rem;font-weight:600;line-height:1;margin-bottom:3px}
+.metric-cell .desc{font-size:.72rem;color:var(--text-dim)}
+.metric-cell.rust .val{color:var(--rust)}
+.metric-cell.teal .val{color:var(--teal)}
+.metric-cell.sage .val{color:var(--sage)}
+.metric-cell.amber .val{color:var(--amber)}
+
+/* OPEN QUESTIONS */
+.oq-list{counter-reset:oq}
+.oq-item{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:12px 14px 12px 46px;margin-bottom:9px;position:relative;font-size:.82rem;color:var(--text-dim);line-height:1.6}
+.oq-item::before{counter-increment:oq;content:counter(oq);position:absolute;left:14px;font-family:var(--font-mono);font-size:1rem;font-weight:600;color:var(--border-bright);line-height:1.4}
+.oq-item strong{color:var(--text);display:block;margin-bottom:2px}
+
+@media(max-width:860px){.sidebar{display:none}.section-wrap{padding:30px 22px}.doc-header{padding:32px 22px 26px}.delta-strip{padding:16px 22px}.scope-grid,.phase-grid,.metric-row,.cost-compare{grid-template-columns:1fr}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both}
+@media(prefers-reduced-motion:reduce){.fade-in{animation:none}}
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()">◐ THEME</button>
+
+<div class="layout">
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-tag">Simplified PRD</div>
+    <div class="sidebar-logo-name">EpochForge Lite</div>
+    <div class="sidebar-logo-version">v0.2 · Gemini 3.5 Flash Build</div>
+  </div>
+  <div class="nav-label">Overview</div>
+  <a href="#summary" class="nav-item">Summary of Changes</a>
+  <a href="#scope" class="nav-item">Revised Scope</a>
+  <a href="#cost" class="nav-item">Cost Model</a>
+  <div class="nav-label">Design</div>
+  <a href="#architecture" class="nav-item">Simplified Architecture</a>
+  <a href="#data-model" class="nav-item">Data Model</a>
+  <a href="#epoch-protocol" class="nav-item">Epoch Protocol</a>
+  <div class="nav-label">Build</div>
+  <a href="#phases" class="nav-item">Two-Phase Plan</a>
+  <a href="#metrics" class="nav-item">Exit Criteria</a>
+  <a href="#open-questions" class="nav-item">Open Questions</a>
+  <div class="sidebar-footer">
+    STATUS: DRAFT v0.2<br>
+    MODEL: gemini-3.5-flash<br>
+    BUDGET: ~$12 / full run<br>
+    HORIZON: 5–6 Weeks
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- HEADER -->
+<div class="doc-header fade-in">
+  <div class="doc-eyebrow"><span class="num">PRD v0.2</span> · Simplified Build · Budget-Constrained</div>
+  <h1 class="doc-title"><em>EpochForge Lite</em> — RQGM Minimal Prototype</h1>
+  <p class="doc-sub">A stripped-down implementation of the Red Queen Gödel Machine. One domain, one evaluator slot, one epoch boundary, four Python files, JSON persistence. Uses <strong>gemini-3.5-flash</strong> for all LLM calls.</p>
+  <div class="meta-row">
+    <div class="meta-cell"><div class="meta-label">Model</div><div class="meta-value highlight">gemini-3.5-flash</div></div>
+    <div class="meta-cell"><div class="meta-label">Eval Budget</div><div class="meta-value highlight">B = 80 tasks</div></div>
+    <div class="meta-cell"><div class="meta-label">Epoch Boundaries</div><div class="meta-value highlight">1 (at B = 30)</div></div>
+    <div class="meta-cell"><div class="meta-label">Task Pool</div><div class="meta-value highlight">20 HumanEval</div></div>
+    <div class="meta-cell"><div class="meta-label">Est. Cost / Run</div><div class="meta-value highlight">~$3–5</div></div>
+    <div class="meta-cell"><div class="meta-label">Build Horizon</div><div class="meta-value highlight">5–6 Weeks</div></div>
+  </div>
+</div>
+
+<!-- DELTA STRIP -->
+<div class="delta-strip">
+  <span class="delta-label">vs v0.1 :</span>
+  <span class="delta-pill cut">✗ Docker sandbox</span>
+  <span class="delta-pill cut">✗ SQLite / SQLAlchemy</span>
+  <span class="delta-pill cut">✗ Streamlit dashboard</span>
+  <span class="delta-pill cut">✗ CRAVE dataset</span>
+  <span class="delta-pill cut">✗ Adversarial pool</span>
+  <span class="delta-pill cut">✗ Specialist / generalist split</span>
+  <span class="delta-pill cut">✗ Polyglot 100-task</span>
+  <span class="delta-pill cut">✗ Claude Sonnet 4.6</span>
+  <span class="delta-pill changed">↓ 3 phases → 2</span>
+  <span class="delta-pill changed">↓ 7 components → 4 files</span>
+  <span class="delta-pill changed">↓ 100 tasks → 20</span>
+  <span class="delta-pill new">+ JSON persistence</span>
+  <span class="delta-pill new">+ subprocess exec</span>
+  <span class="delta-pill new">+ gemini-3.5-flash (all calls)</span>
+  <span class="delta-pill new">+ google-genai SDK</span>
+  <span class="delta-pill new">+ context caching ($0.15/1M)</span>
+</div>
+
+<!-- §1 SUMMARY OF CHANGES -->
+<section class="section-wrap" id="summary">
+  <div class="section-eyebrow"><span class="num">§1</span> Summary of Changes</div>
+  <h2 class="section-heading">What Changed and Why</h2>
+
+  <div class="callout success">
+    <span class="callout-icon">◎</span>
+    <p><strong>The core RQGM mechanism is preserved:</strong> co-evolving task agent and evaluator, epoch-gated utility evolution, ε-best-belief evaluator promotion, selective erasure. Everything else is cut or simplified to reduce cost and build time.</p>
+  </div>
+
+  <table class="spec-table">
+    <thead><tr><th>Dimension</th><th>v0.1 (Full Prototype)</th><th>v0.2 (Lite)</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td class="strong">LLM</td><td>Claude Sonnet 4.6</td><td class="mono">gemini-3.5-flash</td><td>Strong agentic + coding model; beats Gemini 3.1 Pro on Terminal-Bench at 4× speed. Context caching ($0.15/1M) cuts reviewer re-eval cost ~90%. Use <code>thinking_level="medium"</code>; do not set temperature/top_p/top_k.</td></tr>
+      <tr><td class="strong">Persistence</td><td>SQLite + SQLAlchemy</td><td class="mono">JSON files (archive.json)</td><td>No schema migrations, no ORM setup; entire archive fits in RAM for B=80</td></tr>
+      <tr><td class="strong">Sandbox</td><td>Docker per node</td><td>subprocess + tempdir</td><td>Docker adds 30min setup and per-invocation overhead; tempdir subprocess is sufficient for 20 HumanEval tasks</td></tr>
+      <tr><td class="strong">Task pool</td><td>Polyglot 100-task subset</td><td>HumanEval 20-task subset</td><td>HumanEval is public, Python-only (simpler), no multi-language harness needed; reduces evaluation cost</td></tr>
+      <tr><td class="strong">GT Anchor</td><td>CRAVE pull-request dataset</td><td>HumanEval test suite (verifiable)</td><td>Coder's own test pass/fail is already ground truth; no separate anchor dataset needed for evaluator promotion in coding domain</td></tr>
+      <tr><td class="strong">Epoch count</td><td>2–3 boundaries (B=500)</td><td>1 boundary (B=80, checkpoint at 30)</td><td>1 boundary is sufficient to demonstrate the mechanism; keeps total LLM calls under 200</td></tr>
+      <tr><td class="strong">Code structure</td><td>11-file package</td><td>4 flat Python files</td><td>No package overhead; all state is passed explicitly; easier to read and debug in a prototype</td></tr>
+      <tr><td class="strong">Dashboard</td><td>Streamlit app</td><td>JSON output + matplotlib chart</td><td>Observability via <code>results.json</code> and a single <code>plot.py</code> script; no web server to maintain</td></tr>
+      <tr><td class="strong">Adversarial pool</td><td>Phase 3 feature</td><td>Out of scope entirely</td><td>Requires a second domain or paper-quality judgments; not demonstrable in coding domain with this budget</td></tr>
+      <tr><td class="strong">Build horizon</td><td>10–14 weeks</td><td>5–6 weeks (1 engineer)</td><td>Reduced scope makes this a solo project</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- §2 SCOPE -->
+<section class="section-wrap" id="scope">
+  <div class="section-eyebrow"><span class="num">§2</span> Revised Scope</div>
+  <h2 class="section-heading">What's In and What's Out</h2>
+
+  <div class="scope-grid">
+    <div class="scope-list in-scope">
+      <div class="scope-header in">In Scope — EpochForge Lite MVP</div>
+      <ul>
+        <li>Archive tree (dict in memory, JSON-persisted) with CMP and ε-best-belief scoring</li>
+        <li>Thompson sampling over clade meta-productivity for node selection</li>
+        <li>Two agentic roles in shared workspace: <strong>Coder</strong> (generates Python solutions) and <strong>Reviewer</strong> (scores code quality via LLM prompt)</li>
+        <li>Meta-agent that edits the shared workspace codebase (LLM-generated unified diffs)</li>
+        <li>Evaluator role (Reviewer) co-evolves alongside the Coder in the same archive</li>
+        <li>One epoch boundary at checkpoint B=30; selective erasure of reviewer-scored records</li>
+        <li>ε-best-belief evaluator promotion: challenger vs incumbent on HumanEval test suite</li>
+        <li>HumanEval 20-task stratified subset with Python <code>subprocess</code> test execution</li>
+        <li>Blended token counter (input + 5× output) tracking per run</li>
+        <li>HGM-H baseline run (same code, frozen reviewer throughout) for comparison</li>
+        <li><code>results.json</code> + <code>plot.py</code> for utility trajectory and token cost chart</li>
+      </ul>
+    </div>
+    <div class="scope-list out-scope">
+      <div class="scope-header out">Out of Scope — Not in Lite</div>
+      <ul>
+        <li>Docker container isolation per node</li>
+        <li>SQLite or any relational database</li>
+        <li>Streamlit or any web dashboard</li>
+        <li>CRAVE dataset or any external evaluator ground-truth dataset</li>
+        <li>Adversarial pool and adversarial epoch objectives</li>
+        <li>Specialist vs. generalist agent distinction</li>
+        <li>Multiple evaluator slots (M > 1)</li>
+        <li>Polyglot multi-language benchmark</li>
+        <li>More than one epoch boundary</li>
+        <li>Parallel / distributed search</li>
+        <li>Any model other than gemini-3.5-flash</li>
+        <li>Production API, auth, or multi-user support</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout warn" style="margin-top:14px">
+    <span class="callout-icon">⚑</span>
+    <p><strong>Key design constraint:</strong> In the Lite prototype, the Reviewer's "ground truth anchor" for evaluator promotion is the same HumanEval test suite used to score the Coder. A challenger reviewer wins promotion if it better predicts which Coder solutions will pass tests — measured by computing Reviewer acceptance vs. actual test outcome on a 50-sample held-out split. This sidesteps the need for a separate GT dataset like CRAVE.</p>
+  </div>
+</section>
+
+<!-- §3 COST MODEL -->
+<section class="section-wrap" id="cost">
+  <div class="section-eyebrow"><span class="num">§3</span> Cost Model</div>
+  <h2 class="section-heading">Budget Breakdown per Run</h2>
+
+  <p>All estimates use <strong>gemini-3.5-flash</strong> pricing: $1.50/1M input, $9.00/1M output, $0.15/1M cached input. Blended cost = input cost + 5× output cost (paper's metric). A "run" is one complete RQGM search with B=80 evaluations. Reviewer prompts are cached — same 1,200-token system prompt reused across all 80 calls drops input cost to $0.15/1M for that portion.</p>
+
+  <div class="cost-compare">
+    <div class="cost-card before">
+      <div class="cost-card-label">v0.1 — Sonnet 4.6 Estimate</div>
+      <div class="cost-row"><span class="item">Meta-agent expansions (~40)</span><span class="amount">~$6.00</span></div>
+      <div class="cost-row"><span class="item">Coder evaluations (80 tasks)</span><span class="amount">~$4.80</span></div>
+      <div class="cost-row"><span class="item">Reviewer evaluations (80 tasks)</span><span class="amount">~$3.20</span></div>
+      <div class="cost-row"><span class="item">Evaluator promotion contest</span><span class="amount">~$1.50</span></div>
+      <div class="cost-row"><span class="item">HGM-H baseline run</span><span class="amount">~$8.00</span></div>
+      <div class="cost-total"><span>Est. total (per experiment)</span><span class="amount">~$23–30</span></div>
+    </div>
+    <div class="cost-card after">
+      <div class="cost-card-label">v0.2 — Gemini 3.5 Flash Estimate</div>
+      <div class="cost-row"><span class="item">Meta-agent expansions (~40)</span><span class="amount">~$0.53</span></div>
+      <div class="cost-row"><span class="item">Coder evaluations (80 tasks)</span><span class="amount">~$0.36</span></div>
+      <div class="cost-row"><span class="item">Reviewer evals (80, cached input)</span><span class="amount">~$0.15</span></div>
+      <div class="cost-row"><span class="item">Evaluator promotion contest</span><span class="amount">~$0.04</span></div>
+      <div class="cost-row"><span class="item">HGM-H baseline run</span><span class="amount">~$1.15</span></div>
+      <div class="cost-total"><span>Est. total (per experiment)</span><span class="amount">~$2.50–3.50</span></div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <span class="callout-icon">◎</span>
+    <p>Running <strong>10 experiment variants</strong> (hyperparameter sweeps, ablations, re-runs for variance) costs approximately <strong>$25–35 total</strong> with Gemini 3.5 Flash. The same experiments with Sonnet 4.6 would cost $230–300. Context caching on the reviewer prompt further reduces per-run cost by ~$0.10–0.20. Gemini 3.5 Flash is roughly 2× the per-token cost of Haiku 4.5 but substantially stronger at agentic code generation — the tradeoff is better meta-agent patch quality at modestly higher cost.</p>
+  </div>
+
+  <table class="spec-table">
+    <thead><tr><th>Call Type</th><th>Avg Input Tokens</th><th>Avg Output Tokens</th><th>Count (full run)</th><th>Gemini 3.5 Flash Cost</th></tr></thead>
+    <tbody>
+      <tr><td class="strong">Meta-agent expansion</td><td class="mono">4,000</td><td class="mono">800</td><td>~40</td><td class="mono">~$0.53</td></tr>
+      <tr><td class="strong">Coder solution generation</td><td class="mono">600</td><td class="mono">400</td><td>80</td><td class="mono">~$0.36</td></tr>
+      <tr><td class="strong">Reviewer scoring (cached input)</td><td class="mono">1,200 (→$0.15)</td><td class="mono">150</td><td>80</td><td class="mono">~$0.15</td></tr>
+      <tr><td class="strong">Evaluator promotion contest</td><td class="mono">1,200</td><td class="mono">150</td><td>~10</td><td class="mono">~$0.04</td></tr>
+      <tr><td class="strong">Re-evaluation after erasure</td><td class="mono">1,200 (cached)</td><td class="mono">150</td><td>~15</td><td class="mono">~$0.02</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout info">
+    <span class="callout-icon">◈</span>
+    <p><strong>Gemini context caching:</strong> The reviewer system prompt (~1,200 tokens, same across all 80 calls) is cached via the Gemini API caching endpoint. Cached input tokens cost $0.15/1M vs $1.50/1M uncached — a 10× reduction for that portion. Cache TTL set to 600s (covers one full run). <strong>Do not set <code>temperature</code>, <code>top_p</code>, or <code>top_k</code></strong> for Gemini 3.5 Flash — Google recommends defaults only. Use <code>thinking_level="medium"</code> (the default) for the meta-agent; switch to <code>"low"</code> for reviewer/coder calls to reduce latency and output tokens.</p>
+  </div>
+</section>
+
+<!-- §4 ARCHITECTURE -->
+<section class="section-wrap" id="architecture">
+  <div class="section-eyebrow"><span class="num">§4</span> Simplified Architecture</div>
+  <h2 class="section-heading">Four Files, Flat Structure</h2>
+
+  <p>No package, no modules, no abstract base classes. Four Python files share a single <code>archive.json</code> state file. All LLM calls go through one thin wrapper in <code>llm.py</code>.</p>
+
+  <div class="file-tree">
+<span class="dir">epochforge-lite/</span>
+├── <span class="file">archive.py</span>        <span class="ann"># Archive tree + Thompson sampling + CMP + ε-best-belief</span>
+│                    <span class="ann"># Nodes stored as dicts; persisted to archive.json after each step</span>
+│                    <span class="ann"># Also owns: selective_erase(), recompute_clade()</span>
+│
+├── <span class="file">search.py</span>         <span class="ann"># Main loop: UCB-Air gate + epoch manager + 3-level sampler</span>
+│                    <span class="ann"># Runs the coder, runs the reviewer, calls archive.record()</span>
+│                    <span class="ann"># Detects checkpoint B=30 → triggers epoch boundary</span>
+│                    <span class="ann"># Epoch boundary: run_promotion_contest() → selective_erase()</span>
+│
+├── <span class="file">agents.py</span>         <span class="ann"># MetaAgent: generates code diffs from parent workspace context</span>
+│                    <span class="ann"># CoderAgent: generates Python solution for a HumanEval task</span>
+│                    <span class="ann"># ReviewerAgent: scores solution (0/1) via LLM prompt</span>
+│                    <span class="ann"># All agents use llm.call() — model string is a constant at top</span>
+│
+├── <span class="file">llm.py</span>            <span class="ann"># Google GenAI SDK wrapper around gemini-3.5-flash</span>
+│                    <span class="ann"># Context cache for reviewer prompt (TTL=600s, $0.15/1M)</span>
+│                    <span class="ann"># thinking_level: "medium" for meta-agent, "low" for eval calls</span>
+│                    <span class="ann"># Blended token counter (input + 5× output); LRU cache on outputs</span>
+│
+├── <span class="new-file">plot.py</span>           <span class="ann"># Reads results.json → matplotlib chart (utility vs tokens)</span>
+│                    <span class="ann"># One chart: RQGM trajectory vs HGM-H baseline</span>
+│                    <span class="ann"># Marks epoch boundary with a vertical dashed line</span>
+│
+├── <span class="file">tasks/</span>
+│   └── <span class="file">humaneval_20.json</span> <span class="ann"># 20 HumanEval tasks (stratified: easy/medium/hard)</span>
+│                         <span class="ann"># Each: {task_id, prompt, test_code, difficulty}</span>
+│
+└── <span class="file">archive.json</span>      <span class="ann"># Runtime state (auto-created). Gitignored.</span>
+                     <span class="ann"># {nodes: [...], utility_records: [...], epoch_events: [...]}</span>
+  </div>
+
+  <div class="callout info" style="margin-top:14px">
+    <span class="callout-icon">◈</span>
+    <p><strong>Workspace model:</strong> Each archive node's "codebase" is just two Python strings — <code>coder_fn</code> and <code>reviewer_fn</code> — stored directly in the node dict. The meta-agent is prompted to return a JSON object with updated versions of either or both. No file system, no git, no diff application. For a 20-task prototype this is sufficient.</p>
+  </div>
+
+  <h3 style="font-size:.9rem;font-weight:600;color:var(--text);margin:20px 0 10px">llm.py — Google GenAI SDK Wrapper</h3>
+  <div class="code-block"><span class="comment"># llm.py — google-genai SDK wrapper</span>
+<span class="fn">import</span> google.generativeai <span class="fn">as</span> genai
+<span class="fn">from</span> functools <span class="fn">import</span> lru_cache
+
+<span class="key">MODEL</span>          = <span class="str">"gemini-3.5-flash"</span>
+<span class="key">THINKING_META</span>  = <span class="str">"medium"</span>   <span class="comment"># meta-agent: needs reasoning depth</span>
+<span class="key">THINKING_EVAL</span>  = <span class="str">"low"</span>      <span class="comment"># coder/reviewer: speed > depth</span>
+<span class="comment"># NOTE: do NOT set temperature / top_p / top_k on Gemini 3.5 Flash</span>
+
+_token_log = {<span class="str">"input"</span>: <span class="num">0</span>, <span class="str">"output"</span>: <span class="num">0</span>}
+
+<span class="fn">def</span> <span class="key">call</span>(prompt, system=<span class="key">None</span>, thinking=<span class="key">THINKING_EVAL</span>):
+    model = genai.GenerativeModel(
+        model_name=<span class="key">MODEL</span>,
+        system_instruction=system,
+        generation_config={<span class="str">"thinking_level"</span>: thinking}
+    )
+    resp = model.generate_content(prompt)
+    _token_log[<span class="str">"input"</span>]  += resp.usage_metadata.prompt_token_count
+    _token_log[<span class="str">"output"</span>] += resp.usage_metadata.candidates_token_count
+    <span class="fn">return</span> resp.text
+
+<span class="fn">def</span> <span class="key">blended_tokens</span>():
+    <span class="comment"># paper's metric: input + 5× output</span>
+    <span class="fn">return</span> _token_log[<span class="str">"input"</span>] + <span class="num">5</span> * _token_log[<span class="str">"output"</span>]
+
+<span class="fn">def</span> <span class="key">blended_cost_usd</span>():
+    <span class="comment"># $1.50/1M input, $9.00/1M output (cached input handled separately)</span>
+    <span class="fn">return</span> _token_log[<span class="str">"input"</span>] / <span class="num">1e6</span> * <span class="num">1.50</span> + _token_log[<span class="str">"output"</span>] / <span class="num">1e6</span> * <span class="num">9.00</span>
+
+<span class="comment"># LRU cache on reviewer outputs — same (solution_hash, reviewer_fn_hash)</span>
+<span class="comment"># returns same binary score without an API call. Selective erasure just</span>
+<span class="comment"># re-runs the scoring logic on the cached text, not a new Gemini call.</span>
+@lru_cache(maxsize=<span class="num">2048</span>)
+<span class="fn">def</span> <span class="key">cached_reviewer_call</span>(solution_hash, reviewer_fn_hash, task_prompt):
+    <span class="fn">return</span> call(task_prompt, thinking=<span class="key">THINKING_EVAL</span>)</div>
+
+  <h3 style="font-size:.9rem;font-weight:600;color:var(--text);margin:20px 0 10px">Core Search Loop (search.py)</h3>
+  <div class="code-block"><span class="comment"># search.py — main loop (simplified)</span>
+<span class="key">MODEL</span> = <span class="str">"gemini-3.5-flash"</span>
+<span class="key">THINKING_META</span> = <span class="str">"medium"</span>   <span class="comment"># meta-agent: needs reasoning for code edits</span>
+<span class="key">THINKING_EVAL</span> = <span class="str">"low"</span>      <span class="comment"># coder/reviewer: latency-sensitive, no temp/top_p</span>
+<span class="key">BUDGET</span> = <span class="num">80</span>          <span class="comment"># total task evaluations</span>
+<span class="key">CHECKPOINT</span> = <span class="num">30</span>      <span class="comment"># single epoch boundary</span>
+<span class="key">EPSILON</span> = <span class="num">0.05</span>       <span class="comment"># ε for best-belief scoring</span>
+<span class="key">ALPHA</span> = <span class="num">0.6</span>          <span class="comment"># UCB-Air expansion exponent</span>
+<span class="key">TASKS</span> = load_tasks(<span class="str">"tasks/humaneval_20.json"</span>)
+
+<span class="fn">def</span> <span class="key">run</span>(mode=<span class="str">"rqgm"</span>):           <span class="comment"># mode="hgm_h" for baseline</span>
+    archive = Archive()
+    epoch = <span class="num">0</span>
+    boundary_fired = <span class="key">False</span>
+
+    <span class="fn">for</span> step <span class="fn">in</span> range(<span class="key">BUDGET</span>):
+
+        <span class="comment"># 1. Epoch boundary check (single checkpoint)</span>
+        <span class="fn">if</span> mode == <span class="str">"rqgm"</span> <span class="fn">and</span> step == <span class="key">CHECKPOINT</span> <span class="fn">and not</span> boundary_fired:
+            run_epoch_boundary(archive)
+            boundary_fired = <span class="key">True</span>
+
+        <span class="comment"># 2. UCB-Air gate: expand or evaluate</span>
+        <span class="fn">if</span> step**<span class="key">ALPHA</span> >= len(archive.nodes):
+            node = archive.thompson_sample()
+            child = MetaAgent().expand(node, archive.ancestor_logs(node))
+            archive.add_child(node, child)
+        <span class="fn">else</span>:
+            <span class="comment"># 3. Three-level sample: node → role → task</span>
+            node = archive.thompson_sample()
+            role = least_evaluated_role(node)   <span class="comment"># "coder" or "reviewer"</span>
+            task = least_evaluated_task(node, role, <span class="key">TASKS</span>)
+            outcome = evaluate(node, role, task, epoch)
+            archive.record(node, role, task, outcome, epoch)
+
+    archive.save(<span class="str">"archive.json"</span>)
+    <span class="fn">return</span> archive.best_belief_agent(<span class="key">EPSILON</span>)</div>
+
+  <h3 style="font-size:.9rem;font-weight:600;color:var(--text);margin:20px 0 10px">Epoch Boundary Procedure (in search.py)</h3>
+  <div class="code-block"><span class="fn">def</span> <span class="key">run_epoch_boundary</span>(archive):
+    <span class="comment"># 1. Score all reviewer nodes on held-out HumanEval test pass prediction</span>
+    <span class="comment">#    "Does reviewer accept this solution?" vs "Does test suite pass?"</span>
+    <span class="comment">#    Accuracy = fraction of 50 held-out solutions where reviewer and tests agree</span>
+    incumbent = archive.get_incumbent_reviewer()
+    challengers = [n <span class="fn">for</span> n <span class="fn">in</span> archive.nodes <span class="fn">if</span> n.role == <span class="str">"reviewer"</span>]
+
+    scores = {n.id: gt_accuracy(n, HELD_OUT_50) <span class="fn">for</span> n <span class="fn">in</span> challengers + [incumbent]}
+
+    <span class="comment"># 2. ε-best-belief winner (ties → keep incumbent)</span>
+    winner_id = max(scores, key=<span class="fn">lambda</span> k: eps_best_belief(*scores[k], eps=<span class="key">EPSILON</span>))
+    <span class="fn">if</span> winner_id == incumbent.id:
+        log_event(<span class="str">"retained"</span>); <span class="fn">return</span>
+
+    <span class="comment"># 3. Selective erasure: remove all reviewer-scored records from epoch 0</span>
+    erased = archive.selective_erase(role=<span class="str">"reviewer"</span>, epoch=<span class="num">0</span>)
+    archive.set_incumbent_reviewer(winner_id, new_epoch=<span class="num">1</span>)
+    archive.recompute_clade_aggregates()
+    log_event(<span class="str">"promoted"</span>, records_erased=erased)</div>
+</section>
+
+<!-- §5 DATA MODEL -->
+<section class="section-wrap" id="data-model">
+  <div class="section-eyebrow"><span class="num">§5</span> Data Model</div>
+  <h2 class="section-heading">JSON Schema — archive.json</h2>
+
+  <p>All state lives in one JSON file. Three top-level arrays. No foreign key constraints — references are by string ID. The entire file is written atomically after each step using a temp-file + rename pattern.</p>
+
+  <div class="schema-block">
+    <div class="schema-header">nodes[ ] <span>one entry per archive node (agent workspace version)</span></div>
+    <div class="schema-body">
+      <div class="schema-field"><span class="field-name">id</span><span class="field-type">string</span><span class="field-desc">UUID. Seed node is "root".</span></div>
+      <div class="schema-field"><span class="field-name">parent_id</span><span class="field-type">string|null</span><span class="field-desc">Parent node ID. Null for seed.</span></div>
+      <div class="schema-field"><span class="field-name">coder_fn</span><span class="field-type">string</span><span class="field-desc">Full Python source of the coder function at this node.</span></div>
+      <div class="schema-field"><span class="field-name">reviewer_fn</span><span class="field-type">string</span><span class="field-desc">Full Python source of the reviewer function. Can be same as parent (unchanged).</span></div>
+      <div class="schema-field"><span class="field-name">s_own</span><span class="field-type">int</span><span class="field-desc">Own successes (epoch-current only; reset on selective erasure for reviewer role).</span></div>
+      <div class="schema-field"><span class="field-name">f_own</span><span class="field-type">int</span><span class="field-desc">Own failures (epoch-current only).</span></div>
+      <div class="schema-field"><span class="field-name">s_clade</span><span class="field-type">int</span><span class="field-desc">Clade success aggregate. Recomputed after selective erasure.</span></div>
+      <div class="schema-field"><span class="field-name">f_clade</span><span class="field-type">int</span><span class="field-desc">Clade failure aggregate.</span></div>
+      <div class="schema-field"><span class="field-name">best_belief</span><span class="field-type">float</span><span class="field-desc">ε-best-belief (ε=0.05). Updated after every record() call.</span></div>
+      <div class="schema-field"><span class="field-name">children</span><span class="field-type">string[]</span><span class="field-desc">List of child node IDs. For clade traversal.</span></div>
+    </div>
+  </div>
+
+  <div class="schema-block">
+    <div class="schema-header">utility_records[ ] <span>individual evaluation outcomes — the selective erasure target</span></div>
+    <div class="schema-body">
+      <div class="schema-field"><span class="field-name">id</span><span class="field-type">string</span><span class="field-desc">UUID.</span></div>
+      <div class="schema-field"><span class="field-name">node_id</span><span class="field-type">string</span><span class="field-desc">Which node this belongs to.</span></div>
+      <div class="schema-field"><span class="field-name">role</span><span class="field-type">"coder"|"reviewer"</span><span class="field-desc">Which role was evaluated.</span></div>
+      <div class="schema-field"><span class="field-name">task_id</span><span class="field-type">string</span><span class="field-desc">HumanEval task identifier.</span></div>
+      <div class="schema-field"><span class="field-name">outcome</span><span class="field-type">0|1</span><span class="field-desc">1 = success, 0 = failure.</span></div>
+      <div class="schema-field"><span class="field-name">epoch</span><span class="field-type">int</span><span class="field-desc"><strong>The erasure key.</strong> Records with role="reviewer" and epoch=0 are deleted on first epoch boundary. Coder records (is_verifiable=true) are never deleted.</span></div>
+      <div class="schema-field"><span class="field-name">is_verifiable</span><span class="field-type">bool</span><span class="field-desc">True for coder (test suite), false for reviewer (evaluator-dependent). Only false records are erasable.</span></div>
+      <div class="schema-field"><span class="field-name">reviewer_output_cache</span><span class="field-type">string|null</span><span class="field-desc">Raw reviewer LLM output. Stored to enable re-scoring under new reviewer without extra API call.</span></div>
+    </div>
+  </div>
+
+  <div class="schema-block">
+    <div class="schema-header">epoch_events[ ] <span>audit log — one entry per epoch boundary</span></div>
+    <div class="schema-body">
+      <div class="schema-field"><span class="field-name">step</span><span class="field-type">int</span><span class="field-desc">Budget counter when boundary fired.</span></div>
+      <div class="schema-field"><span class="field-name">outcome</span><span class="field-type">"promoted"|"retained"</span><span class="field-desc">Whether the challenger was promoted.</span></div>
+      <div class="schema-field"><span class="field-name">incumbent_id</span><span class="field-type">string</span><span class="field-desc">Node ID of the incumbent reviewer before contest.</span></div>
+      <div class="schema-field"><span class="field-name">winner_id</span><span class="field-type">string</span><span class="field-desc">Node ID of the promoted reviewer (may equal incumbent_id).</span></div>
+      <div class="schema-field"><span class="field-name">gt_accuracy_before</span><span class="field-type">float</span><span class="field-desc">Incumbent accuracy on 50-sample held-out set.</span></div>
+      <div class="schema-field"><span class="field-name">gt_accuracy_after</span><span class="field-type">float</span><span class="field-desc">Winner accuracy on same set. Should be ≥ before if promoted.</span></div>
+      <div class="schema-field"><span class="field-name">records_erased</span><span class="field-type">int</span><span class="field-desc">Count of reviewer utility_records deleted (0 if retained).</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- §6 EPOCH PROTOCOL -->
+<section class="section-wrap" id="epoch-protocol">
+  <div class="section-eyebrow"><span class="num">§6</span> Epoch Protocol</div>
+  <h2 class="section-heading">The One Epoch Boundary</h2>
+
+  <p>With B=80 and a single checkpoint at step 30, there is exactly one opportunity for an evaluator upgrade. The protocol must still be implemented correctly — the correctness guarantee is what the prototype exists to validate.</p>
+
+  <table class="spec-table">
+    <thead><tr><th>Step</th><th>Action</th><th>Invariant Checked</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="strong">Steps 0–29</td>
+        <td>Normal search. Reviewer nodes co-evolve alongside coder nodes. All reviewer records tagged <code class="mono" style="font-size:.75rem">epoch=0</code>. Coder test records tagged <code class="mono" style="font-size:.75rem">is_verifiable=True</code>.</td>
+        <td>All utility_records have epoch=0. CMP is consistent with s_own/f_own.</td>
+      </tr>
+      <tr>
+        <td class="strong">Step 30 (Boundary)</td>
+        <td>1. Score all reviewer nodes on held-out 50-sample set.<br>2. Compute ε-best-belief for each.<br>3. Promote winner (if != incumbent) or retain.<br>4. If promoted: delete all <code class="mono" style="font-size:.75rem">role="reviewer", epoch=0</code> records. Increment epoch to 1. Recompute CMP for all nodes. Log to epoch_events.</td>
+        <td>After erasure: zero records exist with <code class="mono" style="font-size:.75rem">role="reviewer" AND epoch=0</code>. All surviving records are either coder (is_verifiable=True) or reviewer epoch=1. Node s_own + f_own match surviving records.</td>
+      </tr>
+      <tr>
+        <td class="strong">Steps 31–80</td>
+        <td>Continues under new (or same) reviewer. New reviewer evaluations tagged <code class="mono" style="font-size:.75rem">epoch=1</code>. Coder continues to accumulate test-verified records normally.</td>
+        <td>No records with <code class="mono" style="font-size:.75rem">epoch=0</code> exist. CMP is consistent.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚑</span>
+    <p><strong>Critical test:</strong> After every call to <code>selective_erase()</code>, the test suite must assert <code>len([r for r in archive["utility_records"] if r["role"]=="reviewer" and r["epoch"]==0]) == 0</code>. This assertion runs in CI on every commit and after every simulated epoch boundary in the integration test.</p>
+  </div>
+
+  <h3 style="font-size:.9rem;font-weight:600;color:var(--text);margin:18px 0 10px">Ground-Truth Accuracy — How Reviewer Promotion Works in Lite</h3>
+  <p>Without CRAVE, the reviewer's "ground truth" is whether it correctly predicts coder test outcomes. The 50-sample held-out set is constructed at run start: pick 50 random (task, solution) pairs from the HumanEval training split, run the test suite to get ground-truth pass/fail, store them. A reviewer's GT accuracy = fraction it correctly classifies.</p>
+  <div class="code-block"><span class="fn">def</span> <span class="key">gt_accuracy</span>(reviewer_node, held_out_50):
+    <span class="comment"># held_out_50: list of {solution, task, ground_truth_pass: bool}</span>
+    correct = <span class="num">0</span>
+    <span class="fn">for</span> item <span class="fn">in</span> held_out_50:
+        reviewer_says_pass = ReviewerAgent(reviewer_node).score(
+            item[<span class="str">"solution"</span>], item[<span class="str">"task"</span>]
+        ) == <span class="num">1</span>
+        <span class="fn">if</span> reviewer_says_pass == item[<span class="str">"ground_truth_pass"</span>]:
+            correct += <span class="num">1</span>
+    <span class="fn">return</span> (correct, len(held_out_50) - correct)  <span class="comment"># (successes, failures)</span></div>
+</section>
+
+<!-- §7 TWO-PHASE PLAN -->
+<section class="section-wrap" id="phases">
+  <div class="section-eyebrow"><span class="num">§7</span> Implementation Plan</div>
+  <h2 class="section-heading">Two Phases, ~3 Weeks Each</h2>
+
+  <div class="phase-grid">
+    <div class="phase-card p1">
+      <div class="phase-tag">Phase 1 · Weeks 1–3 · Foundation</div>
+      <h3>Fixed-Reviewer Baseline (HGM-H equivalent)</h3>
+      <p>Build everything except the epoch machinery. Produces a working baseline run. All Phase 2 work is additive — no rewrites needed.</p>
+      <ul class="phase-tasks">
+        <li><span>HumanEval 20-task JSON loader + subprocess test runner</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>Archive dict structure + JSON persistence (atomic write)</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>ε-best-belief via scipy.stats Beta quantile</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>Thompson sampling over CMP (Beta draw per node)</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>UCB-Air gate (expand vs evaluate check)</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>Three-level sampler (node → role → task, least-eval first)</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>CoderAgent: Gemini 3.5 Flash generates Python solution for HumanEval prompt</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>ReviewerAgent: Gemini 3.5 Flash scores solution quality (0/1), prompt-based</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>MetaAgent: Gemini 3.5 Flash generates updated coder_fn + reviewer_fn JSON</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>llm.py: google-genai SDK wrapper + context cache setup + blended token counter + LRU output cache</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>HGM-H baseline run: frozen reviewer throughout (epoch boundary disabled)</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>results.json output + plot.py chart</span><span><span class="badge p1">P1</span></span></li>
+      </ul>
+    </div>
+    <div class="phase-card p2">
+      <div class="phase-tag">Phase 2 · Weeks 4–6 · Co-Evolution</div>
+      <h3>Epoch Machinery + Full RQGM Run</h3>
+      <p>Layer in the epoch boundary, selective erasure, and evaluator promotion. Run full RQGM and compare against Phase 1 baseline on the same 20-task subset.</p>
+      <ul class="phase-tasks">
+        <li><span>Build held-out 50-sample GT accuracy set at run start</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>epoch field + is_verifiable field on utility_records</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>selective_erase(role, epoch) + recompute_clade_aggregates()</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>run_epoch_boundary(): contest + promotion + erasure (atomic JSON write)</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>reviewer_output_cache field for re-scoring without extra API calls</span><span><span class="badge p1">P1</span></span></li>
+        <li><span>Erasure invariant test (pytest): assert zero stale records after boundary</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>Full RQGM run (B=80, checkpoint=30) → results.json</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>Comparison plot: RQGM vs HGM-H (token cost vs pass rate + epoch marker)</span><span><span class="badge p0">P0</span></span></li>
+        <li><span>Patch attribution: log % of meta-agent edits touching reviewer_fn</span><span><span class="badge p1">P1</span></span></li>
+        <li><span>Run 3 variants to measure variance in pass rate and token savings</span><span><span class="badge p1">P1</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout info" style="margin-top:14px">
+    <span class="callout-icon">◈</span>
+    <p><strong>Phase 2 is purely additive.</strong> The epoch boundary check in <code>search.py</code> is a single <code>if mode == "rqgm" and step == CHECKPOINT</code> guard. The HGM-H baseline is the same code with <code>mode="hgm_h"</code>. No restructuring required between phases.</p>
+  </div>
+</section>
+
+<!-- §8 EXIT CRITERIA -->
+<section class="section-wrap" id="metrics">
+  <div class="section-eyebrow"><span class="num">§8</span> Exit Criteria</div>
+  <h2 class="section-heading">What "Done" Looks Like</h2>
+
+  <div class="metric-row">
+    <div class="metric-cell rust">
+      <div class="label">P0 · Token Efficiency</div>
+      <div class="val">+10%</div>
+      <div class="desc">RQGM reaches same held-out pass rate as HGM-H using at least 10% fewer blended tokens (direction consistent with paper's 1.35×)</div>
+    </div>
+    <div class="metric-cell teal">
+      <div class="label">P0 · Erasure Invariant</div>
+      <div class="val">0</div>
+      <div class="desc">Stale reviewer records in archive after epoch boundary. Enforced by pytest assertion in CI.</div>
+    </div>
+    <div class="metric-cell sage">
+      <div class="label">P1 · Evaluator Improvement</div>
+      <div class="val">+2pp</div>
+      <div class="desc">Promoted reviewer's GT accuracy exceeds epoch-0 incumbent by ≥2 percentage points on the 50-sample held-out set</div>
+    </div>
+    <div class="metric-cell amber">
+      <div class="label">P1 · Budget Spend</div>
+      <div class="val">&lt;$20</div>
+      <div class="desc">Total Google Gemini API spend across all runs (baseline + RQGM + 3 variance runs). Per-run target: $3–5 uncached, $2.50–4 with reviewer caching</div>
+    </div>
+  </div>
+
+  <div class="callout cut">
+    <span class="callout-icon">✗</span>
+    <p><strong>Not a success criterion:</strong> Reproducing the paper's exact 71.7% pass rate or 1.72× token savings. The prototype uses 20 tasks vs. the paper's full Polyglot suite, a different model (Gemini 3.5 Flash vs. GPT-5.5), and a smaller budget. The bar is directional correctness of the mechanism, not numerical replication.</p>
+  </div>
+</section>
+
+<!-- §9 OPEN QUESTIONS -->
+<section class="section-wrap" id="open-questions">
+  <div class="section-eyebrow"><span class="num">§9</span> Open Questions</div>
+  <h2 class="section-heading">Decisions Before Build Starts</h2>
+
+  <div class="oq-list">
+    <div class="oq-item">
+      <strong>Can Gemini 3.5 Flash write functional Python patches reliably?</strong>
+      The meta-agent must produce valid Python that actually changes behavior. Gemini 3.5 Flash is weaker at code generation than Sonnet. We should spike this before committing to Phase 1: prompt Gemini 3.5 Flash to modify a simple Python function 20 times and measure the rate of syntactically valid, meaningfully different outputs. If it's below 50%, we either switch to Sonnet for meta-agent calls only (keeping Gemini 3.5 Flash for evaluation) or simplify the workspace model further.
+    </div>
+    <div class="oq-item">
+      <strong>Should the reviewer be a prompted LLM or a co-evolved code function?</strong>
+      In the paper, the reviewer is a full agentic process that evolves its own code. In Lite, the simplest version is a fixed LLM prompt that scores solutions, with the meta-agent only evolving the <em>prompt string</em> rather than full code. This is much cheaper and more stable. Is a prompt-as-evaluator faithful enough to the paper's mechanism, or does it undermine the core claim?
+    </div>
+    <div class="oq-item">
+      <strong>Is 20 HumanEval tasks enough statistical signal?</strong>
+      With B=80 evaluations split across 20 tasks and ~25 nodes in the archive, each node gets roughly 3 evaluations on average. ε-best-belief with n=3 is very wide. We may need to either increase the task pool to 40 (doubling cost) or increase B to 160 (doubling cost). Recommend: run a dry cost estimate first with <code>thinking_level="low"</code> on eval calls, then decide. Sampling with replacement is effective here — the reviewer output cache makes repeated (task, node) pairs essentially free after the first API call.
+    </div>
+    <div class="oq-item">
+      <strong>What is the seed node's coder_fn and reviewer_fn?</strong>
+      The seed is initialized with a minimal coder (e.g., a template that returns an empty string) and a minimal reviewer (e.g., always returns 1). Alternatively, the seed can be a passable but weak solution generated by Gemini 3.5 Flash at startup. The second approach may produce more interesting search dynamics but adds one extra API call at initialization.
+    </div>
+    <div class="oq-item">
+      <strong>How do we handle the case where no challenger emerges by step 30?</strong>
+      If all nodes in the archive are coder-dominant (meta-agent only edits coder_fn), there may be no meaningful challenger reviewers at the checkpoint. The boundary fires but returns "no_challenger." The run then continues as HGM-H for steps 31–80. This is a valid outcome but makes the RQGM run identical to baseline. We need a fallback: either prompt the meta-agent to also evolve reviewer_fn, or initialize the archive with a separate reviewer lineage node at step 0.
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+function toggleTheme() {
+  document.documentElement.setAttribute('data-theme',
+    document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+}
+
+const sections = document.querySelectorAll('section[id]');
+const navItems = document.querySelectorAll('.nav-item');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting)
+      navItems.forEach(i => i.classList.toggle('active', i.getAttribute('href') === '#' + e.target.id));
+  });
+}, { threshold: 0.25, rootMargin: '-80px 0px -55% 0px' });
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>

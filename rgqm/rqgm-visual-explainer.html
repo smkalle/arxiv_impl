@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Queen Gödel Machine — Visual Explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+}
+
+[data-theme="dark"] {
+  --bg: #070d14;
+  --surface: #0e1a27;
+  --surface-2: #162033;
+  --surface-3: #1c2940;
+  --border: rgba(100, 160, 230, 0.10);
+  --border-bright: rgba(100, 160, 230, 0.22);
+  --text: #d8e8f8;
+  --text-dim: #7a9ab8;
+  --text-faint: #3a5a78;
+  --gold: #d4a73a;
+  --gold-dim: rgba(212, 167, 58, 0.12);
+  --blue: #4a9edd;
+  --blue-dim: rgba(74, 158, 221, 0.10);
+  --teal: #2eb8b8;
+  --teal-dim: rgba(46, 184, 184, 0.10);
+  --rose: #e05a6e;
+  --rose-dim: rgba(224, 90, 110, 0.10);
+  --emerald: #2ecc88;
+  --emerald-dim: rgba(46, 204, 136, 0.10);
+  --amber: #e08830;
+  --amber-dim: rgba(224, 136, 48, 0.10);
+  --grid-line: rgba(74, 158, 221, 0.04);
+  --hero-glow: rgba(74, 158, 221, 0.07);
+}
+
+[data-theme="light"] {
+  --bg: #f0f4fa;
+  --surface: #ffffff;
+  --surface-2: #f7f9fd;
+  --surface-3: #edf2f9;
+  --border: rgba(30, 70, 130, 0.10);
+  --border-bright: rgba(30, 70, 130, 0.20);
+  --text: #0e1a27;
+  --text-dim: #3a5a78;
+  --text-faint: #9ab8d8;
+  --gold: #b87a10;
+  --gold-dim: rgba(184, 122, 16, 0.10);
+  --blue: #1a6ab8;
+  --blue-dim: rgba(26, 106, 184, 0.08);
+  --teal: #147a7a;
+  --teal-dim: rgba(20, 122, 122, 0.08);
+  --rose: #b83050;
+  --rose-dim: rgba(184, 48, 80, 0.08);
+  --emerald: #0e8860;
+  --emerald-dim: rgba(14, 136, 96, 0.08);
+  --amber: #b86010;
+  --amber-dim: rgba(184, 96, 16, 0.08);
+  --grid-line: rgba(30, 70, 130, 0.04);
+  --hero-glow: rgba(26, 106, 184, 0.05);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 0%, var(--hero-glow) 0%, transparent 55%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── LAYOUT ── */
+.page-wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  position: fixed;
+  top: 18px; right: 20px;
+  z-index: 100;
+  background: var(--surface-2);
+  border: 1px solid var(--border-bright);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: all 0.2s;
+}
+.theme-toggle:hover { color: var(--text); border-color: var(--blue); }
+
+/* ── HERO ── */
+.hero {
+  padding: 72px 0 56px;
+  position: relative;
+}
+.hero-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-tag::before {
+  content: '';
+  display: block;
+  width: 32px; height: 1px;
+  background: var(--gold);
+}
+.hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 400;
+  line-height: 1.15;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--gold);
+}
+.hero-sub {
+  font-size: 1rem;
+  color: var(--text-dim);
+  max-width: 640px;
+  margin-bottom: 32px;
+  line-height: 1.7;
+}
+.hero-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.05em;
+}
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 3px;
+  border: 1px solid var(--border-bright);
+  color: var(--text-dim);
+  background: var(--surface-2);
+}
+.badge.blue { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+.badge.gold { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+.badge.teal { border-color: var(--teal); color: var(--teal); background: var(--teal-dim); }
+
+/* ── SECTION HEADERS ── */
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.section-title {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 24px;
+  line-height: 1.25;
+}
+.section {
+  margin-bottom: 64px;
+}
+
+/* ── CARDS ── */
+.ve-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+}
+.ve-card--elevated {
+  background: var(--surface-2);
+  border-color: var(--border-bright);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.ve-card--blue { border-left: 3px solid var(--blue); }
+.ve-card--gold { border-left: 3px solid var(--gold); }
+.ve-card--teal { border-left: 3px solid var(--teal); }
+.ve-card--rose { border-left: 3px solid var(--rose); }
+.ve-card--emerald { border-left: 3px solid var(--emerald); }
+.ve-card--amber { border-left: 3px solid var(--amber); }
+
+/* ── PROBLEM SECTION ── */
+.problem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 640px) { .problem-grid { grid-template-columns: 1fr; } }
+
+.problem-card {
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-bright);
+  background: var(--surface);
+}
+.problem-card h3 {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.problem-card p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.6; }
+
+.problem-card.static { border-color: var(--rose); }
+.problem-card.static h3 { color: var(--rose); }
+.problem-card.dynamic { border-color: var(--emerald); }
+.problem-card.dynamic h3 { color: var(--emerald); }
+
+.vs-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  padding: 8px 0;
+  grid-column: 1 / -1;
+}
+
+/* ── RQGM INSIGHT STRIP ── */
+.insight-strip {
+  background: var(--gold-dim);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.insight-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+/* ── ARCH DIAGRAM ── */
+.arch-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border-bright);
+  border-radius: 10px;
+  padding: 24px;
+  overflow: hidden;
+}
+.mermaid-wrap {
+  position: relative;
+  min-height: 200px;
+}
+.zoom-controls {
+  position: absolute;
+  top: 8px; right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+.zoom-btn {
+  width: 28px; height: 28px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-bright);
+  color: var(--text-dim);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  transition: all 0.15s;
+}
+.zoom-btn:hover { color: var(--text); border-color: var(--blue); }
+.mermaid-inner {
+  transform-origin: top center;
+  transition: transform 0.2s;
+  overflow: hidden;
+}
+
+/* ── EPOCH FLOW ── */
+.epoch-track {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.epoch-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.epoch-block {
+  flex: 1;
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  position: relative;
+  min-width: 0;
+}
+.epoch-block:first-child { border-radius: 8px 0 0 8px; }
+.epoch-block:last-child { border-radius: 0 8px 8px 0; }
+.epoch-block h4 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.epoch-block p { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
+.epoch-block.active-epoch {
+  background: var(--blue-dim);
+  border-color: var(--blue);
+}
+.epoch-block.transition {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+  border-left: 2px dashed var(--gold);
+  flex: 0.5;
+}
+.epoch-block.active-epoch h4 { color: var(--blue); }
+.epoch-block.transition h4 { color: var(--gold); }
+
+.epoch-label-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2px;
+}
+.epoch-span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  background: var(--blue);
+  color: #000;
+  border-radius: 4px 4px 0 0;
+  margin-right: 2px;
+}
+.epoch-span.e2 { background: var(--teal); }
+.epoch-span.e3 { background: var(--gold); color: #000; }
+.epoch-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--gold);
+  writing-mode: vertical-lr;
+  border-left: 2px dashed var(--gold);
+  border-right: 2px dashed var(--gold);
+  padding: 0 6px;
+  background: var(--gold-dim);
+  flex: 0.15;
+}
+
+/* ── MECHANISM STEPS ── */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.step-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  position: relative;
+}
+.step-number {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--border-bright);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.step-card h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.step-card p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.55; }
+.step-card.s1 .step-number { color: var(--blue); opacity: 0.5; }
+.step-card.s2 .step-number { color: var(--teal); opacity: 0.5; }
+.step-card.s3 .step-number { color: var(--gold); opacity: 0.5; }
+.step-card.s4 .step-number { color: var(--emerald); opacity: 0.5; }
+
+/* ── RESULTS ── */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 720px) { .results-grid { grid-template-columns: 1fr; } }
+
+.domain-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.domain-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.domain-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.domain-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: -4px;
+}
+.metric-big {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.metric-label { font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
+.domain-card .detail { font-size: 0.78rem; color: var(--text-dim); line-height: 1.55; }
+.domain-card.coding { border-top: 2px solid var(--blue); }
+.domain-card.coding .metric-big { color: var(--blue); }
+.domain-card.writing { border-top: 2px solid var(--gold); }
+.domain-card.writing .metric-big { color: var(--gold); }
+.domain-card.proofs { border-top: 2px solid var(--emerald); }
+.domain-card.proofs .metric-big { color: var(--emerald); }
+.domain-card.bias { border-top: 2px solid var(--rose); }
+.domain-card.bias .metric-big { color: var(--rose); }
+
+/* ── TABLE ── */
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-top: 8px;
+}
+.result-table th {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-bright);
+}
+.result-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+  vertical-align: middle;
+}
+.result-table tr:last-child td { border-bottom: none; }
+.result-table .highlight td { color: var(--text); background: var(--blue-dim); }
+.result-table .highlight-gold td { color: var(--text); background: var(--gold-dim); }
+.result-table .winner { color: var(--gold); font-weight: 600; }
+
+/* ── THEORY SECTION ── */
+.theory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 640px) { .theory-grid { grid-template-columns: 1fr; } }
+
+.prop-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+.prop-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+.prop-card h3 {
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.prop-card p { font-size: 0.8rem; color: var(--text-dim); line-height: 1.55; }
+.prop-card.p1 { border-color: var(--blue); }
+.prop-card.p1 h3 { color: var(--blue); }
+.prop-card.p2 { border-color: var(--teal); }
+.prop-card.p2 h3 { color: var(--teal); }
+.prop-card.p3 { border-color: var(--gold); }
+.prop-card.p3 h3 { color: var(--gold); }
+
+/* ── CONTRIB ── */
+.contrib-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 560px) { .contrib-list { grid-template-columns: 1fr; } }
+
+.contrib-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+}
+.contrib-num {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gold);
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.contrib-text h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.contrib-text p { font-size: 0.78rem; color: var(--text-dim); line-height: 1.55; }
+
+/* ── DIVIDER ── */
+.rule {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0 0 48px;
+}
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.footer a { color: var(--blue); text-decoration: none; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fadeUp 0.5s ease both;
+}
+.delay-1 { animation-delay: 0.08s; }
+.delay-2 { animation-delay: 0.16s; }
+.delay-3 { animation-delay: 0.24s; }
+.delay-4 { animation-delay: 0.32s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up { animation: none; }
+}
+
+/* ── MERMAID THEME OVERRIDE ── */
+.mermaid svg { width: 100%; height: auto; max-width: 100%; }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()">◐ THEME</button>
+
+<div class="page-wrap">
+
+  <!-- HERO -->
+  <header class="hero fade-up">
+    <div class="hero-tag">arxiv:2606.26294 · Cambridge ML Systems Lab · June 2026</div>
+    <h1>The <em>Red Queen</em> Gödel Machine</h1>
+    <p class="hero-sub">
+      A recursive self-improvement framework where AI agents and their evaluators <strong>co-evolve together</strong> — 
+      instead of agents improving against a fixed, static benchmark that never changes.
+    </p>
+    <div class="hero-badges">
+      <span class="badge blue">Self-Improving Agents</span>
+      <span class="badge gold">Co-Evolutionary Search</span>
+      <span class="badge teal">Learned Evaluation</span>
+      <span class="badge">Non-Stationary Utilities</span>
+      <span class="badge">Multi-Agent Systems</span>
+    </div>
+    <div class="hero-meta" style="margin-top: 20px;">
+      Iacob · Jovanović · Shen · Burkhardt · Kurmanji · Tastan · Sani · Venanzi · Odonnat · Cao · Marino · Qiu · Lane
+      &nbsp;|&nbsp; University of Cambridge · NVIDIA · Flower Labs · MBZUAI · Inria
+    </div>
+  </header>
+
+  <hr class="rule">
+
+  <!-- 1. THE PROBLEM -->
+  <section class="section fade-up delay-1">
+    <div class="section-label">§1 · Motivation</div>
+    <div class="section-title">Why Static Evaluation Breaks Down</div>
+
+    <div class="insight-strip">
+      <span class="insight-icon">♛</span>
+      <span>Named after the <strong>Red Queen hypothesis</strong> (Van Valen, 1973): species must continuously adapt not toward an absolute ideal, but relative to co-evolving competitors. Staying still means falling behind.</span>
+    </div>
+
+    <div class="problem-grid">
+      <div class="problem-card static">
+        <h3>⚠ Current Approach — Static Evaluation</h3>
+        <p>Prior Gödel Machines (DGM, HGM, HyperAgents) use a <strong>fixed external evaluator</strong> — a benchmark, labeled dataset, or verifier — held constant outside the improvement loop throughout every run.</p>
+      </div>
+      <div class="problem-card dynamic">
+        <h3>✓ RQGM — Co-Evolving Evaluation</h3>
+        <p>The Red Queen Gödel Machine treats the utility signal itself as <strong>part of the search process</strong>. Evaluators improve alongside the agents they score, opening search to evolving objectives.</p>
+      </div>
+
+      <div style="grid-column: 1/-1; margin-top: 8px;">
+        <div class="ve-card ve-card--elevated">
+          <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 14px; font-weight: 500; color: var(--text);">Three situations where static evaluation fails:</p>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+            <div style="padding: 12px; background: var(--rose-dim); border: 1px solid var(--rose); border-radius: 6px;">
+              <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--rose); text-transform: uppercase; margin-bottom: 6px;">No Benchmark Exists</div>
+              <p style="font-size: 0.8rem; color: var(--text-dim);">Paper writing, proof writing — where quality cannot be automatically verified by executing code or looking up answers.</p>
+            </div>
+            <div style="padding: 12px; background: var(--amber-dim); border: 1px solid var(--amber); border-radius: 6px;">
+              <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--amber); text-transform: uppercase; margin-bottom: 6px;">Slow / Noisy Evaluation</div>
+              <p style="font-size: 0.8rem; color: var(--text-dim);">Multi-turn agent execution is expensive. A learned judge can be a cheaper, complementary surrogate that speeds up search.</p>
+            </div>
+            <div style="padding: 12px; background: var(--rose-dim); border: 1px solid var(--rose); border-radius: 6px;">
+              <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--rose); text-transform: uppercase; margin-bottom: 6px;">Benchmark Saturation</div>
+              <p style="font-size: 0.8rem; color: var(--text-dim);">Static benchmarks saturate or become vulnerable to reward hacking as agents improve beyond what the benchmark was designed to test.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 2. CORE ARCHITECTURE -->
+  <section class="section fade-up delay-2">
+    <div class="section-label">§2 · Core Architecture</div>
+    <div class="section-title">How RQGM Works</div>
+
+    <div class="arch-wrap">
+      <div class="mermaid-wrap" id="mermaid-arch">
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="zoomDiagram('mermaid-arch', 1.15)">+</button>
+          <button class="zoom-btn" onclick="zoomDiagram('mermaid-arch', 0.87)">−</button>
+          <button class="zoom-btn" onclick="resetZoom('mermaid-arch')">⌂</button>
+        </div>
+        <div class="mermaid-inner" id="mermaid-arch-inner">
+<div class="mermaid">
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#162033", "primaryTextColor": "#d8e8f8", "primaryBorderColor": "#4a9edd", "lineColor": "#7a9ab8", "secondaryColor": "#0e1a27", "tertiaryColor": "#1c2940", "edgeLabelBackground": "#162033", "fontSize": "13px"}, "flowchart": {"curve": "basis"}} }%%
+flowchart TD
+    A([Seed Node\nArchive]) -->|"Thompson sampling\nover CMP"| B{Expand or\nEvaluate?}
+
+    B -->|"Expand"| C["Meta-Agent\nEdits Workspace"]
+    B -->|"Evaluate"| D["Role ➜ Task\nSelection\nleast-evaluated first"]
+
+    C --> E[(Multi-Agent\nWorkspace\n─────\nTask Agent Slots\nEvaluator Slots)]
+    D --> E
+
+    E --> F["Task Agent\nScored by\nEpoch-Frozen Evaluator"]
+    E --> G["Evaluator\nScored Against\nGround-Truth Anchor"]
+
+    F --> H["ε-Best-Belief Score\naccumulated per node"]
+    G --> H
+
+    H --> I{Epoch\nBoundary?}
+    I -->|"No — continue"| B
+    I -->|"Yes"| J{Challenger\nbeats incumbent\non GT anchor?}
+
+    J -->|"No"| K[Keep incumbent\nEvaluator frozen]
+    J -->|"Yes"| L["🔄 Evaluator Replaced\nSelective Erasure\nof stale records"]
+
+    K --> B
+    L --> M["New Epoch begins\nFresh utility tracking\nArchive re-ranked"]
+    M --> B
+
+    classDef process fill:#162033,stroke:#4a9edd,stroke-width:1.5px,color:#d8e8f8
+    classDef decision fill:#0e1a27,stroke:#d4a73a,stroke-width:1.5px,color:#d4a73a
+    classDef action fill:#1c2940,stroke:#2eb8b8,stroke-width:1px,color:#d8e8f8
+    classDef result fill:#162033,stroke:#2ecc88,stroke-width:1px,color:#d8e8f8
+    classDef replace fill:#1c2940,stroke:#e05a6e,stroke-width:2px,color:#d8e8f8
+
+    class A,E process
+    class B,I,J decision
+    class C,D,F,G action
+    class H,K,M result
+    class L replace
+</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="steps-grid" style="margin-top: 16px;">
+      <div class="step-card s1">
+        <div class="step-number">01</div>
+        <h3>Multi-Agent Workspace</h3>
+        <p>Each archive node contains K agentic roles: task agent slots (coder, writer, prover) AND evaluator slots (code reviewer, paper reviewer, proof grader). All share a common codebase.</p>
+      </div>
+      <div class="step-card s2">
+        <div class="step-number">02</div>
+        <h3>Three-Level Sampling</h3>
+        <p>Node → Role → Task. At each level, the scheduler picks the <em>least-evaluated eligible option</em>, ensuring balanced coverage across all roles and tasks. Clade meta-productivity (CMP) drives node selection.</p>
+      </div>
+      <div class="step-card s3">
+        <div class="step-number">03</div>
+        <h3>Frozen Within Each Epoch</h3>
+        <p>The evaluator is locked ("epoch-stationary") within each epoch. This means within-epoch search is a standard fixed-criterion problem — prior HGM convergence guarantees apply directly.</p>
+      </div>
+      <div class="step-card s4">
+        <div class="step-number">04</div>
+        <h3>Evolving Across Epochs</h3>
+        <p>At epoch boundaries, challengers compete against the incumbent evaluator on a held-out ground-truth anchor. The ε-best-belief winner is frozen for the next epoch. Selective erasure removes stale records.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 3. CONTROLLED UTILITY EVOLUTION -->
+  <section class="section fade-up delay-2">
+    <div class="section-label">§3 · Key Mechanism</div>
+    <div class="section-title">Controlled Utility Evolution</div>
+
+    <div class="insight-strip">
+      <span class="insight-icon">⟳</span>
+      <span>The core insight: run self-improvement with a <strong>frozen evaluator</strong> (so guarantees hold within each epoch), but allow the evaluator to be <strong>upgraded at epoch boundaries</strong> if a better one emerges from co-evolution.</span>
+    </div>
+
+    <!-- Epoch Timeline -->
+    <div class="arch-wrap" style="margin-bottom: 16px;">
+      <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 12px;">Search Timeline</div>
+
+      <div style="display: flex; align-items: stretch; gap: 0; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-bright);">
+        <!-- Epoch 0 -->
+        <div style="flex: 2; background: var(--blue-dim); border-right: 2px dashed var(--gold); padding: 16px;">
+          <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--blue); text-transform: uppercase; margin-bottom: 6px;">Epoch 0 — Fixed Evaluator E₀</div>
+          <p style="font-size: 0.78rem; color: var(--text-dim);">Agents evolve under frozen evaluator E₀. HGM search within epoch. Challenger evaluators co-evolve in parallel.</p>
+          <div style="margin-top: 10px; font-family: var(--font-mono); font-size: 9px; color: var(--blue);">● Clade utility stable · archive grows</div>
+        </div>
+        <!-- Boundary 1 -->
+        <div style="flex: 0.35; background: var(--gold-dim); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; gap: 4px; border-right: 2px dashed var(--gold);">
+          <div style="font-family: var(--font-mono); font-size: 8px; color: var(--gold); text-align: center; writing-mode: vertical-lr; transform: rotate(180deg);">♛ BOUNDARY</div>
+          <div style="font-size: 8px; color: var(--text-faint); text-align: center; writing-mode: vertical-lr; transform: rotate(180deg);">E₁ beats E₀ on GT</div>
+        </div>
+        <!-- Epoch 1 -->
+        <div style="flex: 2; background: var(--teal-dim); border-right: 2px dashed var(--gold); padding: 16px;">
+          <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--teal); text-transform: uppercase; margin-bottom: 6px;">Epoch 1 — Upgraded Evaluator E₁</div>
+          <p style="font-size: 0.78rem; color: var(--text-dim);">Selective erasure removes stale E₀ records. Agents re-ranked under stricter E₁. Utility dips then re-climbs.</p>
+          <div style="margin-top: 10px; font-family: var(--font-mono); font-size: 9px; color: var(--teal);">● Utility drops → re-climbs under E₁</div>
+        </div>
+        <!-- Boundary 2 -->
+        <div style="flex: 0.35; background: var(--gold-dim); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; gap: 4px;">
+          <div style="font-family: var(--font-mono); font-size: 8px; color: var(--gold); text-align: center; writing-mode: vertical-lr; transform: rotate(180deg);">♛ BOUNDARY</div>
+          <div style="font-size: 8px; color: var(--text-faint); text-align: center; writing-mode: vertical-lr; transform: rotate(180deg);">E₂ beats E₁ on GT</div>
+        </div>
+        <!-- Epoch 2 -->
+        <div style="flex: 2; background: var(--gold-dim); padding: 16px;">
+          <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; margin-bottom: 6px;">Epoch 2 — Stronger Evaluator E₂</div>
+          <p style="font-size: 0.78rem; color: var(--text-dim);">Each epoch's evaluator is provably better than the last. Agents now optimized against an increasingly rigorous judge.</p>
+          <div style="margin-top: 10px; font-family: var(--font-mono); font-size: 9px; color: var(--gold);">● Curriculum effect: ever-harder bar</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div class="ve-card ve-card--blue">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue); margin-bottom: 8px;">Selective Erasure</div>
+        <p style="font-size: 0.82rem; color: var(--text-dim);">When E₀ is replaced by E₁, only utility records scored by E₀ are discarded. Unrelated task records survive. Amortized re-evaluation cost is <strong>O(B)</strong> — linear in budget, not O(B²).</p>
+      </div>
+      <div class="ve-card ve-card--gold">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px;">Exponential Checkpoints</div>
+        <p style="font-size: 0.82rem; color: var(--text-dim);">Epoch boundaries are exponentially spaced (ratio ρ > 1). Later evaluators — which are more accurate — get longer epochs and shape the search for longer. Earlier, weaker evaluators expire cheaply.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 4. RESULTS -->
+  <section class="section fade-up delay-3">
+    <div class="section-label">§4 · Empirical Results</div>
+    <div class="section-title">Three Domains, Four Research Questions</div>
+
+    <div class="results-grid">
+      <!-- Coding -->
+      <div class="domain-card coding">
+        <div>
+          <div class="domain-name">RQ1 · Coding</div>
+          <h3>Polyglot Benchmarks</h3>
+        </div>
+        <div>
+          <div class="metric-big">71.7%</div>
+          <div class="metric-label">held-out pass rate (RQGM vs 69.9% prior SOTA HGM-H)</div>
+        </div>
+        <div>
+          <div class="metric-big">1.72×</div>
+          <div class="metric-label">fewer search tokens to match HGM-H's best performance</div>
+        </div>
+        <p class="detail">A co-evolved code reviewer agent-as-a-judge provides a cheap, complementary signal. 90% of accepted patches modify shared infrastructure used by <em>both</em> coder and reviewer roles.</p>
+      </div>
+
+      <!-- Paper Writing -->
+      <div class="domain-card writing">
+        <div>
+          <div class="domain-name">RQ2 · Scientific Writing</div>
+          <h3>Paper Writer + Reviewer</h3>
+        </div>
+        <div>
+          <div class="metric-big">1.86×</div>
+          <div class="metric-label">higher panel acceptance rate vs HGM-H baseline</div>
+        </div>
+        <div>
+          <div class="metric-big">40.5%</div>
+          <div class="metric-label">specialist acceptance vs 21.8% baseline (APReS benchmark)</div>
+        </div>
+        <p class="detail">No objective benchmark for writing quality — the co-evolved reviewer fills this gap. Adversarial epochs prevent AI self-preference bias in the reviewer.</p>
+      </div>
+
+      <!-- Proof Writing -->
+      <div class="domain-card proofs">
+        <div>
+          <div class="domain-name">RQ2 · Olympiad Proofs</div>
+          <h3>IMO Proof Writer + Grader</h3>
+        </div>
+        <div>
+          <div class="metric-big">+9%</div>
+          <div class="metric-label">grader accuracy vs static baselines on ground-truth human grades</div>
+        </div>
+        <div>
+          <div class="metric-big">3×</div>
+          <div class="metric-label">lower search cost than prior SOTA (DGM-H) to match quality</div>
+        </div>
+        <p class="detail">Proof grader co-evolved using IMO-GradingBench human grades as ground-truth anchor. Improvements emerge at longer training horizons. Graders reach 9% higher accuracy.</p>
+      </div>
+    </div>
+
+    <!-- Paper acceptance table -->
+    <div class="ve-card ve-card--elevated" style="margin-bottom: 16px;">
+      <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 12px;">Paper Writing — Reviewer Panel Acceptance Rate (%)</div>
+      <table class="result-table">
+        <thead>
+          <tr>
+            <th>Writer Agent</th>
+            <th>Search Tokens</th>
+            <th>Sakana Reviewer</th>
+            <th>DGM-H Reviewer</th>
+            <th>HGM-H Reviewer</th>
+            <th>RQGM Adversarial</th>
+            <th>Panel Mean</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>HGM-H (baseline)</td>
+            <td style="font-family:var(--font-mono); font-size:0.78rem;">42.5M</td>
+            <td>1.0 ± 2.2</td>
+            <td>12.0 ± 6.3</td>
+            <td>64.0 ± 9.3</td>
+            <td>10.0 ± 5.9</td>
+            <td>21.8 ± 4.0</td>
+          </tr>
+          <tr class="highlight">
+            <td>RQGM generalist</td>
+            <td style="font-family:var(--font-mono); font-size:0.78rem;">44.6M</td>
+            <td>2.0 ± 2.9</td>
+            <td>43.0 ± 9.6</td>
+            <td>81.0 ± 7.6</td>
+            <td>29.0 ± 8.8</td>
+            <td class="winner">38.8 ± 4.8 <span style="font-size:0.7rem; color:var(--blue);">(+1.78×)</span></td>
+          </tr>
+          <tr class="highlight-gold">
+            <td>RQGM specialist</td>
+            <td style="font-family:var(--font-mono); font-size:0.78rem;">221.8M</td>
+            <td>5.0 ± 4.3</td>
+            <td>40.0 ± 9.5</td>
+            <td>86.0 ± 6.8</td>
+            <td>31.0 ± 9.0</td>
+            <td class="winner">40.5 ± 4.8 <span style="font-size:0.7rem; color:var(--gold);">(+1.86×)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Bias correction -->
+    <div class="ve-card ve-card--rose">
+      <div style="display: flex; gap: 16px; align-items: flex-start;">
+        <div style="flex: 1;">
+          <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rose); margin-bottom: 8px;">RQ4 · Bias Correction via Adversarial Epochs</div>
+          <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.6;">The strongest baseline reviewer <strong>over-accepts AI-generated papers at 1.91× the human rate</strong> — a known LLM self-preference bias. RQGM corrects this by gathering AI-accepted papers from the first epoch and replaying them as adversarial negatives in later epochs. The resulting reviewer is equally stringent on both AI and human work.</p>
+        </div>
+        <div style="flex: 0; min-width: 120px; text-align: center;">
+          <div style="font-family: var(--font-mono); font-size: 2rem; font-weight: 600; color: var(--rose);">1.91×</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim);">over-acceptance of AI papers by unregularized reviewer</div>
+          <div style="font-family: var(--font-mono); font-size: 1.2rem; font-weight: 600; color: var(--emerald); margin-top: 8px;">1.0×</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim);">after RQGM adversarial correction</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 5. CO-EVOLUTION DIAGRAM -->
+  <section class="section fade-up delay-3">
+    <div class="section-label">§5 · Interaction Dynamics</div>
+    <div class="section-title">Co-Evolution Between Agents and Evaluators</div>
+
+    <div class="arch-wrap">
+      <div class="mermaid-wrap" id="mermaid-coevo">
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="zoomDiagram('mermaid-coevo', 1.15)">+</button>
+          <button class="zoom-btn" onclick="zoomDiagram('mermaid-coevo', 0.87)">−</button>
+          <button class="zoom-btn" onclick="resetZoom('mermaid-coevo')">⌂</button>
+        </div>
+        <div class="mermaid-inner" id="mermaid-coevo-inner">
+<div class="mermaid">
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0e1a27", "primaryTextColor": "#d8e8f8", "primaryBorderColor": "#4a9edd", "lineColor": "#7a9ab8", "edgeLabelBackground": "#0e1a27", "fontSize": "13px"}} }%%
+graph LR
+    GA["Task Agent\n(Writer / Coder / Prover)"]
+    EV["Evaluator\n(Reviewer / Grader / Judge)"]
+    GT["Ground-Truth Anchor\n(APReS / IMO / CRAVE)"]
+    MA["Meta-Agent\n(edits shared workspace)"]
+    ARC["Archive\n(clade tree)"]
+    ADV["Adversarial Pool\n(samples evaluator accepts\nbut shouldn't)"]
+
+    GA -->|"generates artifacts"| EV
+    EV -->|"scores artifacts → search signal"| GA
+    EV -->|"accuracy measured against"| GT
+    GT -->|"promotes better evaluator\nat epoch boundary"| EV
+    MA -->|"edits both agent & evaluator code"| GA
+    MA -->|"edits both agent & evaluator code"| EV
+    ARC -->|"Thompson sampling\nselects node"| MA
+    GA -->|"utility score → clade"| ARC
+    ADV -->|"adversarial objective\nin later epochs"| EV
+
+    classDef agent fill:#162033,stroke:#4a9edd,stroke-width:2px,color:#d8e8f8
+    classDef eval fill:#1c2940,stroke:#d4a73a,stroke-width:2px,color:#d8e8f8
+    classDef infra fill:#0e1a27,stroke:#7a9ab8,stroke-width:1px,color:#7a9ab8
+    classDef adv fill:#1c0e14,stroke:#e05a6e,stroke-width:1.5px,color:#e05a6e
+
+    class GA agent
+    class EV eval
+    class GT,MA,ARC infra
+    class ADV adv
+</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+      <div style="padding: 12px 14px; background: var(--blue-dim); border: 1px solid var(--blue); border-radius: 6px;">
+        <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--blue); text-transform: uppercase; margin-bottom: 6px;">Shared Codebase</div>
+        <p style="font-size: 0.78rem; color: var(--text-dim);">90% of accepted patches in the coding domain modify shared infrastructure used by both coder and reviewer — a single edit improves both roles.</p>
+      </div>
+      <div style="padding: 12px 14px; background: var(--gold-dim); border: 1px solid var(--gold); border-radius: 6px;">
+        <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; margin-bottom: 6px;">Curriculum Effect</div>
+        <p style="font-size: 0.78rem; color: var(--text-dim);">As evaluators strengthen across epochs, they re-rank the archive — imposing a natural curriculum. Agents must satisfy progressively harder criteria to survive.</p>
+      </div>
+      <div style="padding: 12px 14px; background: var(--rose-dim); border: 1px solid var(--rose); border-radius: 6px;">
+        <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; color: var(--rose); text-transform: uppercase; margin-bottom: 6px;">Adversarial Regularization</div>
+        <p style="font-size: 0.78rem; color: var(--text-dim);">After epoch 0, papers accepted by the displaced reviewer become adversarial negatives. The new reviewer learns to be equally strict on AI and human work.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 6. THEORY -->
+  <section class="section fade-up delay-3">
+    <div class="section-label">§6 · Theoretical Guarantees</div>
+    <div class="section-title">What RQGM Can Formally Prove</div>
+
+    <div class="theory-grid">
+      <div class="prop-card p1">
+        <div class="prop-num">Proposition 3 · Epoch-Local Validity</div>
+        <h3>Per-Epoch Convergence</h3>
+        <p>Each epoch with a frozen evaluator is a fixed-criterion search problem. HGM's convergence guarantees apply directly within every epoch. Selective erasure ensures no cross-epoch utility contamination.</p>
+      </div>
+      <div class="prop-card p2">
+        <div class="prop-num">Propositions 4–5 · Anchor Improvement</div>
+        <h3>Cross-Epoch Progress</h3>
+        <p>The promoted evaluator maximizes ε-best-belief on the ground-truth anchor — a lower bound that the anchor utility exceeds with probability 1−ε. So evaluators get provably better across epoch boundaries.</p>
+      </div>
+      <div class="prop-card p3">
+        <div class="prop-num">Proposition 6 · Amortized Cost</div>
+        <h3>Linear Recovery Cost</h3>
+        <p>With exponentially spaced checkpoints (ratio ρ > 1), the cumulative records exposed to erasure or re-evaluation is O(B) — linear in budget, reducing from the naive O(B²) that would result from per-step transitions.</p>
+      </div>
+    </div>
+
+    <div class="ve-card" style="margin-top: 16px; border-color: var(--border-bright); background: var(--surface-2);">
+      <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 10px;">Informal Summary</div>
+      <p style="font-size: 0.88rem; color: var(--text-dim); line-height: 1.7;">
+        <strong style="color: var(--text);">Convergence holds epoch-by-epoch</strong> via epoch-local stationarity (Prop. 3). 
+        <strong style="color: var(--text);">Evaluators improve across epochs</strong> via anchor-guided promotion (Rem. 3). 
+        <strong style="color: var(--text);">Co-evolution adds no asymptotic overhead</strong> beyond standard archive search (Prop. 6). 
+        The cost is looser convergence guarantees than fully static evaluation — but the benefit is access to open-ended domains that static evaluation cannot handle at all.
+      </p>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- 7. CONTRIBUTIONS -->
+  <section class="section fade-up delay-4">
+    <div class="section-label">§7 · Summary</div>
+    <div class="section-title">Three Key Contributions</div>
+
+    <div class="contrib-list">
+      <div class="contrib-item">
+        <div class="contrib-num">C1</div>
+        <div class="contrib-text">
+          <h3>Non-Stationary Recursive Self-Improvement</h3>
+          <p>Extends self-improving agents beyond fixed external evaluation. The utility signal is itself part of the search process, enabling search objectives to evolve and opening self-improvement to open-ended domains.</p>
+        </div>
+      </div>
+      <div class="contrib-item">
+        <div class="contrib-num">C2</div>
+        <div class="contrib-text">
+          <h3>Controlled Utility Evolution Mechanism</h3>
+          <p>Makes non-stationary utilities compatible with prior self-improvement guarantees. Fixed-evaluator epochs + boundary-only changes + ε-best-belief promotion = co-evolution with formal per-epoch convergence.</p>
+        </div>
+      </div>
+      <div class="contrib-item">
+        <div class="contrib-num">C3</div>
+        <div class="contrib-text">
+          <h3>Practical Co-Evolved Evaluator Benefits</h3>
+          <p>Three demonstrated benefits: (i) cheaper complementary coding signal (+1.35–1.72× efficiency), (ii) generator search where no benchmark exists (1.78–1.86× higher paper acceptance), (iii) adversarial debiasing to fix LLM self-preference.</p>
+        </div>
+      </div>
+      <div class="contrib-item" style="border: 1px solid var(--gold);">
+        <div class="contrib-num" style="color: var(--text-faint);">→</div>
+        <div class="contrib-text">
+          <h3 style="color: var(--gold);">Future Vision</h3>
+          <p>A class of self-improving co-evolving systems where agents and evaluators recursively bootstrap one another without further human intervention — a meaningful step toward capable AI with open-ended, evolving objectives. Future work: longer search horizons, SWE-bench, richer co-evolutionary dynamics.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page-wrap -->
+
+<div class="page-wrap">
+  <footer class="footer">
+    <span>Red Queen Gödel Machine · arXiv:2606.26294 · Cambridge MLSys Lab · June 2026</span>
+    <span>Visual explainer generated by Claude · <a href="https://arxiv.org/abs/2606.26294">arxiv.org/abs/2606.26294</a></span>
+  </footer>
+</div>
+
+<script>
+// ── THEME ──
+function toggleTheme() {
+  const html = document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+
+// ── ZOOM ──
+const scales = {};
+function zoomDiagram(id, factor) {
+  scales[id] = (scales[id] || 1) * factor;
+  document.getElementById(id + '-inner').style.transform = `scale(${scales[id]})`;
+}
+function resetZoom(id) {
+  scales[id] = 1;
+  document.getElementById(id + '-inner').style.transform = 'scale(1)';
+}
+
+// ── MERMAID ──
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    primaryColor: '#162033',
+    primaryTextColor: '#d8e8f8',
+    primaryBorderColor: '#4a9edd',
+    lineColor: '#7a9ab8',
+    secondaryColor: '#0e1a27',
+    tertiaryColor: '#1c2940',
+    edgeLabelBackground: '#162033',
+    fontSize: '13px'
+  },
+  flowchart: { curve: 'basis', padding: 20 }
+});
+
+// ── STAGGERED FADE-UPS ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.animationPlayState = 'running';
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.fade-up').forEach(el => {
+  el.style.animationPlayState = 'paused';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
