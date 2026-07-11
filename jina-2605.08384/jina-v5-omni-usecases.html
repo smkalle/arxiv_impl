@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jina v5-Omni — Use Case Shortlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root, [data-theme="light"] {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --surface-elevated: #fafaf8;
+    --border: rgba(0,0,0,0.08);
+    --border-bright: rgba(0,0,0,0.14);
+    --text: #1a1816;
+    --text-dim: #6b6560;
+    --text-bright: #0d0c0b;
+    --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --amber: #b45309;
+    --amber-dim: rgba(180,83,9,0.10);
+    --green: #166534;
+    --green-dim: rgba(22,101,52,0.10);
+    --teal: #0e7490;
+    --teal-dim: rgba(14,116,144,0.10);
+    --rose: #9f1239;
+    --rose-dim: rgba(159,18,57,0.10);
+    --slate: #334155;
+    --slate-dim: rgba(51,65,85,0.10);
+    --accent: #0e7490;
+    --accent-dim: rgba(14,116,144,0.10);
+    --tier1: #b45309;
+    --tier2: #0e7490;
+    --tier3: #166534;
+  }
+  [data-theme="dark"] {
+    --bg: #0e0c0b;
+    --surface: #181512;
+    --surface-elevated: #211e1a;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.13);
+    --text: #e8e2d9;
+    --text-dim: #8c8378;
+    --text-bright: #f5f0e8;
+    --amber: #f59e0b;
+    --amber-dim: rgba(245,158,11,0.12);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.10);
+    --teal: #22d3ee;
+    --teal-dim: rgba(34,211,238,0.10);
+    --rose: #fb7185;
+    --rose-dim: rgba(251,113,133,0.10);
+    --slate: #94a3b8;
+    --slate-dim: rgba(148,163,184,0.10);
+    --accent: #22d3ee;
+    --accent-dim: rgba(34,211,238,0.10);
+    --tier1: #f59e0b;
+    --tier2: #22d3ee;
+    --tier3: #34d399;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+  }
+
+  .page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 64px 32px 96px;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    margin-bottom: 56px;
+  }
+  .page-header .kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .page-header h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text-bright);
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .page-header .subtitle {
+    font-size: 16px;
+    color: var(--text-dim);
+    max-width: 680px;
+    line-height: 1.6;
+  }
+  .page-header .subtitle strong { color: var(--text); }
+
+  /* ── SCORING KEY ── */
+  .scoring-key {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin: 32px 0 48px;
+    padding: 20px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .scoring-key__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .scoring-key__dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .scoring-key__label { color: var(--text-dim); }
+  .scoring-key__label strong { color: var(--text); }
+
+  /* ── TIER SECTION ── */
+  .tier-section { margin-bottom: 56px; }
+  .tier-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--border-bright);
+  }
+  .tier-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+  .tier1 .tier-badge { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
+  .tier2 .tier-badge { background: var(--teal-dim); color: var(--teal); border: 1px solid var(--teal); }
+  .tier3 .tier-badge { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
+
+  .tier-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+  .tier-header .tier-desc {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+  }
+
+  /* ── USE CASE CARD ── */
+  .uc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .uc-grid > * { min-width: 0; }
+
+  .uc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    position: relative;
+    transition: border-color 0.18s;
+  }
+  .uc-card:hover { border-color: var(--border-bright); }
+
+  .tier1 .uc-card { border-left: 3px solid var(--amber); }
+  .tier2 .uc-card { border-left: 3px solid var(--teal); }
+  .tier3 .uc-card { border-left: 3px solid var(--green); }
+
+  .uc-card__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .uc-card__icon {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .uc-card__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-bright);
+    line-height: 1.3;
+  }
+  .uc-card__tagline {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  /* Score bars */
+  .score-rows { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+  .score-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 28px;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+  }
+  .score-row__label { color: var(--text-dim); font-family: var(--font-mono); }
+  .score-bar {
+    height: 5px;
+    background: var(--border-bright);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .score-bar__fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+  .bar-ease  .score-bar__fill { background: var(--amber); }
+  .bar-value .score-bar__fill { background: var(--teal); }
+  .bar-market .score-bar__fill { background: var(--green); }
+  .score-row__val {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+
+  /* Tags */
+  .uc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-bright);
+    color: var(--text-dim);
+  }
+  .tag--modality { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+
+  /* Unique angle */
+  .uc-card__angle {
+    font-size: 12px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+  .uc-card__angle strong { color: var(--amber); }
+
+  /* ── 2×2 MATRIX ── */
+  .matrix-section { margin-bottom: 56px; }
+  .matrix-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+  .matrix-section .section-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+  }
+  .matrix-wrap {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 1.6/1;
+    min-height: 340px;
+  }
+  .matrix-axis-x {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .matrix-axis-y-wrap {
+    display: flex;
+    gap: 0;
+  }
+  .matrix-axis-y {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0 10px 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .matrix-quadrant {
+    background: var(--surface);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    position: relative;
+  }
+  .matrix-quadrant__label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+  }
+  .q-tl { background: color-mix(in srgb, var(--amber-dim) 60%, var(--surface) 40%); }
+  .q-tr { background: color-mix(in srgb, var(--teal-dim) 80%, var(--surface) 20%); }
+  .q-bl { background: var(--surface); }
+  .q-br { background: color-mix(in srgb, var(--green-dim) 60%, var(--surface) 40%); }
+
+  .matrix-chip {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: inline-block;
+    line-height: 1.3;
+  }
+  .chip-amber { background: var(--amber-dim); color: var(--amber); }
+  .chip-teal  { background: var(--teal-dim);  color: var(--teal); }
+  .chip-green { background: var(--green-dim); color: var(--green); }
+  .chip-slate { background: var(--slate-dim); color: var(--slate); }
+
+  /* ── RATIONALE TABLE ── */
+  .rationale-section { margin-bottom: 56px; }
+  .rationale-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 20px;
+  }
+  .rtable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .rtable th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 2px solid var(--border-bright);
+    background: var(--surface);
+  }
+  .rtable td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .rtable tr:last-child td { border-bottom: none; }
+  .rtable tr:hover td { background: var(--surface-elevated); }
+  .rtable .uc-name { font-weight: 600; color: var(--text-bright); }
+  .rtable .risk { color: var(--rose); font-size: 12px; }
+  .rtable .win  { color: var(--green); font-size: 12px; }
+  .rtable .score-pill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    padding: 18px 22px;
+    border-radius: 8px;
+    border-left: 4px solid var(--amber);
+    background: var(--amber-dim);
+    margin: 40px 0;
+  }
+  .callout__title {
+    font-weight: 600;
+    color: var(--amber);
+    font-size: 13px;
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .callout p { font-size: 14px; line-height: 1.6; }
+  .callout strong { color: var(--text-bright); }
+
+  /* ── THEME TOGGLE ── */
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    z-index: 100;
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1;
+  }
+  .theme-toggle:hover { border-color: var(--accent); }
+
+  /* animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .uc-card { animation: fadeUp 0.3s ease both; }
+  .uc-grid .uc-card:nth-child(1) { animation-delay: 0.04s; }
+  .uc-grid .uc-card:nth-child(2) { animation-delay: 0.09s; }
+  .uc-grid .uc-card:nth-child(3) { animation-delay: 0.14s; }
+  .uc-grid .uc-card:nth-child(4) { animation-delay: 0.19s; }
+
+  @media (max-width: 680px) {
+    .page-wrap { padding: 40px 18px 64px; }
+    .uc-grid { grid-template-columns: 1fr; }
+    .matrix-wrap { aspect-ratio: auto; min-height: auto; }
+    .tier-header .tier-desc { display: none; }
+    .scoring-key { gap: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .uc-card { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀</button>
+
+<div class="page-wrap">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="kicker">AI Product Research · Jina Embeddings v5-Omni</div>
+    <h1>Use Case Shortlist &amp;<br>Prioritization Matrix</h1>
+    <p class="subtitle">
+      <strong>jina-embeddings-v5-omni</strong> unifies text, image, audio, video, and PDF into a single shared vector space.
+      This analysis scores candidate use cases across <strong>Ease of Implementation</strong>, <strong>Practical Value</strong>,
+      and <strong>Marketability</strong> — then surfaces the highest-conviction builds.
+    </p>
+  </div>
+
+  <!-- SCORING KEY -->
+  <div class="scoring-key">
+    <div class="scoring-key__item">
+      <div class="scoring-key__dot" style="background:var(--amber)"></div>
+      <span class="scoring-key__label"><strong>Ease</strong> — Time to working demo, infra complexity, dependency count</span>
+    </div>
+    <div class="scoring-key__item">
+      <div class="scoring-key__dot" style="background:var(--teal)"></div>
+      <span class="scoring-key__label"><strong>Value</strong> — Daily pain solved, breadth of users, ROI signal</span>
+    </div>
+    <div class="scoring-key__item">
+      <div class="scoring-key__dot" style="background:var(--green)"></div>
+      <span class="scoring-key__label"><strong>Market</strong> — Defensibility, pricing clarity, clear buyer persona</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TIER 1 — SHIP NOW
+  ══════════════════════════════════════════════ -->
+  <div class="tier-section tier1">
+    <div class="tier-header">
+      <span class="tier-badge">Tier 1</span>
+      <h2>Ship Now — High Conviction</h2>
+      <span class="tier-desc">Score ≥ 8 · 2 of 3 axes</span>
+    </div>
+    <div class="uc-grid">
+
+      <!-- UC-1 -->
+      <div class="uc-card">
+        <div class="uc-card__header">
+          <div class="uc-card__icon">🗂</div>
+          <div class="uc-card__title">Enterprise Knowledge Search</div>
+        </div>
+        <p class="uc-card__tagline">One index over Confluence docs, Figma screenshots, Loom recordings, and Notion PDFs — query with any modality.</p>
+        <div class="score-rows">
+          <div class="score-row bar-ease">
+            <span class="score-row__label">Ease</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:80%"></div></div>
+            <span class="score-row__val">8</span>
+          </div>
+          <div class="score-row bar-value">
+            <span class="score-row__label">Value</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:90%"></div></div>
+            <span class="score-row__val">9</span>
+          </div>
+          <div class="score-row bar-market">
+            <span class="score-row__label">Market</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:90%"></div></div>
+            <span class="score-row__val">9</span>
+          </div>
+        </div>
+        <div class="uc-tags">
+          <span class="tag tag--modality">text</span>
+          <span class="tag tag--modality">image</span>
+          <span class="tag tag--modality">audio</span>
+          <span class="tag tag--modality">PDF</span>
+          <span class="tag">Elasticsearch</span>
+          <span class="tag">Chroma / Pinecone</span>
+        </div>
+        <div class="uc-card__angle"><strong>Jina edge:</strong> Backward-compat with existing text indexes — no re-embedding on day 1. Add modalities incrementally.</div>
+      </div>
+
+      <!-- UC-2 -->
+      <div class="uc-card">
+        <div class="uc-card__header">
+          <div class="uc-card__icon">🛒</div>
+          <div class="uc-card__title">Multimodal Product Discovery</div>
+        </div>
+        <p class="uc-card__tagline">Shoppers query by typing, pasting an image, or uploading a video clip — one retrieval pipeline handles all inputs against the same product catalog.</p>
+        <div class="score-rows">
+          <div class="score-row bar-ease">
+            <span class="score-row__label">Ease</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:75%"></div></div>
+            <span class="score-row__val">7.5</span>
+          </div>
+          <div class="score-row bar-value">
+            <span class="score-row__label">Value</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:90%"></div></div>
+            <span class="score-row__val">9</span>
+          </div>
+          <div class="score-row bar-market">
+            <span class="score-row__label">Market</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:85%"></div></div>
+            <span class="score-row__val">8.5</span>
+          </div>
+        </div>
+        <div class="uc-tags">
+          <span class="tag tag--modality">text</span>
+          <span class="tag tag--modality">image</span>
+          <span class="tag tag--modality">video</span>
+          <span class="tag">E-commerce</span>
+          <span class="tag">Rakuten Ichiba</span>
+        </div>
+        <div class="uc-card__angle"><strong>Jina edge:</strong> Fused input (text + image + video in a single encode call) maps shopper intent to catalog without separate pipelines per modality.</div>
+      </div>
+
+      <!-- UC-3 -->
+      <div class="uc-card">
+        <div class="uc-card__header">
+          <div class="uc-card__icon">🎧</div>
+          <div class="uc-card__title">Support Ticket Triage &amp; RAG</div>
+        </div>
+        <p class="uc-card__tagline">Ingest tickets (text), product screenshots (image), and screen recording clips (video). Route to KB articles and auto-draft resolutions.</p>
+        <div class="score-rows">
+          <div class="score-row bar-ease">
+            <span class="score-row__label">Ease</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:80%"></div></div>
+            <span class="score-row__val">8</span>
+          </div>
+          <div class="score-row bar-value">
+            <span class="score-row__label">Value</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:85%"></div></div>
+            <span class="score-row__val">8.5</span>
+          </div>
+          <div class="score-row bar-market">
+            <span class="score-row__label">Market</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:85%"></div></div>
+            <span class="score-row__val">8.5</span>
+          </div>
+        </div>
+        <div class="uc-tags">
+          <span class="tag tag--modality">text</span>
+          <span class="tag tag--modality">image</span>
+          <span class="tag tag--modality">video</span>
+          <span class="tag">SIRA-aligned</span>
+          <span class="tag">KB Automation</span>
+        </div>
+        <div class="uc-card__angle"><strong>Jina edge:</strong> Nano model fits <4GB VRAM; embeds screenshots alongside text without a secondary vision pipeline. Directly extends your SIRA prototype.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TIER 2 — HIGH POTENTIAL, TARGETED BUILD
+  ══════════════════════════════════════════════ -->
+  <div class="tier-section tier2">
+    <div class="tier-header">
+      <span class="tier-badge">Tier 2</span>
+      <h2>High Potential — Targeted Build</h2>
+      <span class="tier-desc">Score 7–8 · clear persona</span>
+    </div>
+    <div class="uc-grid">
+
+      <!-- UC-4 -->
+      <div class="uc-card">
+        <div class="uc-card__header">
+          <div class="uc-card__icon">📦</div>
+          <div class="uc-card__title">AI Catalog Quality Scoring</div>
+        </div>
+        <p class="uc-card__tagline">Embed product titles + images + video demos → score listing completeness and semantic coherence. Flag mismatches before they reach search.</p>
+        <div class="score-rows">
+          <div class="score-row bar-ease">
+            <span class="score-row__label">Ease</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:75%"></div></div>
+            <span class="score-row__val">7.5</span>
+          </div>
+          <div class="score-row bar-value">
+            <span class="score-row__label">Value</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:85%"></div></div>
+            <span class="score-row__val">8.5</span>
+          </div>
+          <div class="score-row bar-market">
+            <span class="score-row__label">Market</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:80%"></div></div>
+            <span class="score-row__val">8</span>
+          </div>
+        </div>
+        <div class="uc-tags">
+          <span class="tag tag--modality">text</span>
+          <span class="tag tag--modality">image</span>
+          <span class="tag">CatalogLab</span>
+          <span class="tag">CQS scoring</span>
+        </div>
+        <div class="uc-card__angle"><strong>Jina edge:</strong> Cosine similarity across modalities — detect image–title mismatches as a quality signal. Enhances your existing CatalogLab CQS pipeline natively.</div>
+      </div>
+
+      <!-- UC-5 -->
+      <div class="uc-card">
+        <div class="uc-card__header">
+          <div class="uc-card__icon">🎬</div>
+          <div class="uc-card__title">Video-to-Content Recommendation</div>
+        </div>
+        <p class="uc-card__tagline">User watches a product unboxing → recommend semantically related articles, related SKUs, or community posts without manual tagging.</p>
+        <div class="score-rows">
+          <div class="score-row bar-ease">
+            <span class="score-row__label">Ease</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:65%"></div></div>
+            <span class="score-row__val">6.5</span>
+          </div>
+          <div class="score-row bar-value">
+            <span class="score-row__label">Value</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:85%"></div></div>
+            <span class="score-row__val">8.5</span>
+          </div>
+          <div class="score-row bar-market">
+            <span class="score-row__label">Market</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:85%"></div></div>
+            <span class="score-row__val">8.5</span>
+          </div>
+        </div>
+        <div class="uc-tags">
+          <span class="tag tag--modality">video</span>
+          <span class="tag tag--modality">text</span>
+          <span class="tag">Recommendation</span>
+          <span class="tag">Commerce AI</span>
+        </div>
+        <div class="uc-card__angle"><strong>Jina edge:</strong> 32 auto-sampled video frames → single embedding. No manual keyframe pipeline. Pre-extract 8–16 frames if latency is critical (model card best practice).</div>
+      </div>
+
+      <!-- UC-6 -->
+      <div class="uc-card">
+        <div class="uc-card__header">
+          <div class="uc-card__icon">🔍</div>
+          <div class="uc-card__title">Zero-shot Multimodal Classification</div>
+        </div>
+        <p class="uc-card__tagline">Classify content (moderation, category routing, intent detection) without labelled training data — embed class descriptions, compare with content embeddings.</p>
+        <div class="score-rows">
+          <div class="score-row bar-ease">
+            <span class="score-row__label">Ease</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:80%"></div></div>
+            <span class="score-row__val">8</span>
+          </div>
+          <div class="score-row bar-value">
+            <span class="score-row__label">Value</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:75%"></div></div>
+            <span class="score-row__val">7.5</span>
+          </div>
+          <div class="score-row bar-market">
+            <span class="score-row__label">Market</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:75%"></div></div>
+            <span class="score-row__val">7.5</span>
+          </div>
+        </div>
+        <div class="uc-tags">
+          <span class="tag tag--modality">text</span>
+          <span class="tag tag--modality">image</span>
+          <span class="tag">Classification adapter</span>
+          <span class="tag">No training data</span>
+        </div>
+        <div class="uc-card__angle"><strong>Jina edge:</strong> Built-in classification task adapter — no fine-tuning. Same index as retrieval; switch adapters at load time.</div>
+      </div>
+
+      <!-- UC-7 -->
+      <div class="uc-card">
+        <div class="uc-card__header">
+          <div class="uc-card__icon">🧬</div>
+          <div class="uc-card__title">Research Paper × Data Multimodal Search</div>
+        </div>
+        <p class="uc-card__tagline">Index arXiv PDFs, supplementary figures, and audio lectures in one namespace. Researchers query with text; find relevant charts and audio clips simultaneously.</p>
+        <div class="score-rows">
+          <div class="score-row bar-ease">
+            <span class="score-row__label">Ease</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:70%"></div></div>
+            <span class="score-row__val">7</span>
+          </div>
+          <div class="score-row bar-value">
+            <span class="score-row__label">Value</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:80%"></div></div>
+            <span class="score-row__val">8</span>
+          </div>
+          <div class="score-row bar-market">
+            <span class="score-row__label">Market</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:70%"></div></div>
+            <span class="score-row__val">7</span>
+          </div>
+        </div>
+        <div class="uc-tags">
+          <span class="tag tag--modality">PDF</span>
+          <span class="tag tag--modality">image</span>
+          <span class="tag tag--modality">audio</span>
+          <span class="tag">Research / Academia</span>
+        </div>
+        <div class="uc-card__angle"><strong>Jina edge:</strong> Native PDF rendering. Matryoshka 128-dim for fast approximate search over large corpora. Relevant for Anagha's bioinformatics work as hobby prototype.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TIER 3 — WATCH / DEPRIORITIZE
+  ══════════════════════════════════════════════ -->
+  <div class="tier-section tier3">
+    <div class="tier-header">
+      <span class="tier-badge">Tier 3</span>
+      <h2>Watch — Deprioritize for Now</h2>
+      <span class="tier-desc">Score &lt;7 or license / complexity risk</span>
+    </div>
+    <div class="uc-grid">
+
+      <div class="uc-card">
+        <div class="uc-card__header">
+          <div class="uc-card__icon">🎵</div>
+          <div class="uc-card__title">Audio-Centric Content Matching</div>
+        </div>
+        <p class="uc-card__tagline">Match music samples, podcast clips, or speech snippets against a catalog by content similarity.</p>
+        <div class="score-rows">
+          <div class="score-row bar-ease">
+            <span class="score-row__label">Ease</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:55%"></div></div>
+            <span class="score-row__val">5.5</span>
+          </div>
+          <div class="score-row bar-value">
+            <span class="score-row__label">Value</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:65%"></div></div>
+            <span class="score-row__val">6.5</span>
+          </div>
+          <div class="score-row bar-market">
+            <span class="score-row__label">Market</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:60%"></div></div>
+            <span class="score-row__val">6</span>
+          </div>
+        </div>
+        <div class="uc-tags">
+          <span class="tag tag--modality">audio</span>
+          <span class="tag">Niche</span>
+        </div>
+        <div class="uc-card__angle"><strong>Risk:</strong> Audio encoding requires librosa + Whisper feature extractor — more setup. Niche buyer pool. Revisit when audio benchmarks mature (MAEB).</div>
+      </div>
+
+      <div class="uc-card">
+        <div class="uc-card__header">
+          <div class="uc-card__icon">⚡</div>
+          <div class="uc-card__title">Edge / IoT Real-time Inference</div>
+        </div>
+        <p class="uc-card__tagline">Deploy nano + GGUF on device for real-time image–text matching without cloud round-trip.</p>
+        <div class="score-rows">
+          <div class="score-row bar-ease">
+            <span class="score-row__label">Ease</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:50%"></div></div>
+            <span class="score-row__val">5</span>
+          </div>
+          <div class="score-row bar-value">
+            <span class="score-row__label">Value</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:70%"></div></div>
+            <span class="score-row__val">7</span>
+          </div>
+          <div class="score-row bar-market">
+            <span class="score-row__label">Market</span>
+            <div class="score-bar"><div class="score-bar__fill" style="width:65%"></div></div>
+            <span class="score-row__val">6.5</span>
+          </div>
+        </div>
+        <div class="uc-tags">
+          <span class="tag tag--modality">text</span>
+          <span class="tag tag--modality">image</span>
+          <span class="tag">GGUF / MLX</span>
+          <span class="tag">Edge</span>
+        </div>
+        <div class="uc-card__angle"><strong>Risk:</strong> GGUF/MLX quantized variants not yet tested at scale. Wait for community benchmarks. MLX well-suited for your OnePlus 13 + UserLAnd dev stack as a testbed.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       2×2 MATRIX
+  ══════════════════════════════════════════════ -->
+  <div class="matrix-section">
+    <h2>Prioritization Matrix</h2>
+    <p class="section-sub">Axes: Ease of Implementation (x) · Practical &amp; Market Value (y)</p>
+
+    <div style="display:flex; gap:0; align-items:stretch;">
+      <div class="matrix-axis-y">← LOW VALUE &nbsp;&nbsp;&nbsp; HIGH VALUE →</div>
+      <div style="flex:1; min-width:0;">
+        <div class="matrix-wrap">
+          <div class="matrix-quadrant q-tl">
+            <div class="matrix-quadrant__label">Hard to build · High value</div>
+            <span class="matrix-chip chip-teal">Video Recommendation</span>
+            <span class="matrix-chip chip-teal">Research Paper Search</span>
+          </div>
+          <div class="matrix-quadrant q-tr">
+            <div class="matrix-quadrant__label">Easy to build · High value ★</div>
+            <span class="matrix-chip chip-amber">Enterprise Knowledge Search</span>
+            <span class="matrix-chip chip-amber">Multimodal Product Discovery</span>
+            <span class="matrix-chip chip-amber">Support Ticket RAG</span>
+            <span class="matrix-chip chip-teal">Catalog Quality Scoring</span>
+          </div>
+          <div class="matrix-quadrant q-bl">
+            <div class="matrix-quadrant__label">Hard to build · Lower value</div>
+            <span class="matrix-chip chip-slate">Audio Matching</span>
+            <span class="matrix-chip chip-slate">Edge / IoT</span>
+          </div>
+          <div class="matrix-quadrant q-br">
+            <div class="matrix-quadrant__label">Easy to build · Medium value</div>
+            <span class="matrix-chip chip-green">Zero-shot Classification</span>
+          </div>
+        </div>
+        <div class="matrix-axis-x">← HARD TO BUILD &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; EASY TO BUILD →</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       RATIONALE TABLE
+  ══════════════════════════════════════════════ -->
+  <div class="rationale-section">
+    <h2>Decision Rationale &amp; Key Risks</h2>
+    <table class="rtable">
+      <thead>
+        <tr>
+          <th>Use Case</th>
+          <th>Why Now</th>
+          <th>Key Risk</th>
+          <th>Composite</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="uc-name">Enterprise Knowledge Search</span></td>
+          <td>Zero migration pain (text-backward-compat). Immediate cross-modal indexing. Clear CIO budget line.</td>
+          <td class="risk">Elastic/Jina CC-BY-NC-4.0 — verify commercial license before GA</td>
+          <td><span class="score-pill">8.7 / 10</span></td>
+        </tr>
+        <tr>
+          <td><span class="uc-name">Multimodal Product Discovery</span></td>
+          <td>Single fused encode for text+image+video. Maps directly to Rakuten Ichiba search intent diversity.</td>
+          <td class="risk">Video embedding latency; pre-extract frames for &lt;500ms SLA</td>
+          <td><span class="score-pill">8.3 / 10</span></td>
+        </tr>
+        <tr>
+          <td><span class="uc-name">Support Ticket RAG</span></td>
+          <td>Nano ≤4GB VRAM. Embeds screenshots alongside text. Directly extends SIRA KB prototype.</td>
+          <td class="risk">Eval harness needed; use MIEB-Lite for image retrieval accuracy gates</td>
+          <td><span class="score-pill">8.3 / 10</span></td>
+        </tr>
+        <tr>
+          <td><span class="uc-name">Catalog Quality Scoring</span></td>
+          <td>Cross-modal cosine detects image–title mismatches. Enhances CatalogLab CQS natively.</td>
+          <td class="risk">Threshold calibration per category; needs labelled mismatch dataset</td>
+          <td><span class="score-pill">8.0 / 10</span></td>
+        </tr>
+        <tr>
+          <td><span class="uc-name">Video Recommendation</span></td>
+          <td>No manual keyframe tagging pipeline. Strong engagement lift signal for commerce.</td>
+          <td class="risk">Frame sampling quality varies; latency budget requires pre-extraction</td>
+          <td><span class="score-pill">7.8 / 10</span></td>
+        </tr>
+        <tr>
+          <td><span class="uc-name">Zero-shot Classification</span></td>
+          <td>Built-in adapter, no training data. Good internal tool / moderation demo.</td>
+          <td class="risk">Accuracy ceiling without fine-tune; may lose to task-specific models</td>
+          <td><span class="score-pill">7.7 / 10</span></td>
+        </tr>
+        <tr>
+          <td><span class="uc-name">Research Paper Search</span></td>
+          <td>Native PDF + figure + audio in one index. Matryoshka 128-dim keeps cost low.</td>
+          <td class="risk">Narrow buyer (academia); market size limits commercial upside</td>
+          <td><span class="score-pill">7.3 / 10</span></td>
+        </tr>
+        <tr>
+          <td><span class="uc-name">Audio Matching</span></td>
+          <td>Unique capability; few competitors at this price point.</td>
+          <td class="risk">librosa + Whisper dependency chain; niche TAM; MAEB benchmarks immature</td>
+          <td><span class="score-pill">6.0 / 10</span></td>
+        </tr>
+        <tr>
+          <td><span class="uc-name">Edge / IoT</span></td>
+          <td>GGUF/MLX nano targets Apple Silicon and low-end servers.</td>
+          <td class="risk">Quantized variant stability unknown; await community validation</td>
+          <td><span class="score-pill">6.2 / 10</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CALLOUT -->
+  <div class="callout">
+    <div class="callout__title">Commercial License Alert</div>
+    <p>jina-embeddings-v5-omni is released under <strong>CC-BY-NC-4.0 (non-commercial)</strong>. For any production revenue-generating deployment — including Rakuten India SaaS or Commerce AI Agent Builder — contact <strong>Jina AI or Elastic</strong> for a commercial license before going GA. This does not block prototyping or internal tooling.</p>
+  </div>
+
+  <!-- BOTTOM STRIP -->
+  <div style="border-top:1px solid var(--border); padding-top:24px; margin-top:48px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);">Jina v5-Omni · arXiv 2605.08384 · HF: jinaai/jina-embeddings-v5-omni-{small,nano}</span>
+    <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);">Analysis: May 2026</span>
+  </div>
+
+</div>
+
+<script>
+  function toggleTheme() {
+    const curr = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', curr === 'dark' ? 'light' : 'dark');
+    document.querySelector('.theme-toggle').textContent = curr === 'dark' ? '☽' : '☀';
+  }
+</script>
+</body>
+</html>

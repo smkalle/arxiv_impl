@@ -1,127 +1,43 @@
-# AGENTS.md
+# AGENTS.md — arxiv_impl (monorepo root)
 
-## Overview
-Implements Meta's SIRA paper (arXiv:2605.06647): training-free retrieval bridging support-ticket vocabulary to KB articles via LLM enrichment + weighted BM25.
+Multi-paper workspace: each subdirectory is an independent implementation of one arXiv paper. There is no root-level application, package, or test suite. **`cd` into the relevant subproject and follow its local `AGENTS.md` / `CLAUDE.md`.** `README.md` holds the canonical table of contents (a subset of subprojects are listed there; others are listed below).
 
-**Project root:** `sira/` — all commands below run from there.
+## OpenWiki
 
-**Current state:** Iterations 1–5 coded. Evaluation harness and ablation runner exist; test set is currently bootstrap placeholder data pending real annotations.
+This repository has documentation located in the /openwiki directory.
 
----
+Start here:
+- [OpenWiki quickstart](openwiki/quickstart.md)
 
-## Setup
+OpenWiki includes repository overview, architecture notes, workflows, domain concepts, operations, integrations, testing guidance, and source maps.
 
-```bash
-pip install -r requirements.txt
-# LLM backend (required for enrichment and sketch generation):
-ollama pull qwen2.5:14b
-ollama serve
-```
+When working in this repository, read the OpenWiki quickstart first, then follow its links to the relevant architecture, workflow, domain, operation, and testing notes.
 
-No `setup.py` / `pyproject.toml`. No CI. No packaging. Run everything as scripts.
+## Subprojects
 
----
+| Folder | Paper | Local docs | Status |
+|---|---|---|---|
+| `sira/` | SIRA (2605.06647) — ticket→KB retrieval via LLM enrichment + weighted BM25 | `AGENTS.md`, `CLAUDE.md`, `sira-ticket-kb-spec.md`, `ITERATIONS.md` | Iter 1–5 coded; eval set is placeholder data |
+| `AAFLOW-2605.02162/` | AAFLOW (2605.02162) — zero-copy Arrow-native ticket ingest → FAISS | `AGENTS.md`, `CLAUDE.md`, `*-spec-*.md`, `Makefile`, `pyproject.toml` | v0.1.0 release-ready |
+| `datamaster/` | DataMaster (2605.10906) — e-commerce catalog enrichment agent | `CLAUDE.md`, `CATALOGAGENT_SPEC.md` | v0.1.0; 42 tests pass |
+| `jina-2605.08384/` | Jina (2605.08384) — enterprise knowledge search prototype (`ek_search/`, FastAPI) | `AGENTS.md`, `TECH_SPEC.md`, `ITERATION_PLAN.md` | Prototype |
+| `sira-kb-ingestor/` | SIRA KB ingestor package | `README.md`, `RELEASE_v0.1.0.md`, `pyproject.toml` | v0.1.0 |
+| `tkmem-2605.13941/` | TKMEM/EvolveMem (2605.13941) — TicketMind retrieval prototype | `AGENTS.md`, `ITERATIONS.md`, `ticketmind-spec.md` | Spec + partial; impl lives under its nested `sira/` |
+| `evolvemem-2605.13941/` | EvolveMem (2605.13941) — EvolveMem TicketMind v2.0 runner: L1→L2→L3→L4 AutoResearch loops over the SIRA pipeline | `pytest.ini`, `requirements.txt`, `evolvemem_runner.py`, `api.py` | Implementation present; tests defined |
+| `rgqm/` | Red Queen Gödel Machine (2606.26294) — EpochForge Lite prototype | `AGENTS.md`, `rqgm-gemini-spec.html` (PRD), `rqgm-visual-explainer.html` | Implementation present; erasure-invariant test passing |
+| `orchestrator/` | **metaorch** — meta-orchestrator pipeline chaining all 8 subprojects' use cases end-to-end via minimal contract-bound adapters (FastAPI + Pydantic v2; in-memory fakes, no sibling imports) | `AGENTS.md`, `SPEC.md`, `README.md`, `pyproject.toml`, `scripts/live_test.py`, `streamlit_app.py` | v0.1.0; 120 tests pass; optional Streamlit admin console |
 
-## Commands
+Each subproject is self-contained: its own deps, own test command, own run location. Several subprojects consume each other (e.g. `AAFLOW` and `sira-kb-ingestor` feed `sira/`); confirm cross-project contracts in the consuming project's spec before changing a producer's output schema.
 
-All commands must be run from `sira/` (not the repo root).
+## Root conventions
 
-```bash
-# Run all tests
-python3 -m pytest tests/
+- **Use `python3`, not `python`** (`python` is not on PATH anywhere in this repo).
+- **No root CI, no root `pyproject.toml`, no root `requirements.txt`, no root test/lint command.** Each subproject defines its own. Do not add a root-wide test runner.
+- **Run commands from inside the subproject folder**, never from the repo root. Several projects insert parent paths into `sys.path` or mount templates relative to CWD.
+- **Generated artifacts are gitignored** — BM25 pickles, `df_store.json`, enriched corpora, FAISS indexes, Arrow files, `archive.json`, `.env`, venvs, `.pytest_cache`. Do not commit these. Per-project ignore rules live in the root `.gitignore` (e.g. `sira/data/*.pkl`, `datamaster/catalog-agent/artifacts*/`). Extend that file when adding a new generated-artifact path.
+- **Commit style** (from `git log`): concise imperative subjects, one paper concern per commit (e.g. `Add sira kb ingestor package`, `Stop tracking generated SIRA artifacts`). No conventional-commits prefix.
+- **No git submodules.** Each subproject is a plain top-level directory in one repo.
 
-# Run a single test file
-python3 -m pytest tests/test_retrieve.py
+## Where to look first in a subproject
 
-# Build BM25 index from plain corpus
-python3 src/index.py data/kb_corpus.jsonl --output data/bm25_index.pkl
-# Also writes data/df_store.json automatically
-
-# Offline enrichment batch job
-python3 src/enrich.py --input data/kb_corpus.jsonl --output data/enriched_corpus.jsonl
-
-# CLI query — plain BM25 (auto-builds index if missing)
-python3 scripts/query.py "app keeps crashing"
-
-# CLI query — full SIRA with audit trace (requires Ollama)
-python3 scripts/query.py --sira "My app keeps crashing on login"
-python3 scripts/query.py --sira "..." --tau 0.01 --weight 1.5
-
-# Enrichment monitor UI (FastAPI, partial Iter 4 work)
-uvicorn src.enrich_ui:app --reload
-```
-
----
-
-## Architecture
-
-### Module layout (`src/`)
-| File | Role |
-|---|---|
-| `index.py` | `CorpusIndex`: load JSONL → tokenize → `BM25Okapi` + DF counter → pickle |
-| `enrich.py` | Offline batch: Ollama → 8–12 customer-language terms per KB article |
-| `sketch.py` | Online: `generate_sketch(ticket_text)` → 8–12 KB-jargon terms via Ollama |
-| `df_filter.py` | `validate_sketch_terms()`: keep terms where `0 < df ≤ τ×N` |
-| `retrieve.py` | `retrieve()` plain BM25; `sira_retrieve()` full weighted pipeline |
-| `enrich_ui.py` | FastAPI enrichment monitor (partial Iter 4 work, not the retrieval API) |
-
-### Online pipeline (per ticket)
-```
-ticket → generate_sketch() → validate_sketch_terms() → weighted BM25
-final_score = BM25(orig_tokens) + w × BM25(validated_sketch_tokens)
-```
-Fallback to plain BM25 if sketch fails or times out (`fallback_used=True`).
-
----
-
-## Key gotchas
-
-- **`python` vs `python3`:** `python` is not on PATH; always use `python3`.
-- **Working directory matters:** `scripts/query.py` inserts its parent's parent into `sys.path`. `enrich_ui.py` mounts `src/static` and `src/templates` relative to CWD. Run everything from `sira_arXiv:2605.06647/`.
-- **Tokenizer:** `nltk.word_tokenize`, lowercased, min token length 2, keeps only tokens with at least one alphanumeric char. Hard-coded in `src/index.py:tokenize()`.
-- **`CorpusIndex` prefers `enriched_body` over `body`** when both fields exist (`src/index.py:44`). The DF counter also folds in `enriched_terms` as a separate set per article.
-- **BM25 index is a pickle of the whole `CorpusIndex` object.** Rebuild after any corpus change.
-- **`df_store.json` is written alongside the pickle** by `build_and_save()`. No need to pass a separate path; it defaults to `data/df_store.json`.
-- **Global `_index` in `retrieve.py`:** must call `load_index()` before `retrieve()` or `sira_retrieve()`. Tests use `_set_index()` to inject fixtures and reset to `None` via `autouse` fixture.
-- **Enrichment idempotency:** articles with `enriched_at >= last_updated` are skipped — requires both fields to be present in the JSONL.
-- **`_parse_terms` in `enrich.py` drops:** terms present in original text (paper invariant), mixed alphanumeric tokens, and single-word tokens >8 chars (concatenation guard).
-- **Env vars for LLM:** `OLLAMA_HOST` (default `http://localhost:11434`), `OLLAMA_MODEL` (default `qwen2.5:14b`). No `.env.example` yet.
-- **`data/` files are not version-controlled** except `kb_corpus.jsonl`. The pickle, `df_store.json`, and enriched corpora are generated artifacts.
-
----
-
-## Hyperparameters
-
-| Param | Default | Description |
-|---|---|---|
-| `τ` (tau) | 0.01 | DF upper-bound filter for sketch validation |
-| `w` | 1.5 | Sketch weight in combined BM25 score |
-| Enrichment temp | 0.3 | Ollama temperature for article enrichment |
-| Sketch temp | 0.1 | Ollama temperature for query sketch generation |
-
-Hallucination rate = `len(rejected) / len(generated)`. If >20%, lower sketch temperature.
-
----
-
-## Testing notes
-
-- **49 tests, no integration tests** — all LLM calls are mocked via `unittest.mock`.
-- `tests/conftest.py` defines `CORPUS_PATH` and `INDEX_PATH` relative to `tests/` parent (i.e., `data/kb_corpus.jsonl` must exist).
-- The `enriched_index` fixture in `test_retrieve.py` pads to 100 articles so `τ=0.01` allows `df=1` terms to pass validation.
-- SIRA tests patch `src.retrieve.generate_sketch` directly (not `src.sketch.generate_sketch`).
-
----
-
-## Remaining gaps
-
-- `tests/annotated_test_set.jsonl` currently contains bootstrap placeholders; replace with hand-annotated ticket→KB pairs.
-- `.env.example` is still missing.
-
-See `ITERATIONS.md` for full sign-off checklists and expected CLI output for each iteration.
-
----
-
-## Key references
-- `sira-ticket-kb-spec.md` — full product spec, API schemas, evaluation thresholds, env vars (§13.3–13.4)
-- `ITERATIONS.md` — implementation roadmap with per-iteration sign-off tests
-- `CLAUDE.md` — architecture details, hyperparameter table, evaluation targets
+Priority order for ramp-up: the subproject's `AGENTS.md` (or `CLAUDE.md`) → its spec/`*-spec*.md` → its `README.md`/`ITERATIONS.md` → executable config (`pyproject.toml` / `Makefile` / `pytest.ini`). If docs conflict with code or config, trust the executable source.

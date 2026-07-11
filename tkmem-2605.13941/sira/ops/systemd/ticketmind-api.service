@@ -1,0 +1,10 @@
+[Unit]
+Description=TicketMind Retrieval API
+
+[Service]
+WorkingDirectory=%h/ticketmind/sira
+ExecStart=/usr/bin/python3 -m uvicorn src.ticket_api:app --host 127.0.0.1 --port 8001
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

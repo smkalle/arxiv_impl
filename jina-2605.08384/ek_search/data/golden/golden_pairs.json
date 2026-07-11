@@ -1,0 +1,62 @@
+[
+  {
+    "id": "q001",
+    "query_text": "how do I set up my account on the first day",
+    "expected_doc_ids": ["src:filesystem:onboarding.md"],
+    "modality": "text"
+  },
+  {
+    "id": "q002",
+    "query_text": "onboarding steps for new employees",
+    "expected_doc_ids": ["src:filesystem:onboarding.md"],
+    "modality": "text"
+  },
+  {
+    "id": "q003",
+    "query_text": "Kafka event streaming pipeline architecture",
+    "expected_doc_ids": ["src:filesystem:architecture.md"],
+    "modality": "text"
+  },
+  {
+    "id": "q004",
+    "query_text": "what database do we use for user data",
+    "expected_doc_ids": ["src:filesystem:architecture.md"],
+    "modality": "text"
+  },
+  {
+    "id": "q005",
+    "query_text": "how to report a security incident",
+    "expected_doc_ids": ["src:filesystem:security_policy.md"],
+    "modality": "text"
+  },
+  {
+    "id": "q006",
+    "query_text": "secret management vault credentials rotation",
+    "expected_doc_ids": ["src:filesystem:security_policy.md"],
+    "modality": "text"
+  },
+  {
+    "id": "q007",
+    "query_text": "how to rollback a failed production deployment",
+    "expected_doc_ids": ["src:filesystem:deployment_runbook.md"],
+    "modality": "text"
+  },
+  {
+    "id": "q008",
+    "query_text": "dbt transformations and data warehouse conventions",
+    "expected_doc_ids": ["src:filesystem:data_engineering.md"],
+    "modality": "text"
+  },
+  {
+    "id": "q009",
+    "query_text": "REST API pagination and error response format",
+    "expected_doc_ids": ["src:filesystem:api_design.md"],
+    "modality": "text"
+  },
+  {
+    "id": "q010",
+    "query_text": "rate limiting and authentication for APIs",
+    "expected_doc_ids": ["src:filesystem:api_design.md"],
+    "modality": "text"
+  }
+]

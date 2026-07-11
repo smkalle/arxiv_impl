@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TicketMind · Admin & Operations Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root[data-theme="dark"] {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --surface: #1c2330;
+    --surface2: #22293a;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --text-muted: #555f6b;
+    --accent: #2ea043;
+    --accent-dim: rgba(46,160,67,0.12);
+    --accent2: #d4a73a;
+    --accent2-dim: rgba(212,167,58,0.12);
+    --danger: #da3633;
+    --danger-dim: rgba(218,54,51,0.12);
+    --warn: #d29922;
+    --warn-dim: rgba(210,153,34,0.12);
+    --info: #388bfd;
+    --info-dim: rgba(56,139,253,0.10);
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  :root[data-theme="light"] {
+    --bg: #f6f8fa;
+    --bg2: #ffffff;
+    --surface: #ffffff;
+    --surface2: #f0f2f4;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.14);
+    --text: #1c2330;
+    --text-dim: #57606a;
+    --text-muted: #8b949e;
+    --accent: #1a7f37;
+    --accent-dim: rgba(26,127,55,0.10);
+    --accent2: #9a6700;
+    --accent2-dim: rgba(154,103,0,0.10);
+    --danger: #cf222e;
+    --danger-dim: rgba(207,34,46,0.08);
+    --warn: #9a6700;
+    --warn-dim: rgba(154,103,0,0.10);
+    --info: #0969da;
+    --info-dim: rgba(9,105,218,0.08);
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ── Layout ── */
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--bg);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar-logo {
+    padding: 20px 18px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo .wordmark {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+  .sidebar-logo .tagline {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .nav-section {
+    padding: 12px 0 4px;
+  }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0 18px 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 18px;
+    cursor: pointer;
+    color: var(--text-dim);
+    border-left: 2px solid transparent;
+    transition: all 0.12s;
+    font-size: 12.5px;
+    font-weight: 400;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: var(--surface); color: var(--text); }
+  .nav-item.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-green { background: var(--accent); }
+  .dot-amber { background: var(--warn); }
+  .dot-red { background: var(--danger); }
+  .dot-blue { background: var(--info); }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 12px 18px 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+  .theme-toggle:hover { color: var(--text-dim); }
+
+  /* ── Topbar ── */
+  .topbar {
+    height: 48px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: var(--bg2);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .topbar-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
+    font-family: var(--mono);
+  }
+  .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+  }
+  .badge-green { background: var(--accent-dim); color: var(--accent); }
+  .badge-amber { background: var(--warn-dim); color: var(--warn); }
+  .badge-red { background: var(--danger-dim); color: var(--danger); }
+  .badge-blue { background: var(--info-dim); color: var(--info); }
+  .badge-gold { background: var(--accent2-dim); color: var(--accent2); }
+
+  /* ── Page content ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-content { padding: 20px 24px 32px; }
+
+  /* ── Stats row ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+  }
+  .stat-delta {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .stat-delta.up { color: var(--accent); }
+  .stat-delta.down { color: var(--danger); }
+
+  /* ── Section header ── */
+  .section-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text-dim);
+    font-family: inherit;
+    transition: all 0.1s;
+  }
+  .btn:hover { background: var(--surface2); color: var(--text); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-danger {
+    background: var(--danger-dim);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+  .btn-sm { padding: 3px 8px; font-size: 10.5px; }
+
+  /* ── Table ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .data-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .data-table tr:hover td { background: var(--surface); }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+
+  .table-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .mono { font-family: var(--mono); }
+  .text-dim { color: var(--text-dim); }
+  .text-muted { color: var(--text-muted); }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .card-body { padding: 14px 16px; }
+
+  /* ── Grid helpers ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .gap-16 { margin-bottom: 16px; }
+  .gap-20 { margin-bottom: 20px; }
+
+  /* ── Progress bar ── */
+  .prog-wrap {
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+  .prog-green { background: var(--accent); }
+  .prog-gold { background: var(--accent2); }
+  .prog-blue { background: var(--info); }
+
+  /* ── Score bar (view contributions) ── */
+  .score-bar {
+    display: flex;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    gap: 1px;
+  }
+  .score-seg { height: 100%; }
+
+  /* ── Tag pill ── */
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--surface2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    margin: 1px;
+  }
+  .tag-green { background: var(--accent-dim); color: var(--accent); border-color: transparent; }
+  .tag-blue { background: var(--info-dim); color: var(--info); border-color: transparent; }
+  .tag-gold { background: var(--accent2-dim); color: var(--accent2); border-color: transparent; }
+
+  /* ── Evolution round row ── */
+  .round-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .round-row:last-child { border-bottom: none; }
+  .round-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    width: 52px;
+    flex-shrink: 0;
+  }
+  .round-strategy {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .round-f1 {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    width: 52px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .round-delta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    width: 40px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .round-delta.pos { color: var(--accent); }
+
+  /* ── Service health card ── */
+  .service-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .service-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .service-pid {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .service-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    font-size: 11px;
+  }
+  .pulse {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+  .pulse-amber { background: var(--warn); }
+  .pulse-red { background: var(--danger); animation: none; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── Query trace panel ── */
+  .trace-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .trace-header {
+    padding: 10px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .trace-result {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .trace-result:hover { background: var(--surface); }
+  .trace-result:last-child { border-bottom: none; }
+  .result-rank {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    width: 22px;
+    float: left;
+    padding-top: 2px;
+  }
+  .result-body { margin-left: 28px; }
+  .result-title { font-size: 12.5px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .result-snippet { font-size: 11px; color: var(--text-dim); margin-bottom: 6px; line-height: 1.5; }
+  .result-meta { display: flex; align-items: center; gap: 8px; }
+
+  /* ── Log tail ── */
+  .log-tail {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    height: 180px;
+    overflow-y: auto;
+    line-height: 1.7;
+  }
+  .log-line { white-space: pre; }
+  .log-info { color: var(--info); }
+  .log-ok { color: var(--accent); }
+  .log-warn { color: var(--warn); }
+  .log-err { color: var(--danger); }
+
+  /* ── Textarea ── */
+  .input-area {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12.5px;
+    padding: 10px 12px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.5;
+  }
+  .input-area:focus { border-color: var(--accent); }
+
+  .input-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .input-label { font-size: 11px; color: var(--text-dim); white-space: nowrap; min-width: 80px; }
+  .input-sel {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    border-radius: 4px;
+    font-size: 11.5px;
+    padding: 4px 8px;
+    font-family: inherit;
+  }
+  .range-wrap { display: flex; align-items: center; gap: 8px; }
+  .range-val { font-family: var(--mono); font-size: 12px; color: var(--accent); min-width: 16px; }
+
+  /* ── Diff comparison ── */
+  .ab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ab-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .rank-moved { background: var(--accent2-dim); }
+  .rank-new { background: var(--accent-dim); }
+
+  /* ── Chart wrap ── */
+  .chart-wrap { position: relative; height: 160px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── Separator ── */
+  .sep { height: 1px; background: var(--border); margin: 16px 0; }
+
+  /* ── Animations ── */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .page.active .stats-row .stat-card { animation: fadeIn 0.25s ease both; }
+  .page.active .stats-row .stat-card:nth-child(2) { animation-delay: 0.04s; }
+  .page.active .stats-row .stat-card:nth-child(3) { animation-delay: 0.08s; }
+  .page.active .stats-row .stat-card:nth-child(4) { animation-delay: 0.12s; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="wordmark">TicketMind</div>
+      <div class="tagline">Support KB · Retrieval Agent</div>
+    </div>
+
+    <nav class="nav-section">
+      <div class="nav-label">Operations</div>
+      <a class="nav-item active" onclick="showPage('kb')">
+        <span class="nav-dot dot-green"></span> KB Management
+      </a>
+      <a class="nav-item" onclick="showPage('query')">
+        <span class="nav-dot dot-blue"></span> Query Inspector
+      </a>
+      <a class="nav-item" onclick="showPage('evolution')">
+        <span class="nav-dot dot-amber"></span> Evolution Monitor
+      </a>
+    </nav>
+
+    <nav class="nav-section">
+      <div class="nav-label">System</div>
+      <a class="nav-item" onclick="showPage('health')">
+        <span class="nav-dot dot-green"></span> System Health
+      </a>
+      <a class="nav-item" onclick="showPage('sessions')">
+        <span class="nav-dot dot-blue"></span> Session Memory
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">☀</span>
+        <span id="theme-label">Light mode</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main">
+
+    <!-- ════════════════════ KB MANAGEMENT ════════════════════ -->
+    <div id="page-kb" class="page active">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">KB Management</div>
+          <div class="topbar-meta">data/lancedb/ · ext4 · 43.2 MB</div>
+        </div>
+        <div class="topbar-actions">
+          <span class="badge badge-green">● HEALTHY</span>
+          <button class="btn btn-primary btn-sm" onclick="triggerIngest()">Re-ingest KB</button>
+        </div>
+      </div>
+
+      <div class="page-content">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">KB Articles</div>
+            <div class="stat-value">1,042</div>
+            <div class="stat-delta up">↑ 23 since last ingest</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg Enriched Terms</div>
+            <div class="stat-value">9.4</div>
+            <div class="stat-delta">per article · target 8–12</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Last Ingestion</div>
+            <div class="stat-value mono" style="font-size:14px">05-22 22:14</div>
+            <div class="stat-delta">91.3 s · 1,042 articles</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">DF Filter Pass Rate</div>
+            <div class="stat-value">78%</div>
+            <div class="stat-delta text-muted">8,112 / 10,398 terms kept</div>
+          </div>
+        </div>
+
+        <div class="gap-20">
+          <div class="section-hdr">
+            <div class="section-title">Article Browser</div>
+            <div style="display:flex;gap:8px">
+              <select class="input-sel">
+                <option>All product areas</option>
+                <option>authentication</option>
+                <option>billing</option>
+                <option>mobile-app</option>
+                <option>api-gateway</option>
+              </select>
+              <input type="search" placeholder="Search KB…" class="input-sel" style="width:180px">
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>KB ID</th>
+                  <th>Title</th>
+                  <th>Product Area</th>
+                  <th>Updated</th>
+                  <th>Terms</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="mono">KB-1042</td>
+                  <td>Authentication service returns 401 on valid JWT tokens</td>
+                  <td><span class="tag tag-blue">authentication</span></td>
+                  <td class="text-muted">2026-04-18</td>
+                  <td><span class="badge badge-green">11</span></td>
+                  <td><button class="btn btn-sm" onclick="showEnrichTrace('KB-1042')">Inspect</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">KB-1039</td>
+                  <td>Recurring billing idempotency failure after subscription update</td>
+                  <td><span class="tag tag-gold">billing</span></td>
+                  <td class="text-muted">2026-04-12</td>
+                  <td><span class="badge badge-green">9</span></td>
+                  <td><button class="btn btn-sm">Inspect</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">KB-1037</td>
+                  <td>Mobile app crashes on deep link when session token is expired</td>
+                  <td><span class="tag">mobile-app</span></td>
+                  <td class="text-muted">2026-04-09</td>
+                  <td><span class="badge badge-amber">7</span></td>
+                  <td><button class="btn btn-sm">Inspect</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">KB-1031</td>
+                  <td>Rate limiting returns 429 on batch API endpoints</td>
+                  <td><span class="tag tag-blue">api-gateway</span></td>
+                  <td class="text-muted">2026-03-28</td>
+                  <td><span class="badge badge-green">10</span></td>
+                  <td><button class="btn btn-sm">Inspect</button></td>
+                </tr>
+                <tr>
+                  <td class="mono">KB-1028</td>
+                  <td>Password reset email not delivered to non-standard TLDs</td>
+                  <td><span class="tag tag-blue">authentication</span></td>
+                  <td class="text-muted">2026-03-20</td>
+                  <td><span class="badge badge-green">8</span></td>
+                  <td><button class="btn btn-sm">Inspect</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Enrichment trace (revealed on Inspect) -->
+        <div id="enrich-trace" style="display:none" class="gap-20">
+          <div class="sep"></div>
+          <div class="section-hdr">
+            <div class="section-title">Enrichment Trace — <span class="mono">KB-1042</span></div>
+            <button class="btn btn-sm" onclick="document.getElementById('enrich-trace').style.display='none'">Close</button>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><div class="card-title">Original Article Snippet</div></div>
+              <div class="card-body" style="font-size:12px;line-height:1.6;color:var(--text-dim)">
+                Authentication service returns <strong style="color:var(--text)">HTTP 401</strong> on requests carrying a <strong style="color:var(--text)">valid JWT token</strong> when the token was issued before the 2026-04-01 signing key rotation. This occurs because the legacy key validation path was removed without a grace-period fallback…
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Generated Enrichment Terms</div>
+                <span class="badge badge-green">9 / 11 passed DF filter</span>
+              </div>
+              <div class="card-body">
+                <div style="margin-bottom:10px;font-size:11px;color:var(--text-muted)">✓ Passed DF filter (df &gt; 0, df ≤ 0.01 × N)</div>
+                <span class="tag tag-green">login fail</span>
+                <span class="tag tag-green">can't sign in</span>
+                <span class="tag tag-green">keeps logging me out</span>
+                <span class="tag tag-green">token expired message</span>
+                <span class="tag tag-green">blocked access</span>
+                <span class="tag tag-green">session invalidated</span>
+                <span class="tag tag-green">auth broken</span>
+                <span class="tag tag-green">getting kicked out</span>
+                <span class="tag tag-green">unauthorised error</span>
+                <div style="margin:10px 0 6px;font-size:11px;color:var(--text-muted)">✗ Rejected (df = 0 or too generic)</div>
+                <span class="tag" style="text-decoration:line-through;opacity:0.5">error</span>
+                <span class="tag" style="text-decoration:line-through;opacity:0.5">problem</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ QUERY INSPECTOR ════════════════════ -->
+    <div id="page-query" class="page">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Query Inspector</div>
+          <div class="topbar-meta">Live retrieval trace · A/B baseline vs evolved</div>
+        </div>
+        <div class="topbar-actions">
+          <span class="badge badge-gold">CONFIG v7</span>
+          <span class="badge badge-green">● API :8001</span>
+        </div>
+      </div>
+
+      <div class="page-content">
+        <div class="grid-2 gap-20">
+          <div>
+            <div class="section-title" style="margin-bottom:10px">Ticket Text</div>
+            <textarea class="input-area" rows="5" id="ticket-input" placeholder="Paste ticket text here…">app keeps crashing when i try to login after i changed my password yesterday, never had this issue before</textarea>
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+              <button class="btn btn-primary" onclick="runTrace()">Run Trace</button>
+              <div class="input-row" style="margin:0">
+                <span class="input-label">top_k</span>
+                <div class="range-wrap">
+                  <input type="range" min="3" max="10" value="5" oninput="document.getElementById('topk-val').textContent=this.value">
+                  <span class="range-val" id="topk-val">5</span>
+                </div>
+              </div>
+              <div class="input-row" style="margin:0">
+                <span class="input-label">A/B mode</span>
+                <input type="checkbox" id="ab-toggle" checked>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="section-title" style="margin-bottom:10px">Query Plan</div>
+            <div class="card">
+              <div class="card-body" style="font-family:var(--mono);font-size:11px;line-height:1.8;color:var(--text-dim)">
+                <div><span style="color:var(--text-muted)">decomposed_queries:</span></div>
+                <div>&nbsp;&nbsp;[0] <span style="color:var(--accent)">"app crash login"</span></div>
+                <div>&nbsp;&nbsp;[1] <span style="color:var(--accent)">"password change session invalidated"</span></div>
+                <div>&nbsp;&nbsp;[2] <span style="color:var(--accent)">"crash after credential update"</span></div>
+                <div style="margin-top:6px"><span style="color:var(--text-muted)">entity_swaps:</span> crash↔segfault, login↔authenticate</div>
+                <div><span style="color:var(--text-muted)">recency_boost:</span> active (< 90 days)</div>
+                <div><span style="color:var(--text-muted)">latency_ms:</span> <span style="color:var(--accent)">312</span></div>
+                <div><span style="color:var(--text-muted)">config:</span> evolved_v7</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="ab-grid gap-20" id="ab-results">
+          <!-- EVOLVED -->
+          <div>
+            <div class="ab-label">▲ EVOLVED CONFIG v7</div>
+            <div class="trace-panel">
+              <div class="trace-header">
+                <span style="font-size:11px;color:var(--text-dim)">5 results · 312 ms</span>
+                <span class="badge badge-green">F1 est. 0.57</span>
+              </div>
+              <div class="trace-result">
+                <div class="result-rank">#1</div>
+                <div class="result-body">
+                  <div class="result-title">Mobile app crashes on deep link when session token is expired <span class="badge badge-green" style="font-size:9px">KB-1037</span></div>
+                  <div class="result-snippet">When a user updates their password, all existing session tokens are invalidated. Deep link navigation on iOS/Android triggers a token refresh check that raises an unhandled exception…</div>
+                  <div class="result-meta">
+                    <div class="score-bar" style="width:80px">
+                      <div class="score-seg prog-blue" style="width:40%;background:var(--info)"></div>
+                      <div class="score-seg prog-green" style="width:32%;background:var(--accent)"></div>
+                      <div class="score-seg" style="width:28%;background:var(--accent2)"></div>
+                    </div>
+                    <span class="text-muted" style="font-size:10px">sem 40% · lex 32% · sym 28%</span>
+                    <span class="tag tag-green">crash↔segfault</span>
+                    <span class="tag tag-green">login fail</span>
+                  </div>
+                </div>
+              </div>
+              <div class="trace-result">
+                <div class="result-rank">#2</div>
+                <div class="result-body">
+                  <div class="result-title">Authentication service returns 401 on valid JWT tokens <span class="badge badge-green" style="font-size:9px">KB-1042</span></div>
+                  <div class="result-snippet">After signing key rotation, tokens issued before 2026-04-01 return 401. Validate token issue timestamp against key rotation date.</div>
+                  <div class="result-meta">
+                    <div class="score-bar" style="width:80px">
+                      <div class="score-seg" style="width:55%;background:var(--info)"></div>
+                      <div class="score-seg" style="width:28%;background:var(--accent)"></div>
+                      <div class="score-seg" style="width:17%;background:var(--accent2)"></div>
+                    </div>
+                    <span class="text-muted" style="font-size:10px">sem 55% · lex 28% · sym 17%</span>
+                    <span class="tag tag-green">keeps logging me out</span>
+                  </div>
+                </div>
+              </div>
+              <div class="trace-result rank-new">
+                <div class="result-rank">#3</div>
+                <div class="result-body">
+                  <div class="result-title">Password reset email not delivered to non-standard TLDs <span class="badge badge-green" style="font-size:9px">KB-1028</span></div>
+                  <div class="result-snippet">Users who changed password via non-standard email domain may not receive confirmation, causing next-login credential mismatch…</div>
+                  <div class="result-meta">
+                    <span class="tag tag-blue">new in evolved</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BASELINE -->
+          <div>
+            <div class="ab-label" style="color:var(--text-muted)">── BASELINE (pre-evolution)</div>
+            <div class="trace-panel" style="opacity:0.7">
+              <div class="trace-header">
+                <span style="font-size:11px;color:var(--text-dim)">5 results · 198 ms</span>
+                <span class="badge badge-amber">F1 est. 0.34</span>
+              </div>
+              <div class="trace-result">
+                <div class="result-rank">#1</div>
+                <div class="result-body">
+                  <div class="result-title">Authentication service returns 401 on valid JWT tokens <span class="badge badge-green" style="font-size:9px">KB-1042</span></div>
+                  <div class="result-snippet">Baseline ranks by raw BM25 lexical match only. "401", "token" match…</div>
+                  <div class="result-meta"><span class="tag">BM25 only</span></div>
+                </div>
+              </div>
+              <div class="trace-result">
+                <div class="result-rank">#2</div>
+                <div class="result-body">
+                  <div class="result-title">Rate limiting returns 429 on batch API endpoints</div>
+                  <div class="result-snippet">Off-topic result — "crash" had weak BM25 signal, "rate" matched noise…</div>
+                  <div class="result-meta"><span class="tag">irrelevant</span></div>
+                </div>
+              </div>
+              <div class="trace-result">
+                <div class="result-rank">#3</div>
+                <div class="result-body">
+                  <div class="result-title">General authentication troubleshooting guide</div>
+                  <div class="result-snippet">Broad article, low specificity. BM25 can't bridge "app keeps crashing" ↔ "session token invalidation"…</div>
+                  <div class="result-meta"><span class="tag">low specificity</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ EVOLUTION MONITOR ════════════════════ -->
+    <div id="page-evolution" class="page">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Evolution Monitor</div>
+          <div class="topbar-meta">EvolveMem AutoResearch · simplemem.optimize(max_rounds=7)</div>
+        </div>
+        <div class="topbar-actions">
+          <span class="badge badge-green">● COMPLETE · Round 7/7</span>
+          <button class="btn btn-primary btn-sm" onclick="startEvolution()">Start New Run</button>
+        </div>
+      </div>
+
+      <div class="page-content">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Baseline F1</div>
+            <div class="stat-value">0.34</div>
+            <div class="stat-delta text-muted">pre-evolution</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Best F1</div>
+            <div class="stat-value" style="color:var(--accent)">0.57</div>
+            <div class="stat-delta up">↑ +67.6% relative gain</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Strategies Adopted</div>
+            <div class="stat-value">4</div>
+            <div class="stat-delta text-muted">of 7 proposed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Run Duration</div>
+            <div class="stat-value mono" style="font-size:14px">62 min</div>
+            <div class="stat-delta text-muted">gpt-4.1-mini · 7 rounds</div>
+          </div>
+        </div>
+
+        <div class="grid-2 gap-20">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">F1 Score Curve</div>
+              <span class="badge badge-gold">EvolveMem</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap">
+                <canvas id="f1-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Discovered Strategies</div>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:var(--accent-dim);border-radius:4px">
+                  <span class="badge badge-green" style="flex-shrink:0">R2</span>
+                  <div>
+                    <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px">Query Decomposition</div>
+                    <div style="font-size:11px;color:var(--text-dim)">Multi-symptom tickets split into ≤3 sub-queries. +0.06 F1 on multi-hop category.</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:var(--accent-dim);border-radius:4px">
+                  <span class="badge badge-green" style="flex-shrink:0">R3</span>
+                  <div>
+                    <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px">Entity Swap — IT Support Synonyms</div>
+                    <div style="font-size:11px;color:var(--text-dim)">crash↔segfault, login↔authenticate, billing↔payment, expired↔invalid. +0.05 F1.</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:var(--accent-dim);border-radius:4px">
+                  <span class="badge badge-green" style="flex-shrink:0">R5</span>
+                  <div>
+                    <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px">Recency Boost</div>
+                    <div style="font-size:11px;color:var(--text-dim)">Articles updated in last 90 days boosted by ×1.15. +0.04 F1 on temporal queries.</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:8px;background:var(--info-dim);border-radius:4px">
+                  <span class="badge badge-blue" style="flex-shrink:0">R6</span>
+                  <div>
+                    <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px">Product Area Verification</div>
+                    <div style="font-size:11px;color:var(--text-dim)">Answer verification: checks retrieved article product_area matches implied ticket domain. +0.02 F1 precision.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="section-hdr gap-16">
+          <div class="section-title">Round-by-Round Log</div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:8px 16px">
+            <div class="round-row">
+              <span class="round-num">Round 1</span>
+              <span class="round-strategy">Baseline measured · no change proposed</span>
+              <span class="round-f1">0.34</span>
+              <span class="round-delta">—</span>
+            </div>
+            <div class="round-row">
+              <span class="round-num">Round 2</span>
+              <span class="round-strategy"><span class="tag tag-green">adopted</span> Query decomposition enabled (len > 8 tokens)</span>
+              <span class="round-f1">0.40</span>
+              <span class="round-delta pos">+0.06</span>
+            </div>
+            <div class="round-row">
+              <span class="round-num">Round 3</span>
+              <span class="round-strategy"><span class="tag tag-green">adopted</span> Entity swap map: IT support domain</span>
+              <span class="round-f1">0.45</span>
+              <span class="round-delta pos">+0.05</span>
+            </div>
+            <div class="round-row">
+              <span class="round-num">Round 4</span>
+              <span class="round-strategy"><span class="tag" style="background:var(--danger-dim);color:var(--danger);border:none">rejected</span> Reranker cross-encoder — latency exceeded 600 ms budget</span>
+              <span class="round-f1">0.45</span>
+              <span class="round-delta">0.00</span>
+            </div>
+            <div class="round-row">
+              <span class="round-num">Round 5</span>
+              <span class="round-strategy"><span class="tag tag-green">adopted</span> Recency weight 0.15 on articles &lt; 90 days</span>
+              <span class="round-f1">0.52</span>
+              <span class="round-delta pos">+0.07</span>
+            </div>
+            <div class="round-row">
+              <span class="round-num">Round 6</span>
+              <span class="round-strategy"><span class="tag tag-blue">adopted</span> Answer verification: product_area cross-check</span>
+              <span class="round-f1">0.55</span>
+              <span class="round-delta pos">+0.03</span>
+            </div>
+            <div class="round-row">
+              <span class="round-num">Round 7</span>
+              <span class="round-strategy"><span class="tag tag-green">adopted</span> Fusion weights tuned [1.2, 1.0, 0.8] semantic-first</span>
+              <span class="round-f1">0.57</span>
+              <span class="round-delta pos">+0.02</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ SYSTEM HEALTH ════════════════════ -->
+    <div id="page-health" class="page">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">System Health</div>
+          <div class="topbar-meta">UserLAnd Ubuntu · ARM64 · Snapdragon 8 Elite · 16 GB RAM</div>
+        </div>
+        <div class="topbar-actions">
+          <span class="badge badge-green">4/4 SERVICES UP</span>
+        </div>
+      </div>
+
+      <div class="page-content">
+        <div class="section-hdr gap-16">
+          <div class="section-title">Services</div>
+        </div>
+        <div class="grid-2 gap-20" style="grid-template-columns:repeat(4,1fr)">
+          <div class="service-card">
+            <div class="service-name">ticket-api</div>
+            <div class="service-pid">:8001 · PID 4821</div>
+            <div class="service-status"><div class="pulse"></div> active · 2d 14h</div>
+            <div style="margin-top:10px">
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:4px">
+                <span>Memory</span><span>142 MB</span>
+              </div>
+              <div class="prog-wrap"><div class="prog-fill prog-green" style="width:9%"></div></div>
+            </div>
+          </div>
+          <div class="service-card">
+            <div class="service-name">dashboard</div>
+            <div class="service-pid">:8000 · PID 4822</div>
+            <div class="service-status"><div class="pulse"></div> active · 2d 14h</div>
+            <div style="margin-top:10px">
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:4px">
+                <span>Memory</span><span>98 MB</span>
+              </div>
+              <div class="prog-wrap"><div class="prog-fill prog-green" style="width:6%"></div></div>
+            </div>
+          </div>
+          <div class="service-card">
+            <div class="service-name">evolve-worker</div>
+            <div class="service-pid">background · PID 4890</div>
+            <div class="service-status"><div class="pulse pulse-amber"></div> idle · waiting</div>
+            <div style="margin-top:10px">
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:4px">
+                <span>Memory</span><span>44 MB</span>
+              </div>
+              <div class="prog-wrap"><div class="prog-fill prog-gold" style="width:3%"></div></div>
+            </div>
+          </div>
+          <div class="service-card">
+            <div class="service-name">kb-ingestor</div>
+            <div class="service-pid">oneshot · PID —</div>
+            <div class="service-status"><div class="pulse pulse-red"></div> inactive · last run 05-22</div>
+            <div style="margin-top:10px">
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:4px">
+                <span>Next run</span><span>nightly 22:00</span>
+              </div>
+              <div class="prog-wrap"><div class="prog-fill" style="width:0%;background:var(--text-muted)"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="grid-2 gap-20">
+          <div class="card">
+            <div class="card-header"><div class="card-title">LanceDB Store</div></div>
+            <div class="card-body">
+              <table class="data-table" style="font-size:11px">
+                <tr><td class="text-muted">Path</td><td class="mono">~/ticketmind/data/lancedb</td></tr>
+                <tr><td class="text-muted">Filesystem</td><td><span class="badge badge-green">ext4 ✓</span></td></tr>
+                <tr><td class="text-muted">Total size</td><td class="mono">43.2 MB</td></tr>
+                <tr><td class="text-muted">Tables</td><td class="mono">3 (kb_memory, cross_memory, metadata)</td></tr>
+                <tr><td class="text-muted">kb_memory rows</td><td class="mono">1,042</td></tr>
+                <tr><td class="text-muted">cross_memory rows</td><td class="mono">287</td></tr>
+                <tr><td class="text-muted">Last write</td><td class="mono">2026-05-22 22:14:03</td></tr>
+                <tr><td class="text-muted">LanceDB version</td><td class="mono">0.30.2 · aarch64 ✓</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Token Usage — Last 7 Days</div></div>
+            <div class="card-body">
+              <div class="chart-wrap" style="height:140px">
+                <canvas id="token-chart"></canvas>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--text-muted)">
+                <span>Total this week: <span class="mono" style="color:var(--text)">124,800</span></span>
+                <span>Est. cost: <span class="mono" style="color:var(--accent)">$0.19</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="section-hdr gap-16">
+          <div class="section-title">Log Tail — ticketmind.log</div>
+          <button class="btn btn-sm" onclick="refreshLogs()">Refresh</button>
+        </div>
+        <div class="log-tail" id="log-tail">
+          <div class="log-line"><span class="text-muted">2026-05-23 10:42:18</span> <span class="log-ok">[ticket-api] POST /query 312ms top_k=5 config=evolved_v7</span></div>
+          <div class="log-line"><span class="text-muted">2026-05-23 10:42:15</span> <span class="log-info">[ticket-api] session/start customer_id=cust_4892</span></div>
+          <div class="log-line"><span class="text-muted">2026-05-23 10:40:02</span> <span class="log-ok">[ticket-api] POST /query 298ms top_k=5 config=evolved_v7</span></div>
+          <div class="log-line"><span class="text-muted">2026-05-23 09:15:44</span> <span class="log-ok">[ticket-api] GET /health 200 OK</span></div>
+          <div class="log-line"><span class="text-muted">2026-05-22 22:14:03</span> <span class="log-ok">[kb-ingestor] finalize() complete 1042 articles 91.3s LanceDB written</span></div>
+          <div class="log-line"><span class="text-muted">2026-05-22 22:10:01</span> <span class="log-info">[kb-ingestor] enrichment start articles=1042 model=gpt-4.1-mini</span></div>
+          <div class="log-line"><span class="text-muted">2026-05-22 20:02:11</span> <span class="log-warn">[evolve-worker] round 4 rejected: reranker latency 892ms > 600ms budget</span></div>
+          <div class="log-line"><span class="text-muted">2026-05-22 18:40:01</span> <span class="log-ok">[evolve-worker] round 7 complete f1=0.570 evolved_config saved</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ SESSION MEMORY ════════════════════ -->
+    <div id="page-sessions" class="page">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Cross-Session Memory</div>
+          <div class="topbar-meta">SimpleMem cross/ · SQLite + LanceDB · 287 memory entries</div>
+        </div>
+        <div class="topbar-actions">
+          <span class="badge badge-green">+64% vs Claude-Mem baseline</span>
+        </div>
+      </div>
+
+      <div class="page-content">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Active Sessions</div>
+            <div class="stat-value">3</div>
+            <div class="stat-delta text-muted">in last 24h</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Memory Entries</div>
+            <div class="stat-value">287</div>
+            <div class="stat-delta up">↑ 14 today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg Context Injected</div>
+            <div class="stat-value">1.8k</div>
+            <div class="stat-delta text-muted">tokens per session start</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Cross-Session Hits</div>
+            <div class="stat-value">82%</div>
+            <div class="stat-delta up">prior context relevant in 82% of opens</div>
+          </div>
+        </div>
+
+        <div class="section-hdr gap-16">
+          <div class="section-title">Recent Sessions</div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Session ID</th>
+                <th>Customer</th>
+                <th>Started</th>
+                <th>Duration</th>
+                <th>Events</th>
+                <th>Memories Stored</th>
+                <th>Prior Context</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">sess_9f2a</td>
+                <td class="text-dim">cust_4892</td>
+                <td class="text-muted">10:42 today</td>
+                <td class="mono">14 min</td>
+                <td>8</td>
+                <td><span class="badge badge-green">3</span></td>
+                <td><span class="badge badge-blue">2 prior sessions injected</span></td>
+              </tr>
+              <tr>
+                <td class="mono">sess_8d1c</td>
+                <td class="text-dim">cust_3017</td>
+                <td class="text-muted">09:15 today</td>
+                <td class="mono">22 min</td>
+                <td>14</td>
+                <td><span class="badge badge-green">5</span></td>
+                <td><span class="badge badge-blue">1 prior session injected</span></td>
+              </tr>
+              <tr>
+                <td class="mono">sess_7b4e</td>
+                <td class="text-dim">cust_1204</td>
+                <td class="text-muted">yesterday</td>
+                <td class="mono">8 min</td>
+                <td>5</td>
+                <td><span class="badge badge-green">2</span></td>
+                <td><span class="text-muted" style="font-size:11px">first session</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="section-hdr gap-16">
+          <div class="section-title">Memory Entry Detail — sess_9f2a / cust_4892</div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="font-size:12px;line-height:1.8">
+            <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+              <span class="badge badge-blue" style="margin-right:8px">OBSERVATION</span>
+              <span style="color:var(--text)">Customer repeatedly encounters authentication failures after password changes. Likely linked to session token invalidation on mobile (KB-1037).</span>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Source: sess_9f2a · 10:42 · confidence 0.84</div>
+            </div>
+            <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+              <span class="badge badge-green" style="margin-right:8px">DECISION</span>
+              <span style="color:var(--text)">Escalated to mobile-app team after two failed resolution attempts with KB-1028 (email delivery) — did not address root cause.</span>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Source: sess_8c1a (prior) · 2026-05-20</div>
+            </div>
+            <div style="padding:8px 0">
+              <span class="badge badge-amber" style="margin-right:8px">CONTEXT INJECTED</span>
+              <span style="color:var(--text-dim)">1,823 tokens of prior context injected at session start · 2 sessions · within 2,000 token budget</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── Navigation ──
+const pages = ['kb','query','evolution','health','sessions'];
+
+function showPage(id) {
+  pages.forEach(p => {
+    document.getElementById('page-'+p).classList.toggle('active', p === id);
+  });
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.remove('active');
+  });
+  event.currentTarget.classList.add('active');
+  if (id === 'evolution') initF1Chart();
+  if (id === 'health') initTokenChart();
+}
+
+// ── Theme ──
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-icon').textContent = isDark ? '☾' : '☀';
+  document.getElementById('theme-label').textContent = isDark ? 'Dark mode' : 'Light mode';
+  // Reinit charts on theme change
+  if (f1Chart) { f1Chart.destroy(); f1Chart = null; initF1Chart(); }
+  if (tokenChart) { tokenChart.destroy(); tokenChart = null; initTokenChart(); }
+}
+
+// ── KB actions ──
+function showEnrichTrace(id) {
+  const el = document.getElementById('enrich-trace');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function triggerIngest() {
+  alert('Re-ingest triggered. kb-ingestor.service started. Check System Health → Log Tail for progress.');
+}
+
+// ── Query trace ──
+function runTrace() {
+  // Simulate a trace run — in production this POSTs to localhost:8001/query
+  const btn = event.currentTarget;
+  btn.textContent = 'Running…';
+  btn.disabled = true;
+  setTimeout(() => { btn.textContent = 'Run Trace'; btn.disabled = false; }, 1200);
+}
+
+// ── Evolution ──
+function startEvolution() {
+  if (!confirm('Start a new 7-round AutoResearch run? This will take ~60–90 minutes.')) return;
+  alert('evolve-worker.service started. Switch to Evolution Monitor to track progress.');
+}
+
+// ── Log refresh ──
+function refreshLogs() {
+  // In production: fetches /api/logs/tail
+  const tail = document.getElementById('log-tail');
+  const now = new Date().toISOString().slice(0,19).replace('T',' ');
+  const newLine = document.createElement('div');
+  newLine.className = 'log-line';
+  newLine.innerHTML = `<span class="text-muted">${now}</span> <span class="log-ok">[ticket-api] GET /health 200 OK</span>`;
+  tail.insertBefore(newLine, tail.firstChild);
+}
+
+// ── Charts ──
+let f1Chart = null, tokenChart = null;
+
+function getComputedColor(varName) {
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
+
+function initF1Chart() {
+  if (f1Chart) return;
+  const ctx = document.getElementById('f1-chart');
+  if (!ctx) return;
+  const accent = '#2ea043';
+  const warn = '#d4a73a';
+  const muted = '#555f6b';
+  f1Chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Base','R1','R2','R3','R4','R5','R6','R7'],
+      datasets: [
+        {
+          label: 'EvolveMem F1',
+          data: [0.34, 0.34, 0.40, 0.45, 0.45, 0.52, 0.55, 0.57],
+          borderColor: accent,
+          backgroundColor: 'rgba(46,160,67,0.08)',
+          borderWidth: 2,
+          pointBackgroundColor: accent,
+          pointRadius: 4,
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: 'Baseline',
+          data: [0.34, 0.34, 0.34, 0.34, 0.34, 0.34, 0.34, 0.34],
+          borderColor: muted,
+          borderWidth: 1,
+          borderDash: [4,3],
+          pointRadius: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#8b949e', font: { family: "'IBM Plex Mono'" }, boxWidth: 12 } } },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { family: "'IBM Plex Mono'", size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { min: 0.2, max: 0.65, ticks: { color: '#8b949e', font: { family: "'IBM Plex Mono'", size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+}
+
+function initTokenChart() {
+  if (tokenChart) return;
+  const ctx = document.getElementById('token-chart');
+  if (!ctx) return;
+  tokenChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['5/17','5/18','5/19','5/20','5/21','5/22','5/23'],
+      datasets: [{
+        label: 'Tokens',
+        data: [4200, 3100, 5800, 71000, 8400, 28100, 4200],
+        backgroundColor: 'rgba(56,139,253,0.3)',
+        borderColor: '#388bfd',
+        borderWidth: 1,
+        borderRadius: 3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { family: "'IBM Plex Mono'", size: 9 } }, grid: { display: false } },
+        y: { ticks: { color: '#8b949e', font: { family: "'IBM Plex Mono'", size: 9 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+}
+
+// Auto-init KB page charts on load
+document.addEventListener('DOMContentLoaded', () => {
+  // Evolution and health pages init charts on first navigate
+});
+</script>
+</body>
+</html>

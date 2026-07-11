@@ -1,0 +1,10 @@
+Based on this tutorial deep research shortlist the best user case based on ease of implementation, useful and practical and marketable : 
+Every memory system for LLM agents evolves what it stores. None evolves how it retrieves.
+https://github.com/aiming-lab/SimpleMem
+🧬 EvolveMem is out, now shipping inside the SimpleMem v0.3.0 update. Powered by AutoResearch: the system researches its own retrieval, treating the full retrieval config as a structured action space and running a closed loop: evaluate ➜ diagnose ➜ propose ➜ validate ➜ repeat.
+
+🔬 From a minimal baseline, 7 autonomous rounds produce a retrieval policy that beats the strongest published baseline by +25.7% on LoCoMo and +18.9% on MemBench.
+
+🧬 It discovers entirely new retrieval dimensions not present in the original design, all integrated into the unified SimpleMem package.
+
+📄 Paper: arxiv.org/abs/2605.13941

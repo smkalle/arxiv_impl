@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# TicketMind generated artifacts
+sira/data/*.pkl
+sira/data/df_store.json
+sira/data/enriched_corpus*.jsonl
+sira/data/*report*.json
+sira/data/*report*.md
+sira/data/evolution_state.json
+sira/data/evolved_config.json
+sira/data/session_store.json

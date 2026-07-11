@@ -1,0 +1,7 @@
+rank-bm25>=0.2.2
+nltk>=3.8
+pytest>=8.0
+fastapi>=0.110
+uvicorn>=0.27
+requests>=2.31
+python-multipart>=0.0.9

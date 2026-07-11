@@ -1,0 +1,10 @@
+[Unit]
+Description=TicketMind Compatibility Evolution Worker
+
+[Service]
+WorkingDirectory=%h/ticketmind/sira
+ExecStart=/usr/bin/python3 -c "from src.evolution import run_evolution; run_evolution()"
+Type=oneshot
+
+[Install]
+WantedBy=default.target

@@ -243,3 +243,10 @@ tool-output/
 datamaster/catalog-agent/artifacts_local/
 datamaster/catalog-agent/artifacts/
 datamaster/catalog-agent/.env
+
+# -----------------------------------------------------------------------------
+# rgqm (EpochForge Lite) generated artifacts
+# -----------------------------------------------------------------------------
+rgqm/archive.json
+rgqm/results.json
+rgqm/results.png

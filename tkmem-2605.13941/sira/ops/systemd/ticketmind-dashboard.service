@@ -1,0 +1,10 @@
+[Unit]
+Description=TicketMind Dashboard
+
+[Service]
+WorkingDirectory=%h/ticketmind/sira
+ExecStart=/usr/bin/python3 -m uvicorn src.enrich_ui:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

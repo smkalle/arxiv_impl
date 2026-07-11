@@ -1,0 +1,10 @@
+{"ticket":"app keeps crashing after login","expected_kb_ids":["KB-1001"]}
+{"ticket":"password reset email never arrives","expected_kb_ids":["KB-1002"]}
+{"ticket":"subscription keeps renewing and payment fails","expected_kb_ids":["KB-1003"]}
+{"ticket":"two factor code is rejected","expected_kb_ids":["KB-1004"]}
+{"ticket":"file attachment will not upload","expected_kb_ids":["KB-1005"]}
+{"ticket":"account locked after too many sign in tries","expected_kb_ids":["KB-1006"]}
+{"ticket":"profile changes do not save","expected_kb_ids":["KB-1007"]}
+{"ticket":"notification settings reset themselves","expected_kb_ids":["KB-1008"]}
+{"ticket":"search results are stale","expected_kb_ids":["KB-1009"]}
+{"ticket":"invoice pdf download fails","expected_kb_ids":["KB-1010"]}
