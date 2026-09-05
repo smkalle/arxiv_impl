@@ -26,6 +26,7 @@ When working in this repository, read the OpenWiki quickstart first, then follow
 | `evolvemem-2605.13941/` | EvolveMem (2605.13941) — EvolveMem TicketMind v2.0 runner: L1→L2→L3→L4 AutoResearch loops over the SIRA pipeline | `pytest.ini`, `requirements.txt`, `evolvemem_runner.py`, `api.py` | Implementation present; tests defined |
 | `rgqm/` | Red Queen Gödel Machine (2606.26294) — EpochForge Lite prototype | `AGENTS.md`, `rqgm-gemini-spec.html` (PRD), `rqgm-visual-explainer.html` | Implementation present; erasure-invariant test passing |
 | `orchestrator/` | **metaorch** — meta-orchestrator pipeline chaining all 8 subprojects' use cases end-to-end via minimal contract-bound adapters (FastAPI + Pydantic v2; in-memory fakes, no sibling imports) | `AGENTS.md`, `SPEC.md`, `README.md`, `pyproject.toml`, `scripts/live_test.py`, `streamlit_app.py` | v0.1.0; 120 tests pass; optional Streamlit admin console |
+| `lfm25-grpo-ifstruct/` | GRPO for structured outputs ([HF blog](https://huggingface.co/blog/grpo-with-trl-ifstruct)) — LFM2.5-350M + LoRA + TRL GRPO on Nemotron data, scored with Liquid's official IFStruct validator | `README.md`, `lfm25_350m_grpo_structured_outputs.ipynb` | Notebook complete; CPU cells verified, training needs a GPU |
 
 Each subproject is self-contained: its own deps, own test command, own run location. Several subprojects consume each other (e.g. `AAFLOW` and `sira-kb-ingestor` feed `sira/`); confirm cross-project contracts in the consuming project's spec before changing a producer's output schema.
 
