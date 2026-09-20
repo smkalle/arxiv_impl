@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leafcx"
+version = "0.1.0"
+description = "Leaf + TaskPilot (arXiv:2609.07925) ported to self-serve account management, with a used-car shortlist as the flagship task"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = ["pytest>=7.0"]
+
+[project.optional-dependencies]
+# Optional: the official Ollama client. The built-in backend talks to the same
+# daemon over stdlib HTTP, so this is a convenience, not a requirement.
+ollama = ["ollama>=0.3"]
+
+[project.scripts]
+leafcx = "leafcx.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["leafcx*"]

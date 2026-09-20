@@ -1,0 +1,2 @@
+# The harness itself is stdlib-only. pytest is required: it is the grader.
+pytest>=7.0
