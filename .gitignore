@@ -250,3 +250,13 @@ datamaster/catalog-agent/.env
 rgqm/archive.json
 rgqm/results.json
 rgqm/results.png
+
+# -----------------------------------------------------------------------------
+# LeafCX (leaf-taskpilot-2609.07925/) generated artifacts
+# -----------------------------------------------------------------------------
+# workspace/ and hidden_tests/ are rebuilt per episode; runs/ and tasks/ hold
+# transcripts and admitted task sets.
+leaf-taskpilot-2609.07925/workspace/
+leaf-taskpilot-2609.07925/hidden_tests/
+leaf-taskpilot-2609.07925/runs/
+leaf-taskpilot-2609.07925/tasks/
